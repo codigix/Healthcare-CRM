@@ -1,0 +1,316 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("admin")
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activityLogs ActivityLog[]
+
+  @@map("users")
+}
+
+model Specialization {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  department  String
+  doctorCount Int      @default(0)
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("specializations")
+}
+
+model Doctor {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  phone          String
+  specialization String
+  experience     Int
+  schedule       String?
+  avatar         String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  appointments Appointment[]
+  prescriptions Prescription[]
+
+  @@map("doctors")
+}
+
+model Patient {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String
+  dob       DateTime
+  gender    String
+  address   String?
+  history   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appointments    Appointment[]
+  invoices        Invoice[]
+  insuranceClaims InsuranceClaim[]
+  prescriptions   Prescription[]
+
+  @@map("patients")
+}
+
+model Appointment {
+  id        String   @id @default(cuid())
+  doctorId  String
+  patientId String
+  date      DateTime
+  time      String
+  status    String   @default("pending")
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("appointments")
+}
+
+model Invoice {
+  id        String   @id @default(cuid())
+  patientId String
+  amount    Decimal
+  status    String   @default("pending")
+  date      DateTime @default(now())
+  dueDate   DateTime?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("invoices")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  description String?
+  timestamp DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
+
+model InsuranceClaim {
+  id            String   @id @default(cuid())
+  patientId     String
+  provider      String
+  policyNumber  String
+  type          String   @default("Medical")
+  amount        Decimal
+  status        String   @default("Draft")
+  submittedDate DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("insurance_claims")
+}
+
+model Prescription {
+  id                  String   @id @default(cuid())
+  patientId           String
+  doctorId            String
+  prescriptionDate    DateTime
+  prescriptionType    String   @default("Standard")
+  diagnosis           String?
+  notesForPharmacist  String?
+  status              String   @default("Active")
+  medications         String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@map("prescriptions")
+}
+
+model PrescriptionTemplate {
+  id           String   @id @default(cuid())
+  name         String
+  category     String
+  medications  String
+  createdBy    String
+  lastUsed     DateTime?
+  usageCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("prescription_templates")
+}
+
+model Ambulance {
+  id            String   @id @default(cuid())
+  name          String
+  registrationNumber String @unique
+  driverName    String
+  driverPhone   String
+  status        String   @default("available")
+  location      String?
+  lastUpdated   DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  emergencyCalls EmergencyCall[]
+
+  @@map("ambulances")
+}
+
+model EmergencyCall {
+  id              String   @id @default(cuid())
+  patientName     String
+  phone           String?
+  location        String
+  emergencyType   String
+  priority        String   @default("Medium")
+  status          String   @default("Pending")
+  ambulanceId     String?
+  callTime        DateTime @default(now())
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  ambulance Ambulance? @relation(fields: [ambulanceId], references: [id], onDelete: SetNull)
+
+  @@map("emergency_calls")
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  head        String
+  location    String
+  staffCount  Int      @default(0)
+  services    Int      @default(0)
+  status      String   @default("Active")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  serviceRecords Service[]
+
+  @@map("departments")
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  departmentId String
+  type        String
+  duration    Int
+  price       Decimal
+  description String?
+  status      String   @default("Active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@map("services")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  category    String
+  description String?
+  status      String   @default("Active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  staff Staff[]
+
+  @@map("roles")
+}
+
+model Staff {
+  id                String   @id @default(cuid())
+  firstName         String
+  lastName          String
+  email             String   @unique
+  phone             String
+  dateOfBirth       DateTime
+  gender            String
+  address           String?
+  city              String?
+  postalCode        String?
+  country           String?
+  emergencyContact  String?
+  emergencyPhone    String?
+  relationship      String?
+  roleId            String?
+  role              Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  department        String
+  joinedDate        DateTime @default(now())
+  status            String   @default("Active")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  attendanceRecords Attendance[]
+  leaveRequests     LeaveRequest[]
+
+  @@map("staff")
+}
+
+model LeaveRequest {
+  id           String   @id @default(cuid())
+  staffId      String
+  staff        Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  leaveType    String
+  startDate    DateTime
+  endDate      DateTime
+  reason       String?
+  status       String   @default("Pending")
+  approvedBy   String?
+  approvedDate DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("leave_requests")
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  staffId   String
+  checkIn   DateTime?
+  checkOut  DateTime?
+  hours     Float    @default(0)
+  status    String   @default("Present")
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  staff Staff @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@map("attendance")
+}
