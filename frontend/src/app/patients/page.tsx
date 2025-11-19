@@ -125,7 +125,7 @@ export default function PatientsPage() {
                         </div>
                       </td>
                       <td className="py-4 px-4 text-gray-300">
-                        {patient.age || 'N/A'} • {patient.gender}
+                        {patient.age || '-'} • {patient.gender || '-'}
                       </td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -136,9 +136,9 @@ export default function PatientsPage() {
                           {patient.status || 'Active'}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-gray-300">{patient.lastVisit || 'N/A'}</td>
-                      <td className="py-4 px-4 text-gray-300">{patient.condition || 'N/A'}</td>
-                      <td className="py-4 px-4 text-gray-300">{patient.doctor || 'N/A'}</td>
+                      <td className="py-4 px-4 text-gray-300">{patient.lastVisit || '-'}</td>
+                      <td className="py-4 px-4 text-gray-300">{patient.condition || '-'}</td>
+                      <td className="py-4 px-4 text-gray-300">{patient.doctor ? `Dr. ${patient.doctor}` : '-'}</td>
                       <td className="py-4 px-4 relative">
                         <div className="flex items-center justify-center">
                           <button 

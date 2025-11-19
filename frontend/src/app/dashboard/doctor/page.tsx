@@ -142,6 +142,14 @@ export default function DoctorDashboard() {
               appointmentCount: 0,
               lastAppointment: '',
             });
+          } else if (apt.patient?.id && patientMap.has(apt.patient.id)) {
+            const existingPatient = patientMap.get(apt.patient.id)!;
+            if (!existingPatient.email || existingPatient.email === 'N/A') {
+              existingPatient.email = apt.patient.email || 'N/A';
+            }
+            if (!existingPatient.phone || existingPatient.phone === 'N/A') {
+              existingPatient.phone = apt.patient.phone || 'N/A';
+            }
           }
         });
 

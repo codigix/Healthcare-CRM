@@ -5,6 +5,8 @@ import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
 export default function AddInventoryItemPage() {
   const [activeTab, setActiveTab] = useState('basic');
   const [formData, setFormData] = useState({

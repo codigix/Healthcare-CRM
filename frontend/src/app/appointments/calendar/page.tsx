@@ -12,8 +12,8 @@ interface Appointment {
   time: string;
   status: string;
   type?: string;
-  doctor: { id: string; name: string };
-  patient: { id: string; name: string };
+  doctor?: { id: string; name: string };
+  patient?: { id: string; name: string };
 }
 
 interface Doctor {
@@ -224,8 +224,8 @@ export default function CalendarViewPage() {
                                 >
                                   <div className="flex justify-between items-start">
                                     <div className="flex-1">
-                                      <div className="font-medium text-white">{apt.patient.name}</div>
-                                      <div className="text-sm text-gray-400">Dr. {apt.doctor.name}</div>
+                                      <div className="font-medium text-white">{apt.patient?.name || 'N/A'}</div>
+                                      <div className="text-sm text-gray-400">Dr. {apt.doctor?.name || 'N/A'}</div>
                                       <div className="text-xs text-gray-500 mt-1">{apt.type || 'Check-up'}</div>
                                     </div>
                                     <span className="text-xs px-2 py-1 rounded bg-blue-500/30">

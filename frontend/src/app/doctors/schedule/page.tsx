@@ -376,15 +376,15 @@ export default function DoctorSchedulePage() {
                                 >
                                   <div className="flex items-start justify-between">
                                     <div>
-                                      <h4 className="font-semibold mb-1">{appointment.patient.name}</h4>
+                                      <h4 className="font-semibold mb-1">{appointment.patient?.name || 'Unknown Patient'}</h4>
                                       <p className="text-sm text-gray-400">
                                         {formatTime(appointment.time)} • {appointment.status}
                                       </p>
                                       <div className="flex items-center gap-2 mt-2">
                                         <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 text-xs font-semibold">
-                                          {appointment.doctor.name.charAt(0)}
+                                          {appointment.doctor?.name?.charAt(0) || '?'}
                                         </div>
-                                        <span className="text-sm text-gray-300">{appointment.doctor.name}</span>
+                                        <span className="text-sm text-gray-300">{appointment.doctor?.name || 'Unassigned'}</span>
                                       </div>
                                     </div>
                                     <span
@@ -428,7 +428,7 @@ export default function DoctorSchedulePage() {
                           {dateAppointments.length > 0 ? (
                             dateAppointments.map((apt) => (
                               <div key={apt.id} className="text-xs bg-blue-500/10 border-l-2 border-blue-500 p-2 rounded">
-                                <p className="font-semibold text-blue-400 truncate">{apt.patient.name}</p>
+                                <p className="font-semibold text-blue-400 truncate">{apt.patient?.name || 'Unknown'}</p>
                                 <p className="text-gray-400">{formatTime(apt.time)}</p>
                               </div>
                             ))
@@ -469,7 +469,7 @@ export default function DoctorSchedulePage() {
                               <div className="text-xs space-y-1">
                                 {dateAppointments.slice(0, 2).map((apt) => (
                                   <div key={apt.id} className="bg-blue-500/20 text-blue-400 px-1 py-0.5 rounded truncate">
-                                    {apt.patient.name.split(' ')[0]}
+                                    {(apt.patient?.name || 'Unknown').split(' ')[0]}
                                   </div>
                                 ))}
                                 {dateAppointments.length > 2 && (
@@ -498,8 +498,8 @@ export default function DoctorSchedulePage() {
                       {appointments.length > 0 ? (
                         appointments.map((apt) => (
                           <tr key={apt.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50">
-                            <td className="py-3 px-4">{apt.patient.name}</td>
-                            <td className="py-3 px-4">{apt.doctor.name}</td>
+                            <td className="py-3 px-4">{apt.patient?.name || 'Unknown Patient'}</td>
+                            <td className="py-3 px-4">{apt.doctor?.name || 'Unassigned'}</td>
                             <td className="py-3 px-4">
                               {new Date(apt.date).toLocaleDateString()} {formatTime(apt.time)}
                             </td>

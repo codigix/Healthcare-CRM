@@ -209,13 +209,13 @@ export default function AllAppointmentsPage() {
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 font-semibold">
-                            {apt.patient.name.charAt(0)}
+                            {apt.patient?.name?.charAt(0) || '?'}
                           </div>
-                          <span className="font-medium">{apt.patient.name}</span>
+                          <span className="font-medium">{apt.patient?.name || 'Unknown'}</span>
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="text-gray-300">Dr. {apt.doctor.name}</span>
+                        <span className="text-gray-300">Dr. {apt.doctor?.name || 'Unassigned'}</span>
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex flex-col">

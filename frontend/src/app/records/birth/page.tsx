@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { Search, Download, Plus, Edit, Trash2, MoreVertical, Filter } from 'lucide-react';
 import Link from 'next/link';
+import { recordsAPI } from '@/lib/api';
 
 interface BirthRecord {
   id: string;
@@ -20,75 +21,62 @@ interface BirthRecord {
 export default function BirthRecordsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [birthRecords, setBirthRecords] = useState<BirthRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean; id: string | null }>({ show: false, id: null });
+  const [statusUpdate, setStatusUpdate] = useState<{ show: boolean; id: string | null; status: string }>({ show: false, id: null, status: '' });
 
-  const birthRecords: BirthRecord[] = [
-    {
-      id: 'BR-2025-001',
-      childName: 'Emma Johnson',
-      dateOfBirth: '5/10/2025',
-      parents: 'Sarah and Michael Johnson',
-      attendingDoctor: 'Dr. Lisa Chen',
-      status: 'Verified',
-      weight: '3.2 kg',
-      gender: 'Female',
-      hospitalName: 'MedixPro Hospital',
-    },
-    {
-      id: 'BR-2025-002',
-      childName: 'Noah Williams',
-      dateOfBirth: '5/18/2025',
-      parents: 'Jessica and David Williams',
-      attendingDoctor: 'Dr. Robert Kim',
-      status: 'Pending',
-      weight: '3.5 kg',
-      gender: 'Male',
-      hospitalName: 'MedixPro Hospital',
-    },
-    {
-      id: 'BR-2025-003',
-      childName: 'Olivia Davis',
-      dateOfBirth: '5/20/2025',
-      parents: 'Emily and James Davis',
-      attendingDoctor: 'Dr. Lisa Chen',
-      status: 'Verified',
-      weight: '3.1 kg',
-      gender: 'Female',
-      hospitalName: 'MedixPro Hospital',
-    },
-    {
-      id: 'BR-2025-004',
-      childName: 'Liam Miller',
-      dateOfBirth: '5/22/2025',
-      parents: 'Sophie and William Miller',
-      attendingDoctor: 'Dr. John Smith',
-      status: 'Verified',
-      weight: '3.8 kg',
-      gender: 'Male',
-      hospitalName: 'MedixPro Hospital',
-    },
-    {
-      id: 'BR-2025-005',
-      childName: 'Ava Wilson',
-      dateOfBirth: '5/25/2025',
-      parents: 'Jennifer and Robert Wilson',
-      attendingDoctor: 'Dr. Lisa Chen',
-      status: 'Pending',
-      weight: '3.0 kg',
-      gender: 'Female',
-      hospitalName: 'MedixPro Hospital',
-    },
-  ];
+  useEffect(() => {
+    fetchRecords();
+  }, []);
 
-  const filteredRecords = birthRecords.filter((record) => {
-    const matchesSearch =
-      record.childName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.parents.toLowerCase().includes(searchQuery.toLowerCase());
+  const fetchRecords = async () => {
+    try {
+      setLoading(true);
+      const response = await recordsAPI.list(1, 100, 'birth');
+      const records = response.data.records.map((record: any) => {
+        const details = typeof record.details === 'string' ? JSON.parse(record.details) : record.details;
+        return {
+          id: record.id,
+          childName: details.childName || record.patientName || '',
+          dateOfBirth: record.date?.split('T')[0] || '',
+          parents: details.parents || '',
+          attendingDoctor: details.attendingDoctor || '',
+          status: record.status || 'Pending',
+          weight: details.weight || '',
+          gender: details.gender || '',
+          hospitalName: details.hospitalName || '',
+        };
+      });
+      setBirthRecords(records);
+    } catch (error) {
+      console.error('Failed to fetch records:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (activeTab === 'verified') return matchesSearch && record.status === 'Verified';
-    if (activeTab === 'pending') return matchesSearch && record.status === 'Pending';
-    return matchesSearch;
-  });
+  const handleDelete = async (id: string) => {
+    try {
+      await recordsAPI.delete(id);
+      setBirthRecords(prev => prev.filter(r => r.id !== id));
+      setDeleteConfirm({ show: false, id: null });
+    } catch (error) {
+      console.error('Failed to delete record:', error);
+    }
+  };
+
+  const handleStatusUpdate = async (id: string, newStatus: string) => {
+    try {
+      await recordsAPI.updateStatus(id, newStatus);
+      setBirthRecords(prev =>
+        prev.map(r => (r.id === id ? { ...r, status: newStatus as any } : r))
+      );
+      setStatusUpdate({ show: false, id: null, status: '' });
+    } catch (error) {
+      console.error('Failed to update status:', error);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -102,6 +90,17 @@ export default function BirthRecordsPage() {
         return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
     }
   };
+
+  const filteredRecords = birthRecords.filter((record) => {
+    const matchesSearch =
+      record.childName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.parents.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (activeTab === 'verified') return matchesSearch && record.status === 'Verified';
+    if (activeTab === 'pending') return matchesSearch && record.status === 'Pending';
+    return matchesSearch;
+  });
 
   return (
     <DashboardLayout>
@@ -170,74 +169,144 @@ export default function BirthRecordsPage() {
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-dark-tertiary">
-                  <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
-                    Record ID
-                  </th>
-                  <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
-                    Child Name
-                  </th>
-                  <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
-                    Date of Birth
-                  </th>
-                  <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
-                    Parents
-                  </th>
-                  <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
-                    Attending Doctor
-                  </th>
-                  <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
-                    Status
-                  </th>
-                  <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRecords.map((record) => (
-                  <tr
-                    key={record.id}
-                    className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-white text-sm font-medium">{record.id}</td>
-                    <td className="px-4 py-3 text-white text-sm font-medium">{record.childName}</td>
-                    <td className="px-4 py-3 text-gray-300 text-sm">{record.dateOfBirth}</td>
-                    <td className="px-4 py-3 text-gray-300 text-sm">{record.parents}</td>
-                    <td className="px-4 py-3 text-gray-300 text-sm">{record.attendingDoctor}</td>
-                    <td className="px-4 py-3 text-sm">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                          record.status
-                        )}`}
-                      >
-                        {record.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <div className="flex items-center gap-2">
-                        <button className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-blue-400 transition-colors">
-                          <Edit size={16} />
-                        </button>
-                        <button className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-red-400 transition-colors">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+          {loading ? (
+            <div className="text-center py-8 text-gray-400">
+              Loading records...
+            </div>
+          ) : filteredRecords.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              No records found
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-dark-tertiary">
+                    <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
+                      Record ID
+                    </th>
+                    <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
+                      Child Name
+                    </th>
+                    <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
+                      Date of Birth
+                    </th>
+                    <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
+                      Parents
+                    </th>
+                    <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
+                      Attending Doctor
+                    </th>
+                    <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
+                      Status
+                    </th>
+                    <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredRecords.map((record) => (
+                    <tr
+                      key={record.id}
+                      className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
+                    >
+                      <td className="px-4 py-3 text-white text-sm font-medium">{record.id}</td>
+                      <td className="px-4 py-3 text-white text-sm font-medium">{record.childName}</td>
+                      <td className="px-4 py-3 text-gray-300 text-sm">{record.dateOfBirth}</td>
+                      <td className="px-4 py-3 text-gray-300 text-sm">{record.parents}</td>
+                      <td className="px-4 py-3 text-gray-300 text-sm">{record.attendingDoctor}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <button
+                          onClick={() => setStatusUpdate({ show: true, id: record.id, status: record.status })}
+                          className={`px-3 py-1 rounded-full text-xs font-medium border cursor-pointer hover:opacity-80 transition-opacity ${getStatusColor(
+                            record.status
+                          )}`}
+                        >
+                          {record.status}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Link href={`/records/birth/edit/${record.id}`}>
+                            <button className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-blue-400 transition-colors">
+                              <Edit size={16} />
+                            </button>
+                          </Link>
+                          <button
+                            onClick={() => setDeleteConfirm({ show: true, id: record.id })}
+                            className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           <div className="mt-4 flex justify-between items-center text-sm text-gray-400">
             <span>Showing {filteredRecords.length} records</span>
           </div>
         </div>
       </div>
+
+      {deleteConfirm.show && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-white mb-2">Delete Record</h3>
+            <p className="text-gray-400 mb-6">Are you sure you want to delete this birth record? This action cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteConfirm({ show: false, id: null })}
+                className="px-4 py-2 bg-dark-tertiary hover:bg-dark-tertiary/80 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteConfirm.id && handleDelete(deleteConfirm.id)}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {statusUpdate.show && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-white mb-4">Update Status</h3>
+            <select
+              value={statusUpdate.status}
+              onChange={(e) => setStatusUpdate({ ...statusUpdate, status: e.target.value })}
+              className="input-field w-full mb-6"
+            >
+              <option value="Pending">Pending</option>
+              <option value="Verified">Verified</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setStatusUpdate({ show: false, id: null, status: '' })}
+                className="px-4 py-2 bg-dark-tertiary hover:bg-dark-tertiary/80 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => statusUpdate.id && handleStatusUpdate(statusUpdate.id, statusUpdate.status)}
+                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

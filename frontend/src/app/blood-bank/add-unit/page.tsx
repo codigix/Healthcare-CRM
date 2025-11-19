@@ -1,39 +1,80 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Calendar } from 'lucide-react';
-import Link from 'next/link';
+import { useState } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { Calendar } from "lucide-react";
+import Link from "next/link";
+import { bloodBankAPI } from "@/lib/api";
 
 export default function AddBloodUnitPage() {
   const [formData, setFormData] = useState({
     anonymousDonor: false,
-    donorId: '',
-    donorName: '',
-    bloodGroup: '',
-    quantity: '1',
+    donorId: "",
+    donorName: "",
+    bloodGroup: "",
+    quantity: "1",
     screeningComplete: false,
     processingComplete: false,
-    collectionDate: '',
-    expiryDate: '',
-    sourceType: '',
-    collectionLocation: '',
-    additionalNotes: ''
+    collectionDate: "",
+    expiryDate: "",
+    sourceType: "",
+    collectionLocation: "",
+    additionalNotes: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value, type } = e.target;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    try {
+      const submitData = {
+        bloodType: formData.bloodGroup,
+        quantity: parseInt(formData.quantity),
+        donorId: formData.anonymousDonor ? null : formData.donorId || null,
+        collectionDate: formData.collectionDate,
+        expiryDate: formData.expiryDate,
+        status: "available",
+        notes: formData.additionalNotes,
+      };
+
+      const response = await bloodBankAPI.createStock(submitData);
+
+      if (response.data.success) {
+        alert("Blood unit added successfully!");
+        setFormData({
+          anonymousDonor: false,
+          donorId: "",
+          donorName: "",
+          bloodGroup: "",
+          quantity: "1",
+          screeningComplete: false,
+          processingComplete: false,
+          collectionDate: "",
+          expiryDate: "",
+          sourceType: "",
+          collectionLocation: "",
+          additionalNotes: "",
+        });
+        window.location.href = "/blood-bank/stock";
+      } else {
+        alert("Error: " + (response.data.error || "Failed to add blood unit"));
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Error adding blood unit");
+    }
   };
 
   return (
@@ -42,7 +83,9 @@ export default function AddBloodUnitPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold mb-2">Add Blood Unit</h1>
-            <p className="text-gray-400">Add a new blood unit to the blood bank inventory</p>
+            <p className="text-gray-400">
+              Add a new blood unit to the blood bank inventory
+            </p>
           </div>
           <Link href="/blood-bank/stock">
             <button className="btn-secondary">Cancel</button>
@@ -51,7 +94,10 @@ export default function AddBloodUnitPage() {
 
         <div className="card">
           <h2 className="text-xl font-semibold mb-6">Blood Unit Information</h2>
-          <p className="text-gray-400 text-sm mb-6">Enter the details of the new blood unit to be added to the inventory.</p>
+          <p className="text-gray-400 text-sm mb-6">
+            Enter the details of the new blood unit to be added to the
+            inventory.
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-6">
@@ -64,7 +110,10 @@ export default function AddBloodUnitPage() {
                   onChange={handleInputChange}
                   className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 rounded focus:ring-emerald-500"
                 />
-                <label htmlFor="anonymousDonor" className="text-sm font-medium cursor-pointer">
+                <label
+                  htmlFor="anonymousDonor"
+                  className="text-sm font-medium cursor-pointer"
+                >
                   Anonymous Donor
                 </label>
               </div>
@@ -83,7 +132,9 @@ export default function AddBloodUnitPage() {
                     className="input-field w-full"
                     disabled={formData.anonymousDonor}
                   />
-                  <p className="text-xs text-gray-400 mt-1">Enter the unique ID of the donor.</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Enter the unique ID of the donor.
+                  </p>
                 </div>
 
                 <div>
@@ -138,7 +189,9 @@ export default function AddBloodUnitPage() {
                     className="input-field w-full"
                     required
                   />
-                  <p className="text-xs text-gray-400 mt-1">Standard unit is approximately 450ml of whole blood.</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Standard unit is approximately 450ml of whole blood.
+                  </p>
                 </div>
               </div>
 
@@ -152,10 +205,15 @@ export default function AddBloodUnitPage() {
                     onChange={handleInputChange}
                     className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 rounded focus:ring-emerald-500"
                   />
-                  <label htmlFor="screeningComplete" className="text-sm font-medium cursor-pointer">
+                  <label
+                    htmlFor="screeningComplete"
+                    className="text-sm font-medium cursor-pointer"
+                  >
                     Screening Complete
                   </label>
-                  <p className="text-xs text-gray-400">Blood has been screened for infectious diseases.</p>
+                  <p className="text-xs text-gray-400">
+                    Blood has been screened for infectious diseases.
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -167,10 +225,15 @@ export default function AddBloodUnitPage() {
                     onChange={handleInputChange}
                     className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 rounded focus:ring-emerald-500"
                   />
-                  <label htmlFor="processingComplete" className="text-sm font-medium cursor-pointer">
+                  <label
+                    htmlFor="processingComplete"
+                    className="text-sm font-medium cursor-pointer"
+                  >
                     Processing Complete
                   </label>
-                  <p className="text-xs text-gray-400">Blood has been processed and is ready for storage.</p>
+                  <p className="text-xs text-gray-400">
+                    Blood has been processed and is ready for storage.
+                  </p>
                 </div>
               </div>
 
@@ -188,7 +251,10 @@ export default function AddBloodUnitPage() {
                       className="input-field w-full"
                       required
                     />
-                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                    <Calendar
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                      size={18}
+                    />
                   </div>
                 </div>
 
@@ -204,9 +270,14 @@ export default function AddBloodUnitPage() {
                       onChange={handleInputChange}
                       className="input-field w-full"
                     />
-                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                    <Calendar
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                      size={18}
+                    />
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Typically 35-42 days after collection for whole blood.</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Typically 35-42 days after collection for whole blood.
+                  </p>
                 </div>
 
                 <div>
@@ -271,7 +342,8 @@ export default function AddBloodUnitPage() {
 
           <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
             <p className="text-sm text-blue-400">
-              Fields marked with <span className="text-red-500">*</span> are required. Make sure to fill all required fields before submitting.
+              Fields marked with <span className="text-red-500">*</span> are
+              required. Make sure to fill all required fields before submitting.
             </p>
           </div>
         </div>

@@ -1,11 +1,15 @@
 const bcrypt = require('bcryptjs');
 
-async function test() {
-  const hash = '$2a$10$5kbJLwZ5l3VvEwphKeBw.ugJIA2dOIFIGJCN.JWoyvNFqBT3UJ6.u';
-  const password = 'password123';
-  
-  const isValid = await bcrypt.compare(password, hash);
-  console.log('Password valid:', isValid);
+async function testPassword() {
+  const hashedPassword = '$2a$10$e.uy5O5tofvgg4puGyqekeCoJtHJMFy.dafZRNYOD0VeFzkyegk2q';
+  const plainPassword = 'password123';
+
+  try {
+    const isValid = await bcrypt.compare(plainPassword, hashedPassword);
+    console.log('Password valid:', isValid);
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
 }
 
-test();
+testPassword();

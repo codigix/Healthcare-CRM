@@ -1,20 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Search, Plus, Droplet, AlertCircle } from 'lucide-react';
+import ActionModal from '@/components/UI/ActionModal';
+import { Search, Plus, Droplet, AlertCircle, Eye, Edit, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { bloodBankAPI } from '@/lib/api';
 
 interface IssuedBlood {
   id: string;
+  issueId: string;
   recipient: string;
-  recipientId: string;
+  recipientId?: string;
   bloodType: string;
   units: number;
   issueDate: string;
   requestingDoctor: string;
   purpose: string;
   department: string;
-  status: 'Approved' | 'Pending' | 'Completed';
+  status: string;
 }
 
 export default function IssuedBloodPage() {
@@ -23,45 +27,28 @@ export default function IssuedBloodPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('all');
+  const [issuedBlood, setIssuedBlood] = useState<IssuedBlood[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [issuedBlood] = useState<IssuedBlood[]>([
-    {
-      id: 'ISS-2023-001',
-      recipient: 'John Smith',
-      recipientId: 'P-00145',
-      bloodType: 'O+',
-      units: 2,
-      issueDate: '2023-04-15 09:30 AM',
-      requestingDoctor: 'Dr. Sarah Johnson',
-      purpose: 'Surgery - Appendectomy',
-      department: 'Surgery',
-      status: 'Approved'
-    },
-    {
-      id: 'ISS-2023-002',
-      recipient: 'Emily Davis',
-      recipientId: 'P-00289',
-      bloodType: 'A-',
-      units: 1,
-      issueDate: '2023-04-14 02:15 PM',
-      requestingDoctor: 'Dr. Michael Chen',
-      purpose: 'Emergency - Trauma',
-      department: 'Emergency',
-      status: 'Completed'
-    },
-    {
-      id: 'ISS-2023-003',
-      recipient: 'Robert Wilson',
-      recipientId: 'P-00312',
-      bloodType: 'B+',
-      units: 3,
-      issueDate: '2023-04-13 11:00 AM',
-      requestingDoctor: 'Dr. Lisa Anderson',
-      purpose: 'Surgery - Cardiac',
-      department: 'Cardiology',
-      status: 'Completed'
+  useEffect(() => {
+    fetchIssuedBlood();
+  }, []);
+
+  const fetchIssuedBlood = async () => {
+    try {
+      setLoading(true);
+      const response = await bloodBankAPI.getIssues();
+      const data = response.data;
+      if (data.success) {
+        setIssuedBlood(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching issued blood:', error);
+      alert('Failed to fetch issued blood records. Please ensure you are logged in.');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -97,7 +84,7 @@ export default function IssuedBloodPage() {
 
   const filteredIssues = issuedBlood.filter(issue => {
     const matchesSearch = issue.recipient.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         issue.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         issue.issueId.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          issue.requestingDoctor.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesBloodType = bloodTypeFilter === 'all' || issue.bloodType === bloodTypeFilter;
     const matchesStatus = statusFilter === 'all' || issue.status === statusFilter;
@@ -109,10 +96,10 @@ export default function IssuedBloodPage() {
     return matchesSearch && matchesBloodType && matchesStatus && matchesDepartment && matchesTab;
   });
 
-  const totalUnitsIssued = 19;
-  const issuedThisMonth = 32;
-  const emergencyIssues = 2;
-  const crossMatchedUnits = 13;
+  const totalUnitsIssued = issuedBlood.reduce((sum, issue) => sum + issue.units, 0);
+  const issuedThisMonth = issuedBlood.length;
+  const emergencyIssues = issuedBlood.filter(i => i.department === 'Emergency').length;
+  const crossMatchedUnits = issuedBlood.filter(i => i.status === 'Completed').reduce((sum, i) => sum + i.units, 0);
 
   const issuesByBloodType = [
     { type: 'A+', units: 2 },
@@ -144,10 +131,12 @@ export default function IssuedBloodPage() {
             <h1 className="text-3xl font-bold mb-2">Issued Blood</h1>
             <p className="text-gray-400">Manage issued blood units and track transfusions</p>
           </div>
-          <button className="btn-primary flex items-center gap-2">
-            <Plus size={20} />
-            Issue Blood
-          </button>
+          <Link href="/blood-bank/issue">
+            <button className="btn-primary flex items-center gap-2">
+              <Plus size={20} />
+              Issue Blood
+            </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -346,49 +335,51 @@ export default function IssuedBloodPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-dark-tertiary">
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Issue ID</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Recipient</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Blood Type</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Issue Date</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Requesting Doctor</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Purpose</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Status</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredIssues.map((issue) => (
-                  <tr key={issue.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
-                    <td className="py-4 px-4 text-gray-300">{issue.id}</td>
-                    <td className="py-4 px-4">
-                      <div className="font-medium text-white">{issue.recipient}</div>
-                      <div className="text-sm text-gray-400">{issue.recipientId}</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getBloodTypeColor(issue.bloodType)}`}>
-                        {issue.bloodType} {issue.units} unit{issue.units > 1 ? 's' : ''}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-gray-300">{issue.issueDate}</td>
-                    <td className="py-4 px-4 text-gray-300">{issue.requestingDoctor}</td>
-                    <td className="py-4 px-4 text-gray-300">{issue.purpose}</td>
-                    <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(issue.status)}`}>
-                        {issue.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <button className="text-gray-400 hover:text-white">...</button>
-                    </td>
+          {loading ? (
+            <div className="text-center py-8 text-gray-400">Loading issued blood records...</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-dark-tertiary">
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Issue ID</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Recipient</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Blood Type</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Issue Date</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Requesting Doctor</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Purpose</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Department</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredIssues.map((issue) => (
+                    <tr key={issue.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
+                      <td className="py-4 px-4 text-gray-300">{issue.issueId}</td>
+                      <td className="py-4 px-4">
+                        <div className="font-medium text-white">{issue.recipient}</div>
+                        <div className="text-sm text-gray-400">{issue.recipientId || 'N/A'}</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getBloodTypeColor(issue.bloodType)}`}>
+                          {issue.bloodType} {issue.units} unit{issue.units > 1 ? 's' : ''}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-gray-300">{new Date(issue.issueDate).toLocaleString()}</td>
+                      <td className="py-4 px-4 text-gray-300">{issue.requestingDoctor}</td>
+                      <td className="py-4 px-4 text-gray-300">{issue.purpose}</td>
+                      <td className="py-4 px-4 text-gray-300">{issue.department}</td>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(issue.status)}`}>
+                          {issue.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>

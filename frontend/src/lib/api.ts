@@ -127,3 +127,57 @@ export const departmentAPI = {
   delete: (id: string) => apiClient.delete(`/departments/${id}`),
   getStatistics: () => apiClient.get('/departments/statistics/summary'),
 };
+
+export const medicineAPI = {
+  list: (page = 1, limit = 10, filters = {}) => apiClient.get('/medicines', { params: { page, limit, ...filters } }),
+  get: (id: string) => apiClient.get(`/medicines/${id}`),
+  create: (data: any) => apiClient.post('/medicines', data),
+  update: (id: string, data: any) => apiClient.put(`/medicines/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/medicines/${id}`),
+};
+
+export const recordsAPI = {
+  list: (page = 1, limit = 10, type = '', search = '') => apiClient.get('/records', { params: { page, limit, type, search } }),
+  get: (id: string) => apiClient.get(`/records/${id}`),
+  create: (data: any) => apiClient.post('/records', data),
+  update: (id: string, data: any) => apiClient.put(`/records/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/records/${id}`),
+  updateStatus: (id: string, status: string) => apiClient.patch(`/records/${id}/status`, { status }),
+};
+
+export const staffAPI = {
+  list: (page = 1, limit = 10, filters = {}) => apiClient.get('/staff', { params: { page, limit, ...filters } }),
+  get: (id: string) => apiClient.get(`/staff/${id}`),
+  create: (data: any) => apiClient.post('/staff', data),
+  update: (id: string, data: any) => apiClient.put(`/staff/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/staff/${id}`),
+};
+
+export const attendanceAPI = {
+  list: (page = 1, limit = 10, filters = {}) => apiClient.get('/attendance', { params: { page, limit, ...filters } }),
+  get: (id: string) => apiClient.get(`/attendance/${id}`),
+  create: (data: any) => apiClient.post('/attendance', data),
+  update: (id: string, data: any) => apiClient.put(`/attendance/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/attendance/${id}`),
+};
+
+export const bloodBankAPI = {
+  getStock: () => apiClient.get('/blood-bank/blood-stock'),
+  createStock: (data: any) => apiClient.post('/blood-bank/blood-stock', data),
+  updateStock: (id: string, data: any) => apiClient.put(`/blood-bank/blood-stock/${id}`, data),
+  deleteStock: (id: string) => apiClient.delete(`/blood-bank/blood-stock/${id}`),
+  
+  getDonors: () => apiClient.get('/blood-bank/blood-donors'),
+  createDonor: (data: any) => apiClient.post('/blood-bank/blood-donors', data),
+  
+  getIssues: () => apiClient.get('/blood-bank/blood-issues'),
+  createIssue: (data: any) => apiClient.post('/blood-bank/blood-issues', data),
+  updateIssue: (id: string, data: any) => apiClient.put(`/blood-bank/blood-issues/${id}`, data),
+  deleteIssue: (id: string) => apiClient.delete(`/blood-bank/blood-issues/${id}`),
+  
+  list: (page = 1, limit = 10, search = '') => apiClient.get('/blood-bank', { params: { page, limit, search } }),
+  get: (id: string) => apiClient.get(`/blood-bank/${id}`),
+  create: (data: any) => apiClient.post('/blood-bank', data),
+  update: (id: string, data: any) => apiClient.put(`/blood-bank/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/blood-bank/${id}`),
+};

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { Search, Plus, Edit, Trash2, Copy, Eye, AlertCircle } from 'lucide-react';
-import Link from 'next/link';
 import { prescriptionTemplateAPI } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
@@ -38,6 +37,8 @@ export default function MedicineTemplatesPage() {
   const [editingTemplate, setEditingTemplate] = useState<MedicationTemplate | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFormData, setEditFormData] = useState({ name: '', category: '' });
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createFormData, setCreateFormData] = useState({ name: '', category: '', medicines: [] });
 
   const tabs = [
     { id: 'all', label: 'All Templates' },
@@ -53,8 +54,25 @@ export default function MedicineTemplatesPage() {
       setLoading(true);
       setError('');
       const response = await prescriptionTemplateAPI.list(page, 10, searchQuery, activeTab);
-      setTemplates(response.data.data || []);
-      setTotalPages(response.data.pagination?.pages || 1);
+      
+      const templatesData = response.data.templates || [];
+      const formattedTemplates = templatesData.map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        category: t.category || 'General',
+        medications: typeof t.medicines === 'string' ? JSON.parse(t.medicines) : t.medicines || [],
+        createdBy: t.createdBy || 'System',
+        lastUsed: t.lastUsed || null,
+        createdAt: t.createdAt,
+        usageCount: t.usageCount || 0,
+      }));
+      
+      setTemplates(formattedTemplates);
+      
+      const total = response.data.total || 0;
+      const limit = response.data.limit || 10;
+      const totalPages = Math.ceil(total / limit) || 1;
+      setTotalPages(totalPages);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to fetch templates');
       console.error('Failed to fetch templates', err);
@@ -100,7 +118,7 @@ export default function MedicineTemplatesPage() {
       await prescriptionTemplateAPI.update(editingTemplate.id, {
         name: editFormData.name,
         category: editFormData.category,
-        medications: editingTemplate.medications,
+        medicines: editingTemplate.medications,
       });
       
       const updatedTemplates = templates.map(t =>
@@ -126,6 +144,28 @@ export default function MedicineTemplatesPage() {
     }
   };
 
+  const handleCreateTemplate = async () => {
+    if (!createFormData.name.trim()) {
+      alert('Please enter a template name');
+      return;
+    }
+
+    try {
+      await prescriptionTemplateAPI.create({
+        name: createFormData.name,
+        category: createFormData.category,
+        medicines: createFormData.medicines,
+      });
+      
+      setShowCreateModal(false);
+      setCreateFormData({ name: '', category: '', medicines: [] });
+      alert('Template created successfully');
+      fetchTemplates();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to create template');
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -134,12 +174,12 @@ export default function MedicineTemplatesPage() {
             <h1 className="text-3xl font-bold mb-2">Prescription Templates</h1>
             <p className="text-gray-400">Manage reusable medication templates for prescriptions.</p>
           </div>
-          <Link href="/prescriptions/create">
-            <button className="btn-primary flex items-center gap-2">
-              <Plus size={20} />
-              New Template
-            </button>
-          </Link>
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="btn-primary flex items-center gap-2">
+            <Plus size={20} />
+            New Template
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -467,6 +507,62 @@ export default function MedicineTemplatesPage() {
                 onClick={() => {
                   setShowEditModal(false);
                   setEditingTemplate(null);
+                }}
+                className="btn-secondary flex-1"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-dark-secondary rounded-lg p-6 max-w-md w-full mx-4 space-y-4">
+            <h3 className="text-xl font-semibold">Create New Template</h3>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Template Name
+              </label>
+              <input
+                type="text"
+                value={createFormData.name}
+                onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
+                placeholder="e.g., Common Antibiotics, Pain Management"
+                className="input-field w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Category
+              </label>
+              <input
+                type="text"
+                value={createFormData.category}
+                onChange={(e) => setCreateFormData({ ...createFormData, category: e.target.value })}
+                placeholder="e.g., Antibiotics, Pain Relief"
+                className="input-field w-full"
+              />
+            </div>
+
+            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm text-blue-300">
+              <p>You can add medications to this template after creation, or leave it empty for now.</p>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <button
+                onClick={handleCreateTemplate}
+                className="btn-primary flex-1"
+              >
+                Create Template
+              </button>
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setCreateFormData({ name: '', category: '', medicines: [] });
                 }}
                 className="btn-secondary flex-1"
               >

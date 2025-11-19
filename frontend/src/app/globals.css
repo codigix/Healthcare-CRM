@@ -382,3 +382,12 @@ body.light .border-slate-800 {
 body.light .divide-slate-700 > * + * {
   border-color: #d0d0d0;
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

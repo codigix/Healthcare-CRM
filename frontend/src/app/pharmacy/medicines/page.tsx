@@ -1,18 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Search, Plus, Package, AlertCircle, MoreVertical } from 'lucide-react';
+import { Search, Plus, Package, AlertCircle, MoreVertical, Loader } from 'lucide-react';
 import Link from 'next/link';
+import { medicineAPI } from '@/lib/api';
 
 interface Medicine {
   id: string;
   name: string;
   genericName: string;
   category: string;
-  stock: number;
-  expiryDate: string;
-  status: 'In Stock' | 'Low Stock' | 'Out of Stock';
+  initialQuantity: number;
+  reorderLevel: number;
+  expiryDate: string | null;
+  status: string;
+  medicineType: string;
+  purchasePrice: number;
+  sellingPrice: number;
 }
 
 export default function MedicineListPage() {
@@ -20,90 +25,48 @@ export default function MedicineListPage() {
   const [activeTab, setActiveTab] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [deleteModal, setDeleteModal] = useState<{ show: boolean; id: string | null }>({ show: false, id: null });
 
-  const [medicines] = useState<Medicine[]>([
-    {
-      id: 'MED001',
-      name: 'Amoxicillin 500mg',
-      genericName: 'Amoxicillin',
-      category: 'Antibiotics',
-      stock: 1250,
-      expiryDate: '2025-06-15',
-      status: 'In Stock'
-    },
-    {
-      id: 'MED002',
-      name: 'Paracetamol 500mg',
-      genericName: 'Acetaminophen',
-      category: 'Analgesics',
-      stock: 2500,
-      expiryDate: '2025-08-22',
-      status: 'In Stock'
-    },
-    {
-      id: 'MED003',
-      name: 'Metformin 850mg',
-      genericName: 'Metformin HCl',
-      category: 'Antidiabetics',
-      stock: 850,
-      expiryDate: '2024-12-10',
-      status: 'In Stock'
-    },
-    {
-      id: 'MED004',
-      name: 'Lisinopril 10mg',
-      genericName: 'Lisinopril',
-      category: 'Antihypertensives',
-      stock: 120,
-      expiryDate: '2024-09-30',
-      status: 'Low Stock'
-    },
-    {
-      id: 'MED005',
-      name: 'Morphine 15mg',
-      genericName: 'Morphine Sulfate',
-      category: 'Analgesics',
-      stock: 75,
-      expiryDate: '2024-11-05',
-      status: 'In Stock'
-    },
-    {
-      id: 'MED006',
-      name: 'Cetirizine 10mg',
-      genericName: 'Cetirizine HCl',
-      category: 'Antihistamines',
-      stock: 0,
-      expiryDate: '2025-03-18',
-      status: 'Out of Stock'
-    },
-    {
-      id: 'MED007',
-      name: 'Atorvastatin 20mg',
-      genericName: 'Atorvastatin Calcium',
-      category: 'Statins',
-      stock: 450,
-      expiryDate: '2025-01-25',
-      status: 'In Stock'
-    },
-    {
-      id: 'MED008',
-      name: 'Diazepam 5mg',
-      genericName: 'Diazepam',
-      category: 'Anxiolytics',
-      stock: 80,
-      expiryDate: '2024-10-12',
-      status: 'Low Stock'
-    },
-    {
-      id: 'MED009',
-      name: 'Ibuprofen 400mg',
-      genericName: 'Ibuprofen',
-      category: 'NSAIDs',
-      stock: 2800,
-      expiryDate: '2025-05-20',
-      status: 'In Stock'
+  const limit = 10;
+
+  useEffect(() => {
+    fetchMedicines();
+  }, [page, statusFilter, categoryFilter, searchQuery]);
+
+  const fetchMedicines = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const filters: any = {};
+      if (statusFilter !== 'all') filters.status = statusFilter;
+      if (categoryFilter !== 'all') filters.category = categoryFilter;
+      if (searchQuery) filters.search = searchQuery;
+
+      const response = await medicineAPI.list(page, limit, filters);
+      setMedicines(response.data.medicines);
+      setTotal(response.data.total);
+    } catch (err: any) {
+      setError('Failed to fetch medicines');
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await medicineAPI.delete(id);
+      setMedicines(medicines.filter(m => m.id !== id));
+      setDeleteModal({ show: false, id: null });
+    } catch (err) {
+      setError('Failed to delete medicine');
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -132,22 +95,25 @@ export default function MedicineListPage() {
     return colors[category] || 'bg-gray-500/10 text-gray-400 border border-gray-500/20';
   };
 
+  const getStatusLabel = (medicine: Medicine) => {
+    if (medicine.initialQuantity === 0) return 'Out of Stock';
+    if (medicine.initialQuantity <= (medicine.reorderLevel || 50)) return 'Low Stock';
+    return 'In Stock';
+  };
+
   const filteredMedicines = medicines.filter(medicine => {
-    const matchesSearch = medicine.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         medicine.genericName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         medicine.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const medicineType = medicine.medicineType || '';
     const matchesTab = activeTab === 'all' || 
-                      (activeTab === 'prescription' && ['Antibiotics', 'Analgesics'].includes(medicine.category)) ||
-                      (activeTab === 'otc' && !['Antibiotics', 'Analgesics'].includes(medicine.category)) ||
-                      (activeTab === 'controlled' && ['Anxiolytics'].includes(medicine.category));
-    const matchesStatus = statusFilter === 'all' || medicine.status === statusFilter;
-    const matchesCategory = categoryFilter === 'all' || medicine.category === categoryFilter;
-    return matchesSearch && matchesTab && matchesStatus && matchesCategory;
+                      (activeTab === 'prescription' && medicineType === 'Prescription') ||
+                      (activeTab === 'otc' && medicineType === 'OTC') ||
+                      (activeTab === 'controlled' && medicineType === 'Controlled');
+    return matchesTab;
   });
 
-  const totalMedicines = medicines.length;
-  const lowStockItems = medicines.filter(m => m.status === 'Low Stock').length;
+  const totalMedicines = total;
+  const lowStockItems = medicines.filter(m => getStatusLabel(m) === 'Low Stock').length;
   const expiringSoon = medicines.filter(m => {
+    if (!m.expiryDate) return false;
     const daysUntilExpiry = Math.floor((new Date(m.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
     return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
   }).length;
@@ -306,71 +272,131 @@ export default function MedicineListPage() {
             </select>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-dark-tertiary">
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">ID</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Medicine Name</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Category</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Stock</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Expiry Date</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Status</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredMedicines.map((medicine) => (
-                  <tr key={medicine.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
-                    <td className="py-4 px-4">
-                      <span className="text-gray-300">{medicine.id}</span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="font-medium text-white">{medicine.name}</div>
-                      <div className="text-sm text-gray-400">{medicine.genericName}</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(medicine.category)}`}>
-                        {medicine.category}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-white">{medicine.stock} units</span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-gray-300">{medicine.expiryDate}</span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(medicine.status)}`}>
-                        {medicine.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <button className="p-2 hover:bg-gray-500/20 rounded transition-colors" title="More">
-                        <MoreVertical size={18} className="text-gray-400" />
-                      </button>
-                    </td>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader className="animate-spin text-emerald-500" size={32} />
+            </div>
+          ) : error ? (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          ) : filteredMedicines.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              No medicines found
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-dark-tertiary">
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">ID</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Medicine Name</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Category</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Stock</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Expiry Date</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Status</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredMedicines.map((medicine) => (
+                    <tr key={medicine.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
+                      <td className="py-4 px-4">
+                        <span className="text-gray-300 text-sm">{medicine.id.slice(0, 8)}</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="font-medium text-white">{medicine.name}</div>
+                        <div className="text-sm text-gray-400">{medicine.genericName}</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(medicine.category)}`}>
+                          {medicine.category}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-white">{medicine.initialQuantity} units</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-gray-300">{medicine.expiryDate ? new Date(medicine.expiryDate).toLocaleDateString() : 'N/A'}</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(getStatusLabel(medicine))}`}>
+                          {getStatusLabel(medicine)}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex gap-2">
+                          <Link href={`/pharmacy/medicines/${medicine.id}`}>
+                            <button className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-xs hover:bg-blue-500/30 transition-colors">
+                              View
+                            </button>
+                          </Link>
+                          <Link href={`/pharmacy/edit-medicine/${medicine.id}`}>
+                            <button className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs hover:bg-yellow-500/30 transition-colors">
+                              Edit
+                            </button>
+                          </Link>
+                          <button
+                            onClick={() => setDeleteModal({ show: true, id: medicine.id })}
+                            className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-xs hover:bg-red-500/30 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           <div className="flex justify-between items-center mt-6 pt-4 border-t border-dark-tertiary">
             <p className="text-gray-400 text-sm">
-              Showing 1 to {filteredMedicines.length} of {medicines.length} medicines
+              Showing {(page - 1) * limit + 1} to {Math.min(page * limit, totalMedicines)} of {totalMedicines} medicines
             </p>
             <div className="flex gap-2">
-              <button className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 transition-colors">
+              <button
+                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Previous
               </button>
-              <button className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 transition-colors">
+              <button
+                onClick={() => setPage(page + 1)}
+                disabled={page * limit >= totalMedicines}
+                className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Next
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {deleteModal.show && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 max-w-sm">
+            <h2 className="text-lg font-bold mb-2">Delete Medicine</h2>
+            <p className="text-gray-400 mb-6">Are you sure you want to delete this medicine? This action cannot be undone.</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteModal({ show: false, id: null })}
+                className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteModal.id && handleDelete(deleteModal.id)}
+                className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

@@ -2,11 +2,16 @@
 
 import { useState } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Upload } from 'lucide-react';
+import { Upload, Loader } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { medicineAPI } from '@/lib/api';
 
 export default function AddMedicinePage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('basic');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     medicineName: '',
     genericName: '',
@@ -45,9 +50,53 @@ export default function AddMedicinePage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    
+    if (!formData.medicineName || !formData.genericName || !formData.category || !formData.medicineType || !formData.purchasePrice || !formData.sellingPrice) {
+      setError('Please fill all required fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+      
+      const medicineData = {
+        name: formData.medicineName,
+        genericName: formData.genericName,
+        category: formData.category,
+        medicineType: formData.medicineType,
+        description: formData.description,
+        medicineForm: formData.medicineForm,
+        manufacturer: formData.manufacturer,
+        supplier: formData.supplier,
+        manufacturingDate: formData.manufacturingDate || null,
+        expiryDate: formData.expiryDate || null,
+        batchNumber: formData.batchNumber,
+        dosage: formData.dosage,
+        sideEffects: formData.sideEffects,
+        precautions: formData.precautions,
+        initialQuantity: formData.initialQuantity,
+        reorderLevel: formData.reorderLevel,
+        maximumLevel: formData.maximumLevel,
+        purchasePrice: formData.purchasePrice,
+        sellingPrice: formData.sellingPrice,
+        taxRate: formData.taxRate,
+        roomTemperature: formData.roomTemperature,
+        frozen: formData.frozen,
+        refrigerated: formData.refrigerated,
+        protectFromLight: formData.protectFromLight,
+        status: formData.activeForSale ? 'Active' : 'Inactive',
+      };
+
+      await medicineAPI.create(medicineData);
+      router.push('/pharmacy/medicines');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to create medicine');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,6 +114,12 @@ export default function AddMedicinePage() {
         </div>
 
         <div className="card">
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
           <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
             <button
               onClick={() => setActiveTab('basic')}
@@ -510,11 +565,23 @@ export default function AddMedicinePage() {
                     type="button"
                     onClick={() => setActiveTab('detailed')}
                     className="btn-secondary"
+                    disabled={loading}
                   >
                     Previous
                   </button>
-                  <button type="submit" className="btn-primary">
-                    Save Medicine
+                  <button
+                    type="submit"
+                    className="btn-primary flex items-center gap-2 disabled:opacity-50"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader size={18} className="animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Medicine'
+                    )}
                   </button>
                 </div>
               </div>

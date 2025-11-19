@@ -1,12 +1,13 @@
-import express, { Express } from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
-
 dotenv.config();
 
+import express, { Express } from 'express';
+import cors from 'cors';
+import pool from './db';
+
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
+
 const app: Express = express();
-const prisma = new PrismaClient();
 
 app.use(cors());
 app.use(express.json());
@@ -27,8 +28,19 @@ import emergencyCallsRoutes from './routes/emergency-calls';
 import departmentRoutes from './routes/departments';
 import staffRoutes from './routes/staff';
 import attendanceRoutes from './routes/attendance';
+import roomAllotmentRoutes from './routes/room-allotment';
+import medicineRoutes from './routes/medicines';
+import bloodBankRoutes from './routes/blood-bank';
+import inventoryAlertsRoutes from './routes/inventory-alerts';
+import suppliersRoutes from './routes/suppliers';
+import recordsRoutes from './routes/records';
+import reportsRoutes from './routes/reports';
+import reviewsRoutes from './routes/reviews';
+import feedbackRoutes from './routes/feedback';
 
+console.log('Registering routes...');
 app.use('/api/auth', authRoutes);
+console.log('✓ Auth routes registered');
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
@@ -43,6 +55,16 @@ app.use('/api/emergency-calls', emergencyCallsRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/room-allotment', roomAllotmentRoutes);
+app.use('/api/medicines', medicineRoutes);
+app.use('/api/blood-bank', bloodBankRoutes);
+app.use('/api/inventory-alerts', inventoryAlertsRoutes);
+app.use('/api/suppliers', suppliersRoutes);
+app.use('/api/records', recordsRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/reviews', reviewsRoutes);
+app.use('/api/feedback', feedbackRoutes);
+console.log('✓ All routes registered');
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Server is running' });
@@ -55,6 +77,10 @@ app.listen(PORT, () => {
 });
 
 process.on('SIGTERM', async () => {
-  await prisma.$disconnect();
+  try {
+    await pool.end();
+  } catch (error) {
+    console.error('Error closing database connection:', error);
+  }
   process.exit(0);
 });

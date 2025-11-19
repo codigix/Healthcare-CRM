@@ -221,10 +221,9 @@ export default function RolesPage() {
                     </td>
                     <td className="py-4 px-4 text-gray-300">{role.category}</td>
                     <td className="py-4 px-4 text-gray-400 text-sm">{role.description}</td>
-                    <td className="py-4 px-4 text-gray-300">{role.users}</td>
+                    <td className="py-4 px-4 text-gray-300">{role.staffCount}</td>
                     <td className="py-4 px-4">
-                      <div className="text-gray-300 text-sm">{role.updated}</div>
-                      <div className="text-gray-500 text-xs">by {role.updatedBy}</div>
+                      <div className="text-gray-300 text-sm">{new Date(role.updatedAt).toLocaleDateString()}</div>
                     </td>
                     <td className="py-4 px-4">
                       <button className="text-gray-400 hover:text-white transition-colors">•••</button>

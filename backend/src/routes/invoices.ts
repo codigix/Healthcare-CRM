@@ -1,29 +1,40 @@
 import { Router, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
-import PDFDocument from 'pdfkit';
+import pool from '../db';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { page = 1, limit = 10, status, patientId } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    const where: any = {};
-    if (status) where.status = String(status);
-    if (patientId) where.patientId = String(patientId);
+    let query = 'SELECT * FROM invoices WHERE 1=1';
+    const params: any[] = [];
 
-    const invoices = await prisma.invoice.findMany({
-      where,
-      skip,
-      take: Number(limit),
-      include: { patient: true },
-      orderBy: { createdAt: 'desc' },
-    });
+    if (status) {
+      query += ' AND status = ?';
+      params.push(String(status));
+    }
 
-    const total = await prisma.invoice.count({ where });
+    if (patientId) {
+      query += ' AND patientId = ?';
+      params.push(String(patientId));
+    }
+
+    let countQuery = query;
+    query += ' ORDER BY createdAt DESC LIMIT ? OFFSET ?';
+    params.push(Number(limit), skip);
+
+    const connection = await pool.getConnection();
+    
+    const [invoices]: any = await connection.query(query, params);
+    const countParams = params.slice(0, params.length - 2);
+    const countSql = `SELECT COUNT(*) as total FROM invoices WHERE 1=1` + countQuery.substring(countQuery.indexOf('WHERE')).replace('ORDER BY createdAt DESC LIMIT ? OFFSET ?', '');
+    const result: any = await connection.query(countSql, countParams);
+    const total = result[0][0].total;
+    
+    connection.release();
 
     res.json({ invoices, total, page: Number(page), limit: Number(limit) });
   } catch (error) {
@@ -33,16 +44,15 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const invoice = await prisma.invoice.findUnique({
-      where: { id: req.params.id },
-      include: { patient: true },
-    });
+    const connection = await pool.getConnection();
+    const [invoices]: any = await connection.query('SELECT * FROM invoices WHERE id = ?', [req.params.id]);
+    connection.release();
 
-    if (!invoice) {
+    if (invoices.length === 0) {
       return res.status(404).json({ error: 'Invoice not found' });
     }
 
-    res.json(invoice);
+    res.json(invoices[0]);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch invoice' });
   }
@@ -52,18 +62,16 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { patientId, amount, status, dueDate, notes } = req.body;
 
-    const invoice = await prisma.invoice.create({
-      data: {
-        patientId,
-        amount: parseFloat(amount),
-        status: status || 'pending',
-        dueDate: dueDate ? new Date(dueDate) : undefined,
-        notes,
-      },
-      include: { patient: true },
-    });
+    const connection = await pool.getConnection();
+    const query = `INSERT INTO Invoice (id, patientId, amount, status, dueDate, notes, createdAt, updatedAt)
+                   VALUES (UUID(), ?, ?, ?, ?, ?, NOW(), NOW())`;
+    
+    await connection.query(query, [patientId, parseFloat(amount), status || 'pending', dueDate ? new Date(dueDate) : null, notes]);
 
-    res.status(201).json(invoice);
+    const [invoice]: any = await connection.query('SELECT * FROM invoices WHERE patientId = ? ORDER BY createdAt DESC LIMIT 1', [patientId]);
+    connection.release();
+
+    res.status(201).json(invoice[0]);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create invoice' });
   }
@@ -71,21 +79,32 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { patientId, amount, status, dueDate, notes } = req.body;
+    const { amount, status, dueDate, notes } = req.body;
+    const connection = await pool.getConnection();
+    
+    const updates: string[] = [];
+    const values: any[] = [];
 
-    const invoice = await prisma.invoice.update({
-      where: { id: req.params.id },
-      data: {
-        patientId,
-        amount: amount ? parseFloat(amount) : undefined,
-        status,
-        dueDate: dueDate ? new Date(dueDate) : undefined,
-        notes,
-      },
-      include: { patient: true },
-    });
+    if (amount !== undefined) { updates.push('amount = ?'); values.push(parseFloat(amount)); }
+    if (status) { updates.push('status = ?'); values.push(status); }
+    if (dueDate) { updates.push('dueDate = ?'); values.push(new Date(dueDate)); }
+    if (notes !== undefined) { updates.push('notes = ?'); values.push(notes); }
 
-    res.json(invoice);
+    if (updates.length === 0) {
+      connection.release();
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    updates.push('updatedAt = NOW()');
+    values.push(req.params.id);
+
+    const query = `UPDATE invoices SET ${updates.join(', ')} WHERE id = ?`;
+    await connection.query(query, values);
+    
+    const [invoice]: any = await connection.query('SELECT * FROM invoices WHERE id = ?', [req.params.id]);
+    connection.release();
+
+    res.json(invoice[0]);
   } catch (error) {
     res.status(500).json({ error: 'Failed to update invoice' });
   }
@@ -93,39 +112,13 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    await prisma.invoice.delete({ where: { id: req.params.id } });
+    const connection = await pool.getConnection();
+    await connection.query('DELETE FROM invoices WHERE id = ?', [req.params.id]);
+    connection.release();
+
     res.json({ message: 'Invoice deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete invoice' });
-  }
-});
-
-router.get('/:id/pdf', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const invoice = await prisma.invoice.findUnique({
-      where: { id: req.params.id },
-      include: { patient: true },
-    });
-
-    if (!invoice) {
-      return res.status(404).json({ error: 'Invoice not found' });
-    }
-
-    const doc = new PDFDocument();
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="invoice-${invoice.id}.pdf"`);
-    doc.pipe(res);
-
-    doc.fontSize(25).text('MedixPro Invoice', 100, 100);
-    doc.fontSize(12).text(`Invoice ID: ${invoice.id}`, 100, 150);
-    doc.text(`Patient: ${invoice.patient.name}`, 100, 170);
-    doc.text(`Amount: $${invoice.amount}`, 100, 190);
-    doc.text(`Status: ${invoice.status}`, 100, 210);
-    doc.text(`Date: ${invoice.createdAt.toLocaleDateString()}`, 100, 230);
-
-    doc.end();
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to generate PDF' });
   }
 });
 

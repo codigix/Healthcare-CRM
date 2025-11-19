@@ -159,8 +159,8 @@ export default function AppointmentsPage() {
                 <tbody>
                   {appointments.map((apt) => (
                     <tr key={apt.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary transition-colors">
-                      <td className="py-3 px-4">{apt.patient.name}</td>
-                      <td className="py-3 px-4">{apt.doctor.name}</td>
+                      <td className="py-3 px-4">{apt.patient?.name || 'N/A'}</td>
+                      <td className="py-3 px-4">{apt.doctor?.name || 'N/A'}</td>
                       <td className="py-3 px-4">{new Date(apt.date).toLocaleDateString()}</td>
                       <td className="py-3 px-4">{apt.time}</td>
                       <td className="py-3 px-4">

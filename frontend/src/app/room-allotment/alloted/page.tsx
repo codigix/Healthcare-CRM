@@ -1,159 +1,147 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Search, Eye, Edit, Trash2, Filter, MoreVertical } from 'lucide-react';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { Search, Eye, Edit, Trash2, Filter, MoreVertical } from "lucide-react";
+import Link from "next/link";
 
-interface AllotedRoom {
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+interface RoomData {
   id: string;
-  allotmentId: string;
-  patientId: string;
-  patientName: string;
-  patientPhone: string;
   roomNumber: string;
   roomType: string;
   department: string;
+}
+
+interface AllotedRoom {
+  id: string;
+  patientId: string;
+  patientName: string;
+  patientPhone: string | null;
+  roomId: string;
+  attendingDoctor: string;
   allotmentDate: string;
-  status: 'Occupied' | 'Discharged' | 'Reserved';
-  doctor: string;
+  status: string;
+  room: RoomData;
 }
 
 export default function AllotedRoomsPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [allotedRooms, setAllotedRooms] = useState<AllotedRoom[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [departments, setDepartments] = useState<string[]>(["all"]);
 
-  const allotedRooms: AllotedRoom[] = [
-    {
-      id: 'RA-001',
-      allotmentId: 'A-1001',
-      patientId: 'P-1001',
-      patientName: 'John Smith',
-      patientPhone: '+1-201-555-0123',
-      roomNumber: '301',
-      roomType: 'Private',
-      department: 'Cardiology',
-      allotmentDate: '2025-04-10',
-      status: 'Occupied',
-      doctor: 'Dr. Emily Chun',
-    },
-    {
-      id: 'RA-002',
-      allotmentId: 'A-1002',
-      patientId: 'P-1002',
-      patientName: 'Sarah Johnson',
-      patientPhone: '+1-201-555-0124',
-      roomNumber: '208',
-      roomType: 'Semi-Private',
-      department: 'Orthopedics',
-      allotmentDate: '2025-04-08',
-      status: 'Occupied',
-      doctor: 'Dr. Michael Brown',
-    },
-    {
-      id: 'RA-003',
-      allotmentId: 'A-1003',
-      patientId: 'P-1003',
-      patientName: 'Robert Davis',
-      patientPhone: '+1-201-555-0125',
-      roomNumber: '102',
-      roomType: 'General',
-      department: 'Neurology',
-      allotmentDate: '2025-04-12',
-      status: 'Occupied',
-      doctor: 'Dr. Lisa Wong',
-    },
-    {
-      id: 'RA-004',
-      allotmentId: 'A-1004',
-      patientId: 'P-1004',
-      patientName: 'Maria Garcia',
-      patientPhone: '+1-201-555-0126',
-      roomNumber: '405',
-      roomType: 'ICU',
-      department: 'Pulmonology',
-      allotmentDate: '2025-04-07',
-      status: 'Occupied',
-      doctor: 'Dr. James Wilson',
-    },
-    {
-      id: 'RA-005',
-      allotmentId: 'A-1005',
-      patientId: 'P-1005',
-      patientName: 'David Lee',
-      patientPhone: '+1-201-555-0127',
-      roomNumber: '210',
-      roomType: 'Semi-Private',
-      department: 'Gastroenterology',
-      allotmentDate: '2025-04-06',
-      status: 'Discharged',
-      doctor: 'Dr. Sarah Miller',
-    },
-    {
-      id: 'RA-006',
-      allotmentId: 'A-1006',
-      patientId: 'P-1006',
-      patientName: 'Jennifer Martinez',
-      patientPhone: '+1-201-555-0128',
-      roomNumber: '312',
-      roomType: 'Private',
-      department: 'Cardiology',
-      allotmentDate: '2025-04-11',
-      status: 'Reserved',
-      doctor: 'Dr. Emily Chun',
-    },
-  ];
+  useEffect(() => {
+    fetchAllotments();
+  }, []);
+
+  const fetchAllotments = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await fetch(`${API_URL}/room-allotment/allotments`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch allotments");
+
+      const data = await response.json();
+      setAllotedRooms(data.allotments || []);
+
+      const uniqueDepts = [
+        "all",
+        ...new Set(
+          (data.allotments || []).map((room: AllotedRoom) => room.room?.department).filter(Boolean)
+        ),
+      ];
+      setDepartments(uniqueDepts as string[]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this allotment?")) return;
+
+    try {
+      const response = await fetch(
+        `${API_URL}/room-allotment/allotments/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to delete");
+      }
+      fetchAllotments();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete");
+    }
+  };
 
   const filteredRooms = allotedRooms.filter((room) => {
     const matchesSearch =
       room.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      room.roomNumber.includes(searchQuery) ||
+      room.room.roomNumber.includes(searchQuery) ||
       room.patientId.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesStatus = statusFilter === 'all' || room.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" || room.status === statusFilter;
     const matchesDepartment =
-      departmentFilter === 'all' || room.department === departmentFilter;
+      departmentFilter === "all" || room.room.department === departmentFilter;
 
     return matchesSearch && matchesStatus && matchesDepartment;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Occupied':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
-      case 'Discharged':
-        return 'bg-red-500/10 text-red-400 border-red-500/30';
-      case 'Reserved':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+      case "Occupied":
+        return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+      case "Discharged":
+        return "bg-red-500/10 text-red-400 border-red-500/30";
+      case "Reserved":
+        return "bg-amber-500/10 text-amber-400 border-amber-500/30";
       default:
-        return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
+        return "bg-gray-500/10 text-gray-400 border-gray-500/30";
     }
   };
 
   const getRoomTypeColor = (roomType: string) => {
     switch (roomType) {
-      case 'ICU':
-        return 'bg-red-500/10 text-red-400';
-      case 'Private':
-        return 'bg-emerald-500/10 text-emerald-400';
-      case 'Semi-Private':
-        return 'bg-blue-500/10 text-blue-400';
-      case 'General':
-        return 'bg-amber-500/10 text-amber-400';
+      case "ICU":
+        return "bg-red-500/10 text-red-400";
+      case "Private":
+        return "bg-emerald-500/10 text-emerald-400";
+      case "Semi-Private":
+        return "bg-blue-500/10 text-blue-400";
+      case "General":
+        return "bg-amber-500/10 text-amber-400";
       default:
-        return 'bg-gray-500/10 text-gray-400';
+        return "bg-gray-500/10 text-gray-400";
     }
   };
-
-  const departments = ['all', ...new Set(allotedRooms.map((room) => room.department))];
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Alloted Rooms</h1>
-          <p className="text-gray-400 mt-2">Manage patient room allocations and assignments</p>
+          <p className="text-gray-400 mt-2">
+            Manage patient room allocations and assignments
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -162,7 +150,7 @@ export default function AllotedRoomsPage() {
               <div>
                 <p className="text-gray-400 text-sm">Total Rooms Alloted</p>
                 <p className="text-2xl font-bold text-white mt-1">
-                  {allotedRooms.length}
+                  {loading ? "-" : allotedRooms.length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
@@ -176,7 +164,10 @@ export default function AllotedRoomsPage() {
               <div>
                 <p className="text-gray-400 text-sm">Currently Occupied</p>
                 <p className="text-2xl font-bold text-emerald-400 mt-1">
-                  {allotedRooms.filter((r) => r.status === 'Occupied').length}
+                  {loading
+                    ? "-"
+                    : allotedRooms.filter((r) => r.status === "Occupied")
+                        .length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
@@ -190,7 +181,10 @@ export default function AllotedRoomsPage() {
               <div>
                 <p className="text-gray-400 text-sm">Discharged</p>
                 <p className="text-2xl font-bold text-red-400 mt-1">
-                  {allotedRooms.filter((r) => r.status === 'Discharged').length}
+                  {loading
+                    ? "-"
+                    : allotedRooms.filter((r) => r.status === "Discharged")
+                        .length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
@@ -204,7 +198,10 @@ export default function AllotedRoomsPage() {
               <div>
                 <p className="text-gray-400 text-sm">Reserved</p>
                 <p className="text-2xl font-bold text-amber-400 mt-1">
-                  {allotedRooms.filter((r) => r.status === 'Reserved').length}
+                  {loading
+                    ? "-"
+                    : allotedRooms.filter((r) => r.status === "Reserved")
+                        .length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center">
@@ -218,7 +215,10 @@ export default function AllotedRoomsPage() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div className="flex gap-2 w-full md:w-auto">
               <div className="relative flex-1 md:flex-none">
-                <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+                <Search
+                  className="absolute left-3 top-3 text-gray-400"
+                  size={20}
+                />
                 <input
                   type="text"
                   placeholder="Search by patient name, room, or ID..."
@@ -294,58 +294,100 @@ export default function AllotedRoomsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredRooms.map((room) => (
-                  <tr
-                    key={room.id}
-                    className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-white text-sm font-medium">
-                      {room.allotmentId}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <div>
-                        <p className="text-white font-medium">{room.patientName}</p>
-                        <p className="text-gray-400 text-xs">{room.patientId}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-white font-medium text-sm">
-                      {room.roomNumber}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getRoomTypeColor(room.roomType)}`}>
-                        {room.roomType}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-300 text-sm">
-                      {room.department}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                          room.status
-                        )}`}
-                      >
-                        {room.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-300 text-sm">
-                      {room.doctor}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <div className="flex items-center gap-2">
-                        <button className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-emerald-400 transition-colors">
-                          <Eye size={16} />
-                        </button>
-                        <button className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-blue-400 transition-colors">
-                          <Edit size={16} />
-                        </button>
-                        <button className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-red-400 transition-colors">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="px-4 py-3 text-center text-gray-400"
+                    >
+                      Loading...
                     </td>
                   </tr>
-                ))}
+                ) : error ? (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="px-4 py-3 text-center text-red-400"
+                    >
+                      {error}
+                    </td>
+                  </tr>
+                ) : filteredRooms.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="px-4 py-3 text-center text-gray-400"
+                    >
+                      No allotments found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredRooms.map((room) => (
+                    <tr
+                      key={room.id}
+                      className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
+                    >
+                      <td className="px-4 py-3 text-white text-sm font-medium">
+                        {room.id}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div>
+                          <p className="text-white font-medium">
+                            {room.patientName}
+                          </p>
+                          <p className="text-gray-400 text-xs">
+                            {room.patientId}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-white font-medium text-sm">
+                        {room.room.roomNumber}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${getRoomTypeColor(
+                            room.room.roomType
+                          )}`}
+                        >
+                          {room.room.roomType}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-300 text-sm">
+                        {room.room.department}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                            room.status
+                          )}`}
+                        >
+                          {room.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-300 text-sm">
+                        {room.attendingDoctor}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <button className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-emerald-400 transition-colors">
+                            <Eye size={16} />
+                          </button>
+                          <Link href={`/room-allotment/edit/${room.id}`}>
+                            <button className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-blue-400 transition-colors">
+                              <Edit size={16} />
+                            </button>
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(room.id)}
+                            className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -356,7 +398,9 @@ export default function AllotedRoomsPage() {
               <button className="px-3 py-1 bg-dark-tertiary hover:bg-dark-tertiary/70 rounded transition-colors">
                 Previous
               </button>
-              <button className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded">1</button>
+              <button className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded">
+                1
+              </button>
               <button className="px-3 py-1 bg-dark-tertiary hover:bg-dark-tertiary/70 rounded transition-colors">
                 Next
               </button>

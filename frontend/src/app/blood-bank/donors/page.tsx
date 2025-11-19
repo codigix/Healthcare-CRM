@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Search, Plus, Users, Calendar, MoreVertical } from 'lucide-react';
+import ActionModal from '@/components/UI/ActionModal';
+import { Search, Plus, Users, Calendar, MoreVertical, Eye, Edit, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { bloodBankAPI } from '@/lib/api';
 
 interface Donor {
   id: string;
@@ -10,10 +13,10 @@ interface Donor {
   bloodType: string;
   contact: string;
   email: string;
-  lastDonation: string;
-  nextEligible: string;
+  lastDonation?: string;
+  nextEligible?: string;
   totalDonations: number;
-  status: 'Eligible' | 'Ineligible' | 'New Donor' | 'Gold Donor';
+  status: string;
 }
 
 export default function BloodDonorsPage() {
@@ -21,53 +24,113 @@ export default function BloodDonorsPage() {
   const [bloodTypeFilter, setBloodTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('all');
+  const [donors, setDonors] = useState<Donor[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [donors] = useState<Donor[]>([
-    {
-      id: 'D-0001',
-      name: 'John Smith',
-      bloodType: 'O+',
-      contact: '+1 (555) 123-4567',
-      email: 'john.smith@example.com',
-      lastDonation: '3/15/2023',
-      nextEligible: '7/15/2023',
-      totalDonations: 8,
-      status: 'Eligible'
-    },
-    {
-      id: 'D-0002',
-      name: 'Sarah Johnson',
-      bloodType: 'A-',
-      contact: '+1 (555) 987-6543',
-      email: 'sarah.johnson@example.com',
-      lastDonation: '5/22/2023',
-      nextEligible: '9/22/2023',
-      totalDonations: 3,
-      status: 'Ineligible'
-    },
-    {
-      id: 'D-0003',
-      name: 'Michael Chen',
-      bloodType: 'B+',
-      contact: '+1 (555) 456-7890',
-      email: 'michael.chen@example.com',
-      lastDonation: '1/10/2023',
-      nextEligible: '5/10/2023',
-      totalDonations: 12,
-      status: 'Eligible'
-    },
-    {
-      id: 'D-0004',
-      name: 'Emily Rodriguez',
-      bloodType: 'AB+',
-      contact: '+1 (555) 234-5678',
-      email: 'emily.r@example.com',
-      lastDonation: 'Never donated',
-      nextEligible: 'N/A',
-      totalDonations: 0,
-      status: 'New Donor'
+  // Modal states
+  const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    bloodType: '',
+    contact: '',
+    email: '',
+    status: '',
+    nextEligible: '',
+    dateOfBirth: '',
+    gender: '',
+    address: '',
+    city: '',
+    phoneNumber: ''
+  });
+
+  useEffect(() => {
+    fetchDonors();
+  }, []);
+
+  const fetchDonors = async () => {
+    try {
+      setLoading(true);
+      const response = await bloodBankAPI.getDonors();
+      const data = response.data;
+      if (data.success) {
+        setDonors(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching donors:', error);
+      alert('Failed to fetch donors. Please ensure you are logged in.');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  const handleViewDetails = (donor: Donor) => {
+    setSelectedDonor(donor);
+    setViewModalOpen(true);
+  };
+
+  const handleEditDonor = (donor: Donor) => {
+    setSelectedDonor(donor);
+    setEditFormData({
+      name: donor.name,
+      bloodType: donor.bloodType,
+      contact: donor.contact,
+      email: donor.email,
+      status: donor.status,
+      nextEligible: donor.nextEligible ? new Date(donor.nextEligible).toISOString().split('T')[0] : '',
+      dateOfBirth: '',
+      gender: '',
+      address: '',
+      city: '',
+      phoneNumber: ''
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleDeleteDonor = (donor: Donor) => {
+    setSelectedDonor(donor);
+    setDeleteModalOpen(true);
+  };
+
+  const handleUpdateDonor = async () => {
+    if (!selectedDonor) return;
+
+    try {
+      const submitData = {
+        bloodType: editFormData.bloodType,
+        contact: editFormData.contact,
+        email: editFormData.email,
+        status: editFormData.status,
+        nextEligible: editFormData.nextEligible
+      };
+      const response = await bloodBankAPI.createDonor(submitData);
+
+      if (response.data.success) {
+        alert('Donor updated successfully!');
+        setEditModalOpen(false);
+        fetchDonors();
+      } else {
+        alert('Error: ' + (response.data.error || 'Failed to update donor'));
+      }
+    } catch (error) {
+      console.error('Error updating donor:', error);
+      alert('Error updating donor');
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedDonor) return;
+
+    try {
+      alert('Donor records cannot be deleted. You can mark them as ineligible instead.');
+      setDeleteModalOpen(false);
+    } catch (error) {
+      console.error('Error deleting donor:', error);
+      alert('Error deleting donor');
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -104,9 +167,9 @@ export default function BloodDonorsPage() {
   });
 
   const totalDonors = donors.length;
-  const donationsThisMonth = 38;
+  const donationsThisMonth = donors.reduce((sum, d) => sum + d.totalDonations, 0);
   const eligibleDonors = donors.filter(d => d.status === 'Eligible').length;
-  const frequentDonors = 42;
+  const frequentDonors = donors.filter(d => d.totalDonations >= 5).length;
 
   const bloodTypeDistribution = [
     { type: 'O+', percentage: 38, count: 94 },
@@ -135,10 +198,12 @@ export default function BloodDonorsPage() {
             <h1 className="text-3xl font-bold mb-2">Blood Donors</h1>
             <p className="text-gray-400">Manage and track blood donors in your blood bank</p>
           </div>
-          <button className="btn-primary flex items-center gap-2">
-            <Plus size={20} />
-            Register New Donor
-          </button>
+          <Link href="/blood-bank/register-donor">
+            <button className="btn-primary flex items-center gap-2">
+              <Plus size={20} />
+              Register New Donor
+            </button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -320,68 +385,281 @@ export default function BloodDonorsPage() {
             <button className="btn-secondary ml-auto">Export</button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-dark-tertiary">
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Donor</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Blood Type</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Contact</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Last Donation</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Status</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Total Donations</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Next Eligible</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredDonors.map((donor) => (
-                  <tr key={donor.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center font-semibold text-emerald-500">
-                          {donor.name.split(' ').map(n => n[0]).join('')}
-                        </div>
-                        <div>
-                          <div className="font-medium text-white">{donor.name}</div>
-                          <div className="text-sm text-gray-400">{donor.id}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getBloodTypeColor(donor.bloodType)}`}>
-                        {donor.bloodType}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="text-sm text-gray-300">{donor.contact}</div>
-                      <div className="text-xs text-gray-400">{donor.email}</div>
-                    </td>
-                    <td className="py-4 px-4 text-gray-300">{donor.lastDonation}</td>
-                    <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(donor.status)}`}>
-                        {donor.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-lg text-sm font-medium ${donor.totalDonations >= 10 ? 'bg-yellow-500/10 text-yellow-500' : 'text-gray-300'}`}>
-                        {donor.totalDonations}
-                        {donor.totalDonations >= 10 && ' 🏆'}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-gray-300">{donor.nextEligible}</td>
-                    <td className="py-4 px-4">
-                      <button className="p-2 hover:bg-gray-500/20 rounded transition-colors">
-                        <MoreVertical size={18} className="text-gray-400" />
-                      </button>
-                    </td>
+          {loading ? (
+            <div className="text-center py-8 text-gray-400">Loading donors...</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-dark-tertiary">
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Donor</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Blood Type</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Contact</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Last Donation</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Status</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Total Donations</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filteredDonors.map((donor) => (
+                    <tr key={donor.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-emerald-500/10 rounded-full flex items-center justify-center font-semibold text-emerald-500">
+                            {donor.name.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div>
+                            <div className="font-medium text-white">{donor.name}</div>
+                            <div className="text-sm text-gray-400">{donor.id}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getBloodTypeColor(donor.bloodType)}`}>
+                          {donor.bloodType}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="text-sm text-gray-300">{donor.contact}</div>
+                        <div className="text-xs text-gray-400">{donor.email}</div>
+                      </td>
+                      <td className="py-4 px-4 text-gray-300">{donor.lastDonation ? new Date(donor.lastDonation).toLocaleDateString() : 'Never'}</td>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(donor.status)}`}>
+                          {donor.status}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 rounded-lg text-sm font-medium ${donor.totalDonations >= 10 ? 'bg-yellow-500/10 text-yellow-500' : 'text-gray-300'}`}>
+                          {donor.totalDonations}
+                          {donor.totalDonations >= 10 && ' 🏆'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleViewDetails(donor)}
+                            className="p-2 hover:bg-blue-500/20 rounded transition-colors"
+                            title="View Details"
+                          >
+                            <Eye size={16} className="text-blue-500" />
+                          </button>
+                          <button
+                            onClick={() => handleEditDonor(donor)}
+                            className="p-2 hover:bg-yellow-500/20 rounded transition-colors"
+                            title="Edit Donor"
+                          >
+                            <Edit size={16} className="text-yellow-500" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteDonor(donor)}
+                            className="p-2 hover:bg-red-500/20 rounded transition-colors"
+                            title="Delete Donor"
+                          >
+                            <Trash2 size={16} className="text-red-500" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* View Details Modal */}
+      <ActionModal
+        isOpen={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        title="Donor Details"
+      >
+        {selectedDonor && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400">Name</label>
+                <p className="text-white">{selectedDonor.name}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400">Blood Type</label>
+                <p className="text-white">{selectedDonor.bloodType}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400">Contact</label>
+                <p className="text-white">{selectedDonor.contact}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400">Email</label>
+                <p className="text-white">{selectedDonor.email}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400">Status</label>
+                <p className="text-white">{selectedDonor.status}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400">Total Donations</label>
+                <p className="text-white">{selectedDonor.totalDonations}</p>
+              </div>
+            </div>
+            {selectedDonor.lastDonation && (
+              <div>
+                <label className="block text-sm font-medium text-gray-400">Last Donation</label>
+                <p className="text-white">{new Date(selectedDonor.lastDonation).toLocaleDateString()}</p>
+              </div>
+            )}
+            {selectedDonor.nextEligible && (
+              <div>
+                <label className="block text-sm font-medium text-gray-400">Next Eligible</label>
+                <p className="text-white">{new Date(selectedDonor.nextEligible).toLocaleDateString()}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </ActionModal>
+
+      {/* Edit Donor Modal */}
+      <ActionModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        title="Edit Donor"
+        actions={
+          <>
+            <button
+              onClick={() => setEditModalOpen(false)}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdateDonor}
+              className="btn-primary"
+            >
+              Update Donor
+            </button>
+          </>
+        }
+      >
+        {selectedDonor && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Name</label>
+                <input
+                  type="text"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
+                  className="input-field w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Blood Type</label>
+                <select
+                  value={editFormData.bloodType}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, bloodType: e.target.value }))}
+                  className="input-field w-full"
+                >
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Contact</label>
+                <input
+                  type="text"
+                  value={editFormData.contact}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, contact: e.target.value }))}
+                  className="input-field w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Email</label>
+                <input
+                  type="email"
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
+                  className="input-field w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Status</label>
+                <select
+                  value={editFormData.status}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, status: e.target.value }))}
+                  className="input-field w-full"
+                >
+                  <option value="Eligible">Eligible</option>
+                  <option value="Ineligible">Ineligible</option>
+                  <option value="New Donor">New Donor</option>
+                  <option value="Gold Donor">Gold Donor</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Next Eligible Date</label>
+                <input
+                  type="date"
+                  value={editFormData.nextEligible}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, nextEligible: e.target.value }))}
+                  className="input-field w-full"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </ActionModal>
+
+      {/* Delete Confirmation Modal */}
+      <ActionModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Delete Donor"
+        actions={
+          <>
+            <button
+              onClick={() => setDeleteModalOpen(false)}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteConfirm}
+              className="btn-primary bg-red-500 hover:bg-red-600"
+            >
+              Delete Donor
+            </button>
+          </>
+        }
+      >
+        {selectedDonor && (
+          <div className="text-center">
+            <div className="mb-4">
+              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={32} className="text-red-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Delete Donor</h3>
+              <p className="text-gray-400 mb-4">
+                Are you sure you want to delete donor <strong>{selectedDonor.name}</strong>?
+                This action cannot be undone.
+              </p>
+              <div className="bg-dark-tertiary p-3 rounded-lg">
+                <p className="text-sm text-gray-300">
+                  <strong>Blood Type:</strong> {selectedDonor.bloodType}<br />
+                  <strong>Contact:</strong> {selectedDonor.contact}<br />
+                  <strong>Total Donations:</strong> {selectedDonor.totalDonations}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </ActionModal>
     </DashboardLayout>
   );
 }

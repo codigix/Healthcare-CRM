@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { ArrowLeft } from 'lucide-react';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
 interface Department {
   id: string;
   name: string;
@@ -31,7 +33,7 @@ export default function AddServicePage() {
 
   const fetchDepartments = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/departments?limit=100', {
+      const res = await fetch(`${API_URL}/departments?limit=100`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -56,7 +58,7 @@ export default function AddServicePage() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/departments/services', {
+      const res = await fetch(`${API_URL}/departments/services`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

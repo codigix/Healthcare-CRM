@@ -1,65 +1,130 @@
 import { Router, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
+import pool from '../db';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    const where = search ? {
-      OR: [
-        { patient: { name: { contains: String(search), mode: 'insensitive' } } },
-        { doctor: { name: { contains: String(search), mode: 'insensitive' } } },
-        { diagnosis: { contains: String(search), mode: 'insensitive' } },
-      ],
-    } : {};
+    let whereClause = '1=1';
+    const params: any[] = [];
 
-    const prescriptions = await prisma.prescription.findMany({
-      where,
-      skip,
-      take: Number(limit),
-      include: {
-        patient: {
-          select: { id: true, name: true, gender: true, dob: true },
-        },
-        doctor: {
-          select: { id: true, name: true },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    if (search) {
+      whereClause += ' AND (pr.medications LIKE ? OR pr.diagnosis LIKE ? OR pr.status LIKE ?)';
+      const searchTerm = `%${String(search)}%`;
+      params.push(searchTerm, searchTerm, searchTerm);
+    }
 
-    const total = await prisma.prescription.count({ where });
+    const connection = await pool.getConnection();
+    
+    const dataParams = [...params, Number(limit), skip];
+    const query = `
+      SELECT 
+        pr.*,
+        p.id as patientId,
+        p.name as patientName,
+        p.gender as patientGender,
+        p.dob as patientDob,
+        d.id as doctorId,
+        d.name as doctorName
+      FROM prescriptions pr
+      LEFT JOIN patients p ON pr.patientId = p.id
+      LEFT JOIN doctors d ON pr.doctorId = d.id
+      WHERE ${whereClause}
+      ORDER BY pr.createdAt DESC
+      LIMIT ? OFFSET ?
+    `;
+    const [prescriptions]: any = await connection.query(query, dataParams);
+    
+    const countSql = `SELECT COUNT(*) as total FROM prescriptions pr WHERE ${whereClause}`;
+    const result: any = await connection.query(countSql, params);
+    const total = result[0][0].total;
+    
+    const formattedPrescriptions = prescriptions.map((p: any) => ({
+      id: p.id,
+      patientId: p.patientId,
+      doctorId: p.doctorId,
+      prescriptionType: p.prescriptionType,
+      prescriptionDate: p.prescriptionDate,
+      diagnosis: p.diagnosis,
+      medications: p.medications,
+      notesForPharmacist: p.notesForPharmacist,
+      status: p.status,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+      patient: p.patientId ? {
+        id: p.patientId,
+        name: p.patientName,
+        gender: p.patientGender,
+        dob: p.patientDob,
+      } : null,
+      doctor: p.doctorId ? {
+        id: p.doctorId,
+        name: p.doctorName,
+      } : null,
+    }));
+    
+    connection.release();
 
-    res.json({ prescriptions, total, page: Number(page), limit: Number(limit) });
+    res.json({ prescriptions: formattedPrescriptions, total, page: Number(page), limit: Number(limit) });
   } catch (error) {
+    console.error('Error fetching prescriptions:', error);
     res.status(500).json({ error: 'Failed to fetch prescriptions' });
   }
 });
 
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const prescription = await prisma.prescription.findUnique({
-      where: { id: req.params.id },
-      include: {
-        patient: {
-          select: { id: true, name: true, gender: true, dob: true },
-        },
-        doctor: {
-          select: { id: true, name: true },
-        },
-      },
-    });
-
-    if (!prescription) {
-      return res.status(404).json({ error: 'Prescription not found' });
+    const connection = await pool.getConnection();
+    const [prescriptions]: any = await connection.query(`
+      SELECT 
+        pr.*,
+        p.id as patientId,
+        p.name as patientName,
+        p.gender as patientGender,
+        p.dob as patientDob,
+        d.id as doctorId,
+        d.name as doctorName
+      FROM prescriptions pr
+      LEFT JOIN patients p ON pr.patientId = p.id
+      LEFT JOIN doctors d ON pr.doctorId = d.id
+      WHERE pr.id = ?
+    `, [req.params.id]);
+    connection.release();
+    
+    if (!prescriptions[0]) {
+      return res.json({ error: 'Not found' });
     }
-
-    res.json(prescription);
+    
+    const p = prescriptions[0];
+    const formatted = {
+      id: p.id,
+      patientId: p.patientId,
+      doctorId: p.doctorId,
+      prescriptionType: p.prescriptionType,
+      prescriptionDate: p.prescriptionDate,
+      diagnosis: p.diagnosis,
+      medications: p.medications,
+      notesForPharmacist: p.notesForPharmacist,
+      status: p.status,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+      patient: p.patientId ? {
+        id: p.patientId,
+        name: p.patientName,
+        gender: p.patientGender,
+        dob: p.patientDob,
+      } : null,
+      doctor: p.doctorId ? {
+        id: p.doctorId,
+        name: p.doctorName,
+      } : null,
+    };
+    
+    res.json(formatted);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch prescription' });
   }
@@ -67,85 +132,138 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { patientId, doctorId, prescriptionDate, prescriptionType, diagnosis, notesForPharmacist, medications, status = 'Active' } = req.body;
-
-    if (!patientId || !doctorId || !prescriptionDate || !medications) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    const { patientId, doctorId, prescriptionType, diagnosis, medications, notesForPharmacist } = req.body;
+    const connection = await pool.getConnection();
+    const query = `INSERT INTO prescriptions (id, patientId, doctorId, prescriptionType, diagnosis, medications, notesForPharmacist, prescriptionDate, status, createdAt, updatedAt)
+                   VALUES (UUID(), ?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), NOW())`;
+    await connection.query(query, [patientId, doctorId, prescriptionType || 'Standard', diagnosis, medications, notesForPharmacist, 'Active']);
+    const [prescription]: any = await connection.query(`
+      SELECT 
+        pr.*,
+        p.id as patientId,
+        p.name as patientName,
+        p.gender as patientGender,
+        p.dob as patientDob,
+        d.id as doctorId,
+        d.name as doctorName
+      FROM prescriptions pr
+      LEFT JOIN patients p ON pr.patientId = p.id
+      LEFT JOIN doctors d ON pr.doctorId = d.id
+      WHERE pr.patientId = ?
+      ORDER BY pr.createdAt DESC
+      LIMIT 1
+    `, [patientId]);
+    
+    if (!prescription[0]) {
+      connection.release();
+      return res.status(500).json({ error: 'Failed to create prescription' });
     }
-
-    const prescription = await prisma.prescription.create({
-      data: {
-        patientId,
-        doctorId,
-        prescriptionDate: new Date(prescriptionDate),
-        prescriptionType,
-        diagnosis: diagnosis || null,
-        notesForPharmacist: notesForPharmacist || null,
-        medications: JSON.stringify(medications),
-        status,
-      },
-      include: {
-        patient: {
-          select: { id: true, name: true, gender: true, dob: true },
-        },
-        doctor: {
-          select: { id: true, name: true },
-        },
-      },
-    });
-
-    res.status(201).json(prescription);
-  } catch (error: any) {
+    
+    const p = prescription[0];
+    const formatted = {
+      id: p.id,
+      patientId: p.patientId,
+      doctorId: p.doctorId,
+      prescriptionType: p.prescriptionType,
+      prescriptionDate: p.prescriptionDate,
+      diagnosis: p.diagnosis,
+      medications: p.medications,
+      notesForPharmacist: p.notesForPharmacist,
+      status: p.status,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+      patient: p.patientId ? {
+        id: p.patientId,
+        name: p.patientName,
+        gender: p.patientGender,
+        dob: p.patientDob,
+      } : null,
+      doctor: p.doctorId ? {
+        id: p.doctorId,
+        name: p.doctorName,
+      } : null,
+    };
+    
+    connection.release();
+    res.status(201).json(formatted);
+  } catch (error) {
+    console.error('Error creating prescription:', error);
     res.status(500).json({ error: 'Failed to create prescription' });
   }
 });
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { patientId, doctorId, prescriptionDate, prescriptionType, diagnosis, notesForPharmacist, medications, status } = req.body;
-
-    const prescription = await prisma.prescription.update({
-      where: { id: req.params.id },
-      data: {
-        ...(patientId && { patientId }),
-        ...(doctorId && { doctorId }),
-        ...(prescriptionDate && { prescriptionDate: new Date(prescriptionDate) }),
-        ...(prescriptionType && { prescriptionType }),
-        ...(diagnosis !== undefined && { diagnosis: diagnosis || null }),
-        ...(notesForPharmacist !== undefined && { notesForPharmacist: notesForPharmacist || null }),
-        ...(medications && { medications: JSON.stringify(medications) }),
-        ...(status && { status }),
-      },
-      include: {
-        patient: {
-          select: { id: true, name: true, gender: true, dob: true },
-        },
-        doctor: {
-          select: { id: true, name: true },
-        },
-      },
-    });
-
-    res.json(prescription);
-  } catch (error: any) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'Prescription not found' });
+    const { medications, diagnosis, notesForPharmacist, status } = req.body;
+    const connection = await pool.getConnection();
+    const updates: string[] = ['updatedAt = NOW()'];
+    const values: any[] = [];
+    if (medications) { updates.unshift('medications = ?'); values.push(medications); }
+    if (diagnosis) { updates.unshift('diagnosis = ?'); values.push(diagnosis); }
+    if (notesForPharmacist) { updates.unshift('notesForPharmacist = ?'); values.push(notesForPharmacist); }
+    if (status) { updates.unshift('status = ?'); values.push(status); }
+    values.push(req.params.id);
+    await connection.query(`UPDATE prescriptions SET ${updates.join(', ')} WHERE id = ?`, values);
+    const [prescription]: any = await connection.query(`
+      SELECT 
+        pr.*,
+        p.id as patientId,
+        p.name as patientName,
+        p.gender as patientGender,
+        p.dob as patientDob,
+        d.id as doctorId,
+        d.name as doctorName
+      FROM prescriptions pr
+      LEFT JOIN patients p ON pr.patientId = p.id
+      LEFT JOIN doctors d ON pr.doctorId = d.id
+      WHERE pr.id = ?
+    `, [req.params.id]);
+    
+    if (!prescription[0]) {
+      connection.release();
+      return res.status(500).json({ error: 'Prescription not found' });
     }
+    
+    const p = prescription[0];
+    const formatted = {
+      id: p.id,
+      patientId: p.patientId,
+      doctorId: p.doctorId,
+      prescriptionType: p.prescriptionType,
+      prescriptionDate: p.prescriptionDate,
+      diagnosis: p.diagnosis,
+      medications: p.medications,
+      notesForPharmacist: p.notesForPharmacist,
+      status: p.status,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+      patient: p.patientId ? {
+        id: p.patientId,
+        name: p.patientName,
+        gender: p.patientGender,
+        dob: p.patientDob,
+      } : null,
+      doctor: p.doctorId ? {
+        id: p.doctorId,
+        name: p.doctorName,
+      } : null,
+    };
+    
+    connection.release();
+    res.json(formatted);
+  } catch (error) {
+    console.error('Error updating prescription:', error);
     res.status(500).json({ error: 'Failed to update prescription' });
   }
 });
 
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    await prisma.prescription.delete({
-      where: { id: req.params.id },
-    });
-
-    res.json({ message: 'Prescription deleted successfully' });
-  } catch (error: any) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'Prescription not found' });
-    }
+    const connection = await pool.getConnection();
+    await connection.query('DELETE FROM prescriptions WHERE id = ?', [req.params.id]);
+    connection.release();
+    res.json({ message: 'Prescription deleted' });
+  } catch (error) {
     res.status(500).json({ error: 'Failed to delete prescription' });
   }
 });

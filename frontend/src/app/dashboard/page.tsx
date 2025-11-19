@@ -17,8 +17,8 @@ interface Stats {
 interface Appointment {
   id: string;
   date: string;
-  patient: { name: string };
-  doctor: { name: string };
+  patient?: { name: string };
+  doctor?: { name: string };
   status: string;
 }
 
@@ -83,7 +83,7 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-gray-400 text-sm mb-2">Total Revenue</p>
-                    <p className="text-2xl font-bold">${stats?.totalRevenue || 0}</p>
+                    <p className="text-2xl font-bold">${typeof stats?.totalRevenue === 'number' ? stats.totalRevenue.toFixed(2) : 0}</p>
                     <p className="text-emerald-500 text-xs mt-2">+20.1% from last month</p>
                   </div>
                   <DollarSign className="text-emerald-500" size={24} />
@@ -167,8 +167,8 @@ export default function DashboardPage() {
                   <tbody>
                     {appointments.map((apt) => (
                       <tr key={apt.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary transition-colors">
-                        <td className="py-3 px-4">{apt.patient.name}</td>
-                        <td className="py-3 px-4">{apt.doctor.name}</td>
+                        <td className="py-3 px-4">{apt.patient?.name || 'N/A'}</td>
+                        <td className="py-3 px-4">{apt.doctor?.name || 'N/A'}</td>
                         <td className="py-3 px-4">{new Date(apt.date).toLocaleDateString()}</td>
                         <td className="py-3 px-4">
                           <span className={`status-badge ${getStatusColor(apt.status)}`}>

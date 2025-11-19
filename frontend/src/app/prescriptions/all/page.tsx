@@ -19,13 +19,13 @@ interface Medication {
 
 interface Prescription {
   id: string;
-  patient: {
+  patient?: {
     id: string;
     name: string;
     gender?: string;
     dob?: string;
   };
-  doctor: {
+  doctor?: {
     id: string;
     name: string;
   };
@@ -90,8 +90,8 @@ export default function AllPrescriptionsPage() {
   const handleEdit = (prescription: Prescription) => {
     setEditingId(prescription.id);
     setEditForm({
-      patientId: prescription.patient.id,
-      doctorId: prescription.doctor.id,
+      patientId: prescription.patient?.id || '',
+      doctorId: prescription.doctor?.id || '',
       prescriptionDate: prescription.prescriptionDate.split('T')[0],
       prescriptionType: prescription.prescriptionType,
       diagnosis: prescription.diagnosis || '',
@@ -127,8 +127,8 @@ export default function AllPrescriptionsPage() {
   };
 
   const filteredPrescriptions = prescriptions.filter(prescription => {
-    const matchesSearch = prescription.patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         prescription.doctor.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (prescription.patient?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+                         (prescription.doctor?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
     const matchesStatus = statusFilter === 'all' || prescription.status?.toLowerCase() === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -220,11 +220,11 @@ export default function AllPrescriptionsPage() {
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 font-semibold">
-                            {prescription.patient.name.charAt(0)}
+                            {prescription.patient?.name?.charAt(0) || 'N/A'}
                           </div>
                           <div>
-                            <div className="font-medium">{prescription.patient.name}</div>
-                            {prescription.patient.dob && (
+                            <div className="font-medium">{prescription.patient?.name || 'N/A'}</div>
+                            {prescription.patient?.dob && (
                               <div className="text-sm text-gray-400">
                                 {calculateAge(prescription.patient.dob)}y • {prescription.patient.gender}
                               </div>
@@ -233,7 +233,7 @@ export default function AllPrescriptionsPage() {
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="text-gray-300">Dr. {prescription.doctor.name}</span>
+                        <span className="text-gray-300">Dr. {prescription.doctor?.name || 'N/A'}</span>
                       </td>
                       <td className="py-4 px-4">
                         <span className="text-white">
@@ -323,19 +323,19 @@ export default function AllPrescriptionsPage() {
                   if (!prescription) return null;
                   
                   const meds = parseMedications(prescription.medications);
-                  const age = calculateAge(prescription.patient.dob);
+                  const age = calculateAge(prescription.patient?.dob);
                   
                   return (
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="text-sm text-gray-400">Patient</label>
-                          <p className="text-white font-medium">{prescription.patient.name}</p>
-                          {age && <p className="text-sm text-gray-400">{age} years old • {prescription.patient.gender}</p>}
+                          <p className="text-white font-medium">{prescription.patient?.name || 'N/A'}</p>
+                          {age && <p className="text-sm text-gray-400">{age} years old • {prescription.patient?.gender}</p>}
                         </div>
                         <div>
                           <label className="text-sm text-gray-400">Doctor</label>
-                          <p className="text-white font-medium">Dr. {prescription.doctor.name}</p>
+                          <p className="text-white font-medium">Dr. {prescription.doctor?.name || 'N/A'}</p>
                         </div>
                         <div>
                           <label className="text-sm text-gray-400">Date</label>

@@ -314,3 +314,186 @@ model Attendance {
 
   @@map("attendance")
 }
+
+model Room {
+  id                String   @id @default(cuid())
+  roomNumber        String   @unique
+  roomType          String
+  department        String
+  floor             String
+  capacity          Int
+  pricePerDay       Decimal
+  status            String   @default("Available")
+  description       String?
+  television        Boolean  @default(false)
+  attachedBathroom  Boolean  @default(false)
+  airConditioning   Boolean  @default(false)
+  wheelchairAccessible Boolean @default(false)
+  wifi              Boolean  @default(false)
+  oxygenSupply      Boolean  @default(false)
+  telephone         Boolean  @default(false)
+  nursecallButton   Boolean  @default(false)
+  additionalNotes   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  roomAllotments RoomAllotment[] @relation("RoomAllotments")
+
+  @@map("rooms")
+}
+
+model RoomAllotment {
+  id                    String   @id @default(cuid())
+  patientId             String
+  patientName           String
+  patientPhone          String?
+  roomId                String
+  attendingDoctor       String
+  emergencyContact      String?
+  specialRequirements   String?
+  allotmentDate         DateTime
+  expectedDischargeDate DateTime?
+  status                String   @default("Occupied")
+  paymentMethod         String?
+  insuranceDetails      String?
+  additionalNotes       String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  room Room @relation("RoomAllotments", fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("room_allotments")
+}
+
+model Medicine {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  genericName       String
+  category          String
+  medicineType      String
+  description       String?
+  medicineForm      String
+  manufacturer      String?
+  supplier          String?
+  manufacturingDate DateTime?
+  expiryDate        DateTime?
+  batchNumber       String?
+  dosage            String?
+  sideEffects       String?
+  precautions       String?
+  initialQuantity   Int      @default(0)
+  reorderLevel      Int      @default(0)
+  maximumLevel      Int      @default(0)
+  purchasePrice     Decimal
+  sellingPrice      Decimal
+  taxRate           Decimal  @default(0)
+  roomTemperature   Boolean  @default(false)
+  frozen            Boolean  @default(false)
+  refrigerated      Boolean  @default(false)
+  protectFromLight  Boolean  @default(false)
+  status            String   @default("Active")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("medicines")
+}
+
+model BloodDonor {
+  id               String   @id @default(cuid())
+  name             String
+  bloodType        String
+  contact          String
+  email            String   @unique
+  lastDonation     DateTime?
+  nextEligible     DateTime?
+  totalDonations   Int      @default(0)
+  status           String   @default("New Donor")
+  dateOfBirth      DateTime?
+  gender           String?
+  address          String?
+  city             String?
+  phoneNumber      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  bloodUnits BloodUnit[]
+
+  @@map("blood_donors")
+}
+
+model BloodUnit {
+  id               String   @id @default(cuid())
+  unitId           String   @unique
+  bloodType        String
+  donorId          String?
+  donor            BloodDonor? @relation(fields: [donorId], references: [id], onDelete: SetNull)
+  quantity         Int      @default(1)
+  screeningComplete Boolean  @default(false)
+  processingComplete Boolean @default(false)
+  collectionDate   DateTime
+  expiryDate       DateTime
+  sourceType       String?
+  collectionLocation String?
+  status           String   @default("Available")
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  bloodIssues BloodIssue[]
+
+  @@map("blood_units")
+}
+
+model BloodIssue {
+  id               String   @id @default(cuid())
+  issueId          String   @unique
+  recipient        String
+  recipientId      String?
+  bloodType        String
+  bloodUnitId      String?
+  bloodUnit        BloodUnit? @relation(fields: [bloodUnitId], references: [id], onDelete: SetNull)
+  units            Int      @default(1)
+  issueDate        DateTime
+  requestingDoctor String
+  purpose          String
+  department       String
+  status           String   @default("Pending")
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("blood_issues")
+}
+
+model InventoryAlert {
+  id              String   @id @default(cuid())
+  medicineId      String
+  name            String
+  category        String
+  currentStock    Int
+  minLevel        Int
+  status          String   @default("Low Stock")
+  supplier        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("inventory_alerts")
+}
+
+model Supplier {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  category        String
+  contact         String
+  email           String
+  phone           String?
+  location        String?
+  rating          Int      @default(0)
+  status          String   @default("Active")
+  description     String?
+  contactPerson   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("suppliers")
+}

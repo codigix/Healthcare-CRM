@@ -106,8 +106,8 @@ export default function AppointmentRequestsPage() {
   ];
 
   const filteredRequests = requests.filter(req => {
-    const matchesSearch = req.patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         req.doctor.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (req.patient?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+                         (req.doctor?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
     
     if (activeTab === 'pending') return matchesSearch && req.status.toLowerCase() === 'pending';
     if (activeTab === 'approved') return matchesSearch && req.status.toLowerCase() === 'confirmed';
@@ -182,10 +182,10 @@ export default function AppointmentRequestsPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 font-semibold text-lg">
-                            {request.patient.name.charAt(0)}
+                            {request.patient?.name?.charAt(0) || 'N'}
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold">{request.patient.name}</h3>
+                            <h3 className="text-lg font-semibold">{request.patient?.name || 'N/A'}</h3>
                             <p className="text-sm text-gray-400">
                               Requested: {new Date(request.date).toLocaleDateString('en-US', { 
                                 year: 'numeric', 
@@ -206,7 +206,7 @@ export default function AppointmentRequestsPage() {
                         <div>
                           <span className="text-gray-400">Requested Doctor:</span>
                           <p className="font-medium text-white mt-1">
-                            {request.requestedDoctor || `Dr. ${request.doctor.name}`}
+                            {request.requestedDoctor || `Dr. ${request.doctor?.name || 'N/A'}`}
                           </p>
                         </div>
                         <div>

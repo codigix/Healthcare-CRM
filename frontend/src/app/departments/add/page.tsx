@@ -5,6 +5,8 @@ import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { ArrowLeft, Building2, User, MapPin, Phone, Mail, FileText, Users, Stethoscope } from 'lucide-react';
 import Link from 'next/link';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
 interface Doctor {
   id: string;
   name: string;
@@ -43,7 +45,7 @@ export default function AddDepartmentPage() {
       try {
         setLoading(true);
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5000/api/departments/doctors/list', {
+        const response = await fetch(`${API_URL}/departments/doctors/list`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

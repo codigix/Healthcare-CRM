@@ -1,184 +1,97 @@
 import { Router, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
+import pool from '../db';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { page = 1, limit = 10, staffId, date, status } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    const where: any = {};
+    let query = `SELECT 
+                  a.*,
+                  s.id as staffId, s.firstName, s.lastName, s.email, s.department
+                FROM attendance a
+                LEFT JOIN Staff s ON a.staffId = s.id
+                WHERE 1=1`;
+    const params: any[] = [];
 
     if (staffId) {
-      where.staffId = String(staffId);
+      query += ' AND a.staffId = ?';
+      params.push(String(staffId));
     }
 
     if (date) {
-      const startDate = new Date(String(date));
-      startDate.setHours(0, 0, 0, 0);
-      const endDate = new Date(String(date));
-      endDate.setHours(23, 59, 59, 999);
-
-      where.date = {
-        gte: startDate,
-        lte: endDate,
-      };
+      query += ' AND DATE(a.date) = ?';
+      params.push(String(date));
     }
 
     if (status) {
-      where.status = String(status);
+      query += ' AND a.status = ?';
+      params.push(String(status));
     }
 
-    const attendance = await prisma.attendance.findMany({
-      where,
-      include: {
-        staff: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            role: true,
-            department: true,
-          },
-        },
-      },
-      skip,
-      take: Number(limit),
-      orderBy: { date: 'desc' },
-    });
+    query += ' ORDER BY a.date DESC LIMIT ? OFFSET ?';
+    params.push(Number(limit), skip);
 
-    const total = await prisma.attendance.count({ where });
+    const connection = await pool.getConnection();
+    
+    const [attendance]: any = await connection.query(query, params);
+    
+    let countSql = `SELECT COUNT(*) as total FROM attendance a
+                   LEFT JOIN Staff s ON a.staffId = s.id
+                   WHERE 1=1`;
+    const countParams = params.slice(0, params.length - 2);
+    
+    if (staffId) {
+      countSql += ' AND a.staffId = ?';
+    }
+    if (date) {
+      countSql += ' AND DATE(a.date) = ?';
+    }
+    if (status) {
+      countSql += ' AND a.status = ?';
+    }
+    
+    const result: any = await connection.query(countSql, countParams);
+    const total = result[0][0].total;
+    
+    connection.release();
 
-    res.json({ attendance, total, page: Number(page), limit: Number(limit) });
+    const formattedAttendance = attendance.map((record: any) => ({
+      ...record,
+      staff: {
+        id: record.staffId,
+        firstName: record.firstName,
+        lastName: record.lastName,
+        email: record.email,
+        role: record.role,
+        department: record.department
+      }
+    }));
+
+    res.json({ attendance: formattedAttendance, total, page: Number(page), limit: Number(limit) });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch attendance records' });
   }
 });
 
-router.get('/staff/:staffId/daily', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const { date } = req.query;
-    const staffId = req.params.staffId;
-
-    const startDate = date ? new Date(String(date)) : new Date();
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(startDate);
-    endDate.setHours(23, 59, 59, 999);
-
-    const attendance = await prisma.attendance.findFirst({
-      where: {
-        staffId,
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
-    });
-
-    res.json(attendance || { staffId, date: startDate, status: 'Not recorded' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch daily attendance' });
-  }
-});
-
-router.post('/check-in', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const { staffId } = req.body;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const endToday = new Date(today);
-    endToday.setHours(23, 59, 59, 999);
-
-    let attendance = await prisma.attendance.findFirst({
-      where: {
-        staffId,
-        date: {
-          gte: today,
-          lte: endToday,
-        },
-      },
-    });
-
-    if (attendance) {
-      return res.status(400).json({ error: 'Already checked in today' });
-    }
-
-    attendance = await prisma.attendance.create({
-      data: {
-        staffId,
-        checkIn: new Date(),
-        status: 'Present',
-      },
-    });
-
-    res.status(201).json(attendance);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to check in' });
-  }
-});
-
-router.post('/check-out/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    const attendance = await prisma.attendance.findUnique({
-      where: { id },
-    });
-
-    if (!attendance) {
-      return res.status(404).json({ error: 'Attendance record not found' });
-    }
-
-    if (attendance.checkOut) {
-      return res.status(400).json({ error: 'Already checked out' });
-    }
-
-    const checkOut = new Date();
-    const checkIn = attendance.checkIn || new Date();
-    const hours = (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60);
-
-    const updated = await prisma.attendance.update({
-      where: { id },
-      data: {
-        checkOut,
-        hours: Math.round(hours * 100) / 100,
-      },
-    });
-
-    res.json(updated);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to check out' });
-  }
-});
-
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { staffId, checkIn, checkOut, status, date } = req.body;
+    const { staffId, date, status, checkIn, checkOut, hours } = req.body;
 
-    let hours = 0;
-    if (checkIn && checkOut) {
-      hours = (new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60);
-      hours = Math.round(hours * 100) / 100;
-    }
+    const connection = await pool.getConnection();
+    const query = `INSERT INTO attendance (id, staffId, date, status, checkIn, checkOut, hours, createdAt, updatedAt)
+                   VALUES (UUID(), ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+    
+    await connection.query(query, [staffId, date ? new Date(date) : new Date(), status || 'Present', checkIn, checkOut, hours || 0]);
 
-    const attendance = await prisma.attendance.create({
-      data: {
-        staffId,
-        checkIn: checkIn ? new Date(checkIn) : undefined,
-        checkOut: checkOut ? new Date(checkOut) : undefined,
-        hours,
-        status: status || 'Present',
-        date: date ? new Date(date) : new Date(),
-      },
-    });
+    const [attendance]: any = await connection.query('SELECT * FROM attendance WHERE staffId = ? ORDER BY createdAt DESC LIMIT 1', [staffId]);
+    connection.release();
 
-    res.status(201).json(attendance);
+    res.status(201).json(attendance[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create attendance record' });
@@ -187,36 +100,47 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { checkIn, checkOut, status, date } = req.body;
+    const { status, checkIn, checkOut, hours } = req.body;
+    const connection = await pool.getConnection();
+    
+    const updates: string[] = [];
+    const values: any[] = [];
 
-    let hours = undefined;
-    if (checkIn && checkOut) {
-      hours = (new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60);
-      hours = Math.round(hours * 100) / 100;
+    if (status) { updates.push('status = ?'); values.push(status); }
+    if (checkIn) { updates.push('checkIn = ?'); values.push(checkIn); }
+    if (checkOut) { updates.push('checkOut = ?'); values.push(checkOut); }
+    if (hours !== undefined) { updates.push('hours = ?'); values.push(hours); }
+
+    if (updates.length === 0) {
+      connection.release();
+      return res.status(400).json({ error: 'No fields to update' });
     }
 
-    const updated = await prisma.attendance.update({
-      where: { id: req.params.id },
-      data: {
-        checkIn: checkIn ? new Date(checkIn) : undefined,
-        checkOut: checkOut ? new Date(checkOut) : undefined,
-        hours: hours || undefined,
-        status: status || undefined,
-        date: date ? new Date(date) : undefined,
-      },
-    });
+    updates.push('updatedAt = NOW()');
+    values.push(req.params.id);
 
-    res.json(updated);
+    const query = `UPDATE attendance SET ${updates.join(', ')} WHERE id = ?`;
+    await connection.query(query, values);
+    
+    const [attendance]: any = await connection.query('SELECT * FROM attendance WHERE id = ?', [req.params.id]);
+    connection.release();
+
+    res.json(attendance[0]);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to update attendance record' });
   }
 });
 
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    await prisma.attendance.delete({ where: { id: req.params.id } });
+    const connection = await pool.getConnection();
+    await connection.query('DELETE FROM attendance WHERE id = ?', [req.params.id]);
+    connection.release();
+
     res.json({ message: 'Attendance record deleted successfully' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to delete attendance record' });
   }
 });

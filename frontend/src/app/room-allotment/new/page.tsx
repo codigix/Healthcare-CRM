@@ -1,19 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { ChevronLeft, Check } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function NewAllotmentPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     patientId: '',
     patientName: '',
+    patientPhone: '',
     attendingDoctor: '',
     emergencyContact: '',
-    roomNumber: '',
-    roomType: '',
-    department: '',
+    roomId: '',
     specialRequirements: '',
     allotmentDate: '',
     expectedDischargeDate: '',
@@ -22,18 +25,82 @@ export default function NewAllotmentPage() {
     additionalNotes: '',
   });
 
+  const [rooms, setRooms] = useState<any[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetchAvailableRooms();
+  }, []);
+
+  const fetchAvailableRooms = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/room-allotment/rooms`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch rooms');
+
+      const data = await response.json();
+      setRooms(data.rooms);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to fetch rooms');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+
+    if (name === 'roomId') {
+      const room = rooms.find((r) => r.id === value);
+      setSelectedRoom(room);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Room allotment created successfully!');
+    
+    if (!formData.patientId || !formData.patientName || !formData.roomId || !formData.attendingDoctor || !formData.allotmentDate) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const response = await fetch(`${API_URL}/room-allotment/allotments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          ...formData,
+          status: 'Occupied'
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create allotment');
+      }
+
+      alert('Room allotment created successfully!');
+      router.push('/room-allotment/alloted');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to create allotment');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const departments = [
@@ -129,6 +196,20 @@ export default function NewAllotmentPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Patient Phone
+                    </label>
+                    <input
+                      type="text"
+                      name="patientPhone"
+                      value={formData.patientPhone}
+                      onChange={handleChange}
+                      placeholder="Enter patient phone"
+                      className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
                       Emergency Contact
                     </label>
                     <input
@@ -154,20 +235,18 @@ export default function NewAllotmentPage() {
                       Room Number
                     </label>
                     <select
-                      name="roomNumber"
-                      value={formData.roomNumber}
+                      name="roomId"
+                      value={formData.roomId}
                       onChange={handleChange}
+                      disabled={loading}
                       className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white focus:outline-none focus:border-emerald-500"
                     >
-                      <option value="">Select room number</option>
-                      <option value="101">101</option>
-                      <option value="102">102</option>
-                      <option value="103">103</option>
-                      <option value="201">201</option>
-                      <option value="202">202</option>
-                      <option value="301">301</option>
-                      <option value="302">302</option>
-                      <option value="405">405</option>
+                      <option value="">Select room</option>
+                      {rooms.filter((r) => r.status === 'Available').map((room) => (
+                        <option key={room.id} value={room.id}>
+                          Room {room.roomNumber} - {room.roomType}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -175,38 +254,26 @@ export default function NewAllotmentPage() {
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       Room Type
                     </label>
-                    <select
-                      name="roomType"
-                      value={formData.roomType}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                    >
-                      <option value="">Select room type</option>
-                      {roomTypes.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
+                    <input
+                      type="text"
+                      value={selectedRoom?.roomType || ''}
+                      readOnly
+                      className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-gray-400 cursor-not-allowed"
+                      placeholder="Select a room to see type"
+                    />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       Department
                     </label>
-                    <select
-                      name="department"
-                      value={formData.department}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                    >
-                      <option value="">Select department</option>
-                      {departments.map((dept) => (
-                        <option key={dept} value={dept}>
-                          {dept}
-                        </option>
-                      ))}
-                    </select>
+                    <input
+                      type="text"
+                      value={selectedRoom?.department || ''}
+                      readOnly
+                      className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-gray-400 cursor-not-allowed"
+                      placeholder="Select a room to see department"
+                    />
                   </div>
 
                   <div>
@@ -322,10 +389,11 @@ export default function NewAllotmentPage() {
             </Link>
             <button
               type="submit"
-              className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
+              disabled={submitting || loading}
+              className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-600 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
             >
               <Check size={20} />
-              Create Allotment
+              {submitting ? 'Creating...' : 'Create Allotment'}
             </button>
           </div>
         </form>

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { appointmentAPI } from '@/lib/api';
-import { Calendar, FileText, Heart, Activity, Clock, MapPin, Phone, Mail, Loader } from 'lucide-react';
+import { appointmentAPI, recordsAPI, prescriptionAPI } from '@/lib/api';
+import { Calendar, FileText, Heart, Activity, Clock, MapPin, Phone, Mail, Loader, Pill, Download } from 'lucide-react';
 
 interface PatientStats {
   upcomingAppointments: number;
@@ -22,6 +22,33 @@ interface Appointment {
   location: string;
   type: string;
   status: string;
+}
+
+interface MedicalRecord {
+  id: string;
+  type: string;
+  patientName: string;
+  date: string;
+  details: string;
+  status: string;
+  createdAt: string;
+}
+
+interface Prescription {
+  id: string;
+  patientId: string;
+  doctorId: string;
+  prescriptionType: string;
+  prescriptionDate: string;
+  diagnosis: string;
+  medications: string;
+  notesForPharmacist: string;
+  status: string;
+  createdAt: string;
+  doctor?: {
+    id: string;
+    name: string;
+  };
 }
 
 interface RecentActivity {
@@ -54,6 +81,8 @@ export default function PatientDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [recordsSlideIndex, setRecordsSlideIndex] = useState(0);
+  const [prescriptionsSlideIndex, setPrescriptionsSlideIndex] = useState(0);
   const [patientStats, setPatientStats] = useState<PatientStats>({
     upcomingAppointments: 0,
     medicalRecords: 0,
@@ -61,11 +90,13 @@ export default function PatientDashboard() {
     testResults: 0,
   });
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [primaryDoctor, setPrimaryDoctor] = useState<Doctor | null>(null);
 
   useEffect(() => {
-    const fetchAppointments = async () => {
+    const fetchDashboardData = async () => {
       try {
         setLoading(true);
         setError(null);
@@ -74,14 +105,19 @@ export default function PatientDashboard() {
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(0, 0, 0, 0);
 
-        const upcomingRes = await appointmentAPI.list(1, 100, {
-          startDate: tomorrow.toISOString(),
-        });
-
-        const allRes = await appointmentAPI.list(1, 100, {});
+        const [upcomingRes, allRes, recordsRes, prescriptionsRes] = await Promise.all([
+          appointmentAPI.list(1, 100, {
+            startDate: tomorrow.toISOString(),
+          }),
+          appointmentAPI.list(1, 100, {}),
+          recordsAPI.list(1, 100, '', ''),
+          prescriptionAPI.list(1, 100, ''),
+        ]);
 
         const upcomingAppts = upcomingRes.data.appointments || [];
         const allAppts = allRes.data.appointments || [];
+        const recordsList = recordsRes.data.records || [];
+        const prescriptionsList = prescriptionsRes.data.prescriptions || [];
 
         const mapped: Appointment[] = upcomingAppts.map((apt: any) => ({
           id: apt.id,
@@ -115,23 +151,25 @@ export default function PatientDashboard() {
         }
 
         setUpcomingAppointments(mapped);
+        setMedicalRecords(recordsList);
+        setPrescriptions(prescriptionsList);
         setRecentActivities(activities);
         setPrimaryDoctor(primaryDoc);
         setPatientStats({
           upcomingAppointments: upcomingAppts.length,
-          medicalRecords: 0,
-          prescriptions: 0,
+          medicalRecords: recordsList.length,
+          prescriptions: prescriptionsList.length,
           testResults: 0,
         });
       } catch (err) {
-        console.error('Failed to fetch appointments', err);
-        setError('Failed to load appointments');
+        console.error('Failed to fetch dashboard data', err);
+        setError('Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAppointments();
+    fetchDashboardData();
   }, []);
 
   const getActivityIcon = (type: string) => {
@@ -410,16 +448,111 @@ export default function PatientDashboard() {
                   )}
 
                   {activeTab === 'records' && (
-                    <div className="text-center py-12 text-gray-400">
-                      <FileText className="mx-auto mb-4" size={48} />
-                      <p>Medical records will be displayed here</p>
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Medical Records</h3>
+                      {medicalRecords.length === 0 ? (
+                        <div className="text-center py-12 text-gray-400">
+                          <FileText className="mx-auto mb-4" size={48} />
+                          <p>No medical records found</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {medicalRecords.map((record) => (
+                            <div key={record.id} className="p-4 bg-dark-secondary rounded-lg border border-dark-tertiary hover:bg-dark-tertiary transition-colors">
+                              <div className="flex items-start justify-between mb-3">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <FileText size={18} className="text-emerald-500" />
+                                    <p className="font-semibold text-lg capitalize">{record.type}</p>
+                                  </div>
+                                  <p className="text-sm text-gray-400">{record.patientName}</p>
+                                </div>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                                  record.status === 'Active' 
+                                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                    : 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                                }`}>
+                                  {record.status}
+                                </span>
+                              </div>
+                              {record.details && (
+                                <p className="text-sm text-gray-300 mb-3">{record.details}</p>
+                              )}
+                              <div className="flex items-center justify-between text-sm text-gray-400">
+                                <div className="flex items-center gap-2">
+                                  <Calendar size={14} />
+                                  <span>{new Date(record.date || record.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                </div>
+                                <button className="flex items-center gap-2 text-emerald-500 hover:text-emerald-400 transition-colors">
+                                  <Download size={16} />
+                                  Download
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {activeTab === 'prescriptions' && (
-                    <div className="text-center py-12 text-gray-400">
-                      <FileText className="mx-auto mb-4" size={48} />
-                      <p>Prescriptions will be displayed here</p>
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Active Prescriptions</h3>
+                      {prescriptions.length === 0 ? (
+                        <div className="text-center py-12 text-gray-400">
+                          <Pill className="mx-auto mb-4" size={48} />
+                          <p>No prescriptions found</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {prescriptions.map((prescription) => (
+                            <div key={prescription.id} className="p-4 bg-dark-secondary rounded-lg border border-dark-tertiary hover:bg-dark-tertiary transition-colors">
+                              <div className="flex items-start justify-between mb-3">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Pill size={18} className="text-purple-500" />
+                                    <p className="font-semibold text-lg">{prescription.prescriptionType}</p>
+                                  </div>
+                                  {prescription.doctor && (
+                                    <p className="text-sm text-gray-400">Prescribed by Dr. {prescription.doctor.name}</p>
+                                  )}
+                                </div>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                                  prescription.status === 'Active' 
+                                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                    : prescription.status === 'Completed'
+                                    ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                    : 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                                }`}>
+                                  {prescription.status}
+                                </span>
+                              </div>
+                              {prescription.diagnosis && (
+                                <p className="text-sm mb-2"><span className="text-gray-400">Diagnosis: </span><span className="text-gray-300">{prescription.diagnosis}</span></p>
+                              )}
+                              {prescription.medications && (
+                                <div className="mb-3">
+                                  <p className="text-sm text-gray-400 mb-1">Medications:</p>
+                                  <p className="text-sm text-gray-300 bg-dark-primary rounded px-2 py-1">{prescription.medications}</p>
+                                </div>
+                              )}
+                              {prescription.notesForPharmacist && (
+                                <p className="text-xs text-gray-400 mb-3 italic">Note: {prescription.notesForPharmacist}</p>
+                              )}
+                              <div className="flex items-center justify-between text-sm text-gray-400">
+                                <div className="flex items-center gap-2">
+                                  <Calendar size={14} />
+                                  <span>{new Date(prescription.prescriptionDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                </div>
+                                <button className="flex items-center gap-2 text-purple-500 hover:text-purple-400 transition-colors">
+                                  <Download size={16} />
+                                  Print
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

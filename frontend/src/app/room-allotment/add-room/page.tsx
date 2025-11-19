@@ -4,8 +4,12 @@ import { useState } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { ChevronLeft, Check } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function AddNewRoomPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     roomNumber: '',
     roomType: '',
@@ -26,6 +30,8 @@ export default function AddNewRoomPage() {
     additionalNotes: '',
   });
 
+  const [submitting, setSubmitting] = useState(false);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -39,10 +45,34 @@ export default function AddNewRoomPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Room added successfully!');
+
+    if (!formData.roomNumber || !formData.roomType || !formData.department || !formData.floor || !formData.capacity || !formData.pricePerDay) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const response = await fetch(`${API_URL}/room-allotment/rooms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) throw new Error('Failed to create room');
+
+      alert('Room added successfully!');
+      router.push('/room-allotment/by-department');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to create room');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const departments = [
@@ -344,10 +374,11 @@ export default function AddNewRoomPage() {
             </Link>
             <button
               type="submit"
-              className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
+              disabled={submitting}
+              className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-600 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
             >
               <Check size={20} />
-              Add Room
+              {submitting ? 'Adding...' : 'Add Room'}
             </button>
           </div>
         </form>

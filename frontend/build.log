@@ -1,0 +1,21 @@
+
+> medixpro-frontend@1.0.0 build
+> next build
+
+  ▲ Next.js 14.2.33
+  - Environments: .env.local
+  - Experiments (use with caution):
+    · missingSuspenseWithCSRBailout
+
+   Creating an optimized production build ...
+   Using tsconfig file: ./tsconfig.json
+   Using tsconfig file: ./tsconfig.json
+   Using tsconfig file: ./tsconfig.json
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/77) ...
+   Generating static pages (19/77) 
+   Generating static pages (38/77) 
+   Generating static pages (57/77) 
+ ✓ Generating static pages (77/77)

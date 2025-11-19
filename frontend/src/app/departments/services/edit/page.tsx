@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { ArrowLeft } from 'lucide-react';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
 interface Department {
   id: string;
   name: string;
@@ -55,7 +57,7 @@ export default function EditServicePage() {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         }),
-        fetch('http://localhost:5000/api/departments?limit=100', {
+        fetch(`${API_URL}/departments?limit=100`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { Search, Package, ShoppingCart, DollarSign, TrendingUp, Star, Phone, Mail, MapPin, ExternalLink } from 'lucide-react';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
 interface Supplier {
   id: string;
   name: string;

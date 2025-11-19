@@ -4,6 +4,7 @@ import { useState } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { Calendar } from 'lucide-react';
 import Link from 'next/link';
+import { bloodBankAPI } from '@/lib/api';
 
 export default function IssueBloodPage() {
   const [formData, setFormData] = useState({
@@ -29,9 +30,43 @@ export default function IssueBloodPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    try {
+      const submitData = {
+        bloodType: formData.bloodType,
+        units: parseInt(formData.numberOfUnits),
+        recipient: formData.patient || 'Unknown',
+        recipientId: formData.patient || null,
+        requestingDoctor: formData.requestingDoctor || 'Unknown',
+        purpose: formData.purpose || 'Medical',
+        department: formData.department || 'General'
+      };
+
+      const response = await bloodBankAPI.createIssue(submitData);
+
+      if (response.data.success) {
+        alert('Blood issued successfully!');
+        setFormData({
+          requestType: 'patient',
+          patient: '',
+          bloodType: '',
+          numberOfUnits: '1',
+          department: '',
+          requestingDoctor: '',
+          issueDate: '',
+          emergencyRequest: false,
+          purpose: '',
+          additionalNotes: ''
+        });
+        window.location.href = '/blood-bank/issued';
+      } else {
+        alert('Error: ' + (response.data.error || 'Failed to issue blood'));
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Error issuing blood');
+    }
   };
 
   return (

@@ -1,38 +1,49 @@
 import { Router, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
+import pool from '../db';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    const where = search ? {
-      OR: [
-        { name: { contains: String(search), mode: 'insensitive' } },
-        { email: { contains: String(search), mode: 'insensitive' } },
-        { phone: { contains: String(search), mode: 'insensitive' } },
-      ],
-    } : {};
+    let query = `SELECT 
+                  p.*, 
+                  MAX(a.date) as lastVisitDate,
+                  ANY_VALUE(d.name) as doctorName
+                FROM patients p
+                LEFT JOIN appointments a ON p.id = a.patientId
+                LEFT JOIN doctors d ON a.doctorId = d.id
+                WHERE 1=1`;
+    const params: any[] = [];
 
-    const patients = await prisma.patient.findMany({
-      where,
-      skip,
-      take: Number(limit),
-      include: {
-        appointments: {
-          include: { doctor: true },
-          orderBy: { date: 'desc' },
-          take: 1,
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    if (search) {
+      query += ' AND (p.name LIKE ? OR p.email LIKE ? OR p.phone LIKE ?)';
+      const searchTerm = `%${String(search)}%`;
+      params.push(searchTerm, searchTerm, searchTerm);
+    }
 
-    const total = await prisma.patient.count({ where });
+    query += ' GROUP BY p.id';
+
+    const countParams = params.slice();
+    const countSql = `SELECT COUNT(DISTINCT p.id) as total FROM patients p
+                     WHERE 1=1`;
+    
+    const countQuery = countSql + (search ? ' AND (p.name LIKE ? OR p.email LIKE ? OR p.phone LIKE ?)' : '');
+    
+    query += ' ORDER BY p.createdAt DESC LIMIT ? OFFSET ?';
+    params.push(Number(limit), skip);
+
+    const connection = await pool.getConnection();
+    
+    const [patients]: any = await connection.query(query, params);
+    
+    const [countResult]: any = await connection.query(countQuery, countParams);
+    const total = countResult[0].total;
+    
+    connection.release();
 
     const calculateAge = (dob: Date) => {
       const today = new Date();
@@ -44,7 +55,8 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       return age;
     };
 
-    const formatDate = (date: Date) => {
+    const formatDate = (date: Date | null) => {
+      if (!date) return null;
       return new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -53,40 +65,37 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     };
 
     const enrichedPatients = patients.map((patient: any) => {
-      const lastAppointment = patient.appointments[0];
       return {
         ...patient,
         age: calculateAge(patient.dob),
         status: 'Active',
-        lastVisit: lastAppointment ? formatDate(lastAppointment.date) : 'N/A',
-        condition: patient.history || 'N/A',
-        doctor: lastAppointment?.doctor?.name || 'N/A',
+        lastVisit: patient.lastVisitDate ? formatDate(patient.lastVisitDate) : null,
+        condition: patient.history || null,
+        doctor: patient.doctorName || null,
       };
     });
 
     res.json({ patients: enrichedPatients, total, page: Number(page), limit: Number(limit) });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch patients' });
+  } catch (error: any) {
+    console.error('[PATIENTS GET] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch patients', details: error.message });
   }
 });
 
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const patient = await prisma.patient.findUnique({
-      where: { id: req.params.id },
-      include: {
-        appointments: { include: { doctor: true } },
-        invoices: true,
-      },
-    });
+    const connection = await pool.getConnection();
+    const [patients]: any = await connection.query('SELECT * FROM patients WHERE id = ?', [req.params.id]);
+    connection.release();
 
-    if (!patient) {
+    if (patients.length === 0) {
       return res.status(404).json({ error: 'Patient not found' });
     }
 
-    res.json(patient);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch patient' });
+    res.json(patients[0]);
+  } catch (error: any) {
+    console.error('[PATIENTS GET BY ID] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch patient', details: error.message });
   }
 });
 
@@ -94,53 +103,79 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { name, email, phone, dob, gender, address, history } = req.body;
 
-    const patient = await prisma.patient.create({
-      data: {
-        name,
-        email,
-        phone,
-        dob: new Date(dob),
-        gender,
-        address,
-        history,
-      },
-    });
+    const connection = await pool.getConnection();
+    
+    const query = `INSERT INTO patients (id, name, email, phone, dob, gender, address, history, createdAt, updatedAt)
+                   VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+    
+    await connection.query(query, [name, email, phone, new Date(dob), gender, address, history]);
 
-    res.status(201).json(patient);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create patient' });
+    const [patient]: any = await connection.query('SELECT * FROM patients WHERE email = ? ORDER BY createdAt DESC LIMIT 1', [email]);
+    connection.release();
+
+    res.status(201).json(patient[0]);
+  } catch (error: any) {
+    console.error('[PATIENTS POST] Error:', error);
+    res.status(500).json({ error: 'Failed to create patient', details: error.message });
   }
 });
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { name, email, phone, dob, gender, address, history } = req.body;
+    const connection = await pool.getConnection();
+    
+    const updates: string[] = [];
+    const values: any[] = [];
 
-    const patient = await prisma.patient.update({
-      where: { id: req.params.id },
-      data: {
-        name,
-        email,
-        phone,
-        dob: dob ? new Date(dob) : undefined,
-        gender,
-        address,
-        history,
-      },
-    });
+    if (name) { updates.push('name = ?'); values.push(name); }
+    if (email) { updates.push('email = ?'); values.push(email); }
+    if (phone) { updates.push('phone = ?'); values.push(phone); }
+    if (dob) { updates.push('dob = ?'); values.push(new Date(dob)); }
+    if (gender) { updates.push('gender = ?'); values.push(gender); }
+    if (address) { updates.push('address = ?'); values.push(address); }
+    if (history !== undefined) { updates.push('history = ?'); values.push(history); }
 
-    res.json(patient);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update patient' });
+    if (updates.length === 0) {
+      connection.release();
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    updates.push('updatedAt = NOW()');
+    values.push(req.params.id);
+
+    const query = `UPDATE patients SET ${updates.join(', ')} WHERE id = ?`;
+    const result = await connection.query(query, values);
+    
+    if ((result[0] as any).affectedRows === 0) {
+      connection.release();
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    const [patient]: any = await connection.query('SELECT * FROM patients WHERE id = ?', [req.params.id]);
+    connection.release();
+
+    res.json(patient[0]);
+  } catch (error: any) {
+    console.error('[PATIENTS PUT] Error:', error);
+    res.status(500).json({ error: 'Failed to update patient', details: error.message });
   }
 });
 
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    await prisma.patient.delete({ where: { id: req.params.id } });
+    const connection = await pool.getConnection();
+    const result = await connection.query('DELETE FROM patients WHERE id = ?', [req.params.id]);
+    connection.release();
+
+    if ((result[0] as any).affectedRows === 0) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
     res.json({ message: 'Patient deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete patient' });
+  } catch (error: any) {
+    console.error('[PATIENTS DELETE] Error:', error);
+    res.status(500).json({ error: 'Failed to delete patient', details: error.message });
   }
 });
 

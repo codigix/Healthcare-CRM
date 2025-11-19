@@ -128,7 +128,7 @@ export default function AdminDashboard() {
                       <DollarSign className="text-emerald-500" size={20} />
                       <p className="text-gray-400 text-sm">Total Revenue</p>
                     </div>
-                    <p className="text-3xl font-bold">${stats?.totalRevenue?.toLocaleString() || '45,231.89'}</p>
+                    <p className="text-3xl font-bold">${(typeof stats?.totalRevenue === 'number' ? stats.totalRevenue.toFixed(2) : '0.00').replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</p>
                     <p className="text-emerald-500 text-sm mt-2 flex items-center gap-1">
                       <TrendingUp size={14} />
                       +20.1% from last month
@@ -262,23 +262,127 @@ export default function AdminDashboard() {
               )}
 
               {activeTab === 'analytics' && (
-                <div className="text-center py-12 text-gray-400">
-                  <BarChart3 className="mx-auto mb-4" size={48} />
-                  <p>Analytics data will be displayed here</p>
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold">Key Performance Indicators</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="bg-dark-secondary rounded-lg p-4 border border-dark-tertiary">
+                      <p className="text-gray-400 text-sm mb-2">Appointment Completion Rate</p>
+                      <p className="text-2xl font-bold">87%</p>
+                      <p className="text-emerald-500 text-xs mt-2">+5% from last month</p>
+                    </div>
+                    <div className="bg-dark-secondary rounded-lg p-4 border border-dark-tertiary">
+                      <p className="text-gray-400 text-sm mb-2">Average Rating</p>
+                      <p className="text-2xl font-bold">4.8/5</p>
+                      <p className="text-emerald-500 text-xs mt-2">Based on 342 reviews</p>
+                    </div>
+                    <div className="bg-dark-secondary rounded-lg p-4 border border-dark-tertiary">
+                      <p className="text-gray-400 text-sm mb-2">Patient Satisfaction</p>
+                      <p className="text-2xl font-bold">92%</p>
+                      <p className="text-emerald-500 text-xs mt-2">+3% from last month</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Monthly Performance</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={revenueData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                        <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" tick={{ fontSize: 12 }} />
+                        <YAxis stroke="rgba(255,255,255,0.5)" tick={{ fontSize: 12 }} />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'rgba(30, 30, 30, 0.95)', 
+                            border: '1px solid rgba(255,255,255,0.1)', 
+                            borderRadius: '8px' 
+                          }} 
+                        />
+                        <Bar dataKey="value" fill="#10b981" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               )}
 
               {activeTab === 'reports' && (
-                <div className="text-center py-12 text-gray-400">
-                  <FileText className="mx-auto mb-4" size={48} />
-                  <p>Reports will be displayed here</p>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold mb-4">Available Reports</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-4 bg-dark-secondary rounded-lg border border-dark-tertiary hover:bg-dark-tertiary transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <FileText className="text-blue-500" size={24} />
+                        <div>
+                          <p className="font-medium">Revenue Report</p>
+                          <p className="text-sm text-gray-400">Monthly revenue summary and trends</p>
+                        </div>
+                      </div>
+                      <button className="px-4 py-2 bg-emerald-500/20 text-emerald-500 rounded hover:bg-emerald-500/30 transition-colors text-sm">
+                        Generate
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-dark-secondary rounded-lg border border-dark-tertiary hover:bg-dark-tertiary transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <FileText className="text-emerald-500" size={24} />
+                        <div>
+                          <p className="font-medium">Patient Demographics</p>
+                          <p className="text-sm text-gray-400">Patient distribution and statistics</p>
+                        </div>
+                      </div>
+                      <button className="px-4 py-2 bg-emerald-500/20 text-emerald-500 rounded hover:bg-emerald-500/30 transition-colors text-sm">
+                        Generate
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-dark-secondary rounded-lg border border-dark-tertiary hover:bg-dark-tertiary transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <FileText className="text-yellow-500" size={24} />
+                        <div>
+                          <p className="font-medium">Staff Performance</p>
+                          <p className="text-sm text-gray-400">Doctor and staff performance metrics</p>
+                        </div>
+                      </div>
+                      <button className="px-4 py-2 bg-emerald-500/20 text-emerald-500 rounded hover:bg-emerald-500/30 transition-colors text-sm">
+                        Generate
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
               {activeTab === 'notifications' && (
-                <div className="text-center py-12 text-gray-400">
-                  <Bell className="mx-auto mb-4" size={48} />
-                  <p>Notifications will be displayed here</p>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold mb-4">Recent Notifications</h3>
+                  <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                    <div className="flex items-start gap-4 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="font-medium text-blue-400">New Appointment Scheduled</p>
+                        <p className="text-sm text-gray-400 mt-1">Dr. Smith has a new appointment with John Doe scheduled for Nov 15, 2025</p>
+                        <p className="text-xs text-gray-500 mt-2">2 hours ago</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="font-medium text-emerald-400">Appointment Completed</p>
+                        <p className="text-sm text-gray-400 mt-1">Appointment with patient Sarah Johnson has been marked as completed</p>
+                        <p className="text-xs text-gray-500 mt-2">4 hours ago</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="font-medium text-yellow-400">Pending Appointment</p>
+                        <p className="text-sm text-gray-400 mt-1">There is 1 pending appointment awaiting confirmation</p>
+                        <p className="text-xs text-gray-500 mt-2">6 hours ago</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4 p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="font-medium text-purple-400">System Update</p>
+                        <p className="text-sm text-gray-400 mt-1">System maintenance scheduled for Nov 20, 2025 from 2:00 AM to 4:00 AM</p>
+                        <p className="text-xs text-gray-500 mt-2">1 day ago</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

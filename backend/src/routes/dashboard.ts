@@ -1,58 +1,67 @@
 import { Router, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
+import pool from '../db';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 router.get('/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const totalDoctors = await prisma.doctor.count();
-    const totalPatients = await prisma.patient.count();
-    const totalAppointments = await prisma.appointment.count();
-    const pendingAppointments = await prisma.appointment.count({ where: { status: 'pending' } });
-
-    const totalRevenue = await prisma.invoice.aggregate({
-      where: { status: 'paid' },
-      _sum: { amount: true },
-    });
+    const connection = await pool.getConnection();
+    const [[{ totalDoctors }]]: any = await connection.query('SELECT COUNT(*) as totalDoctors FROM doctors');
+    const [[{ totalPatients }]]: any = await connection.query('SELECT COUNT(*) as totalPatients FROM patients');
+    const [[{ totalAppointments }]]: any = await connection.query('SELECT COUNT(*) as totalAppointments FROM appointments');
+    const [[{ pendingAppointments }]]: any = await connection.query('SELECT COUNT(*) as pendingAppointments FROM appointments WHERE status = "pending"');
+    const [[{ totalRevenue }]]: any = await connection.query('SELECT COALESCE(SUM(amount), 0) as totalRevenue FROM invoices WHERE status = "paid"');
+    connection.release();
 
     res.json({
       totalDoctors,
       totalPatients,
       totalAppointments,
       pendingAppointments,
-      totalRevenue: totalRevenue._sum.amount || 0,
+      totalRevenue,
     });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch stats' });
+  } catch (error: any) {
+    console.error('[DASHBOARD STATS] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch stats', details: error.message });
   }
 });
 
 router.get('/recent-appointments', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const appointments = await prisma.appointment.findMany({
-      take: 10,
-      orderBy: { date: 'desc' },
-      include: { doctor: true, patient: true },
-    });
+    const connection = await pool.getConnection();
+    const [appointments]: any = await connection.query(`
+      SELECT 
+        a.id,
+        a.date,
+        a.status,
+        a.notes,
+        JSON_OBJECT('name', d.name) as doctor,
+        JSON_OBJECT('name', p.name) as patient
+      FROM appointments a
+      LEFT JOIN doctors d ON a.doctorId = d.id
+      LEFT JOIN patients p ON a.patientId = p.id
+      ORDER BY a.date DESC LIMIT 10
+    `);
+    connection.release();
 
     res.json(appointments);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch recent appointments' });
+  } catch (error: any) {
+    console.error('[DASHBOARD RECENT APPOINTMENTS] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch recent appointments', details: error.message });
   }
 });
 
 router.get('/revenue-chart', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const invoices = await prisma.invoice.findMany({
-      include: { patient: true },
-    });
+    const connection = await pool.getConnection();
+    const [invoices]: any = await connection.query('SELECT amount, createdAt FROM invoices');
+    connection.release();
 
     const monthlyData = new Map<string, number>();
 
     invoices.forEach((invoice: any) => {
-      const month = invoice.createdAt.toLocaleDateString('en-US', { month: 'short' });
+      const month = new Date(invoice.createdAt).toLocaleDateString('en-US', { month: 'short' });
       const current = monthlyData.get(month) || 0;
       monthlyData.set(month, current + Number(invoice.amount));
     });
@@ -60,20 +69,23 @@ router.get('/revenue-chart', authMiddleware, async (req: AuthRequest, res: Respo
     const chartData = Array.from(monthlyData, ([name, value]) => ({ name, value }));
 
     res.json(chartData);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch revenue chart' });
+  } catch (error: any) {
+    console.error('[DASHBOARD REVENUE CHART] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch revenue chart', details: error.message });
   }
 });
 
 router.get('/patient-growth', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const patients = await prisma.patient.findMany({ orderBy: { createdAt: 'asc' } });
+    const connection = await pool.getConnection();
+    const [patients]: any = await connection.query('SELECT createdAt FROM patients ORDER BY createdAt ASC');
+    connection.release();
 
     const monthlyData = new Map<string, number>();
     let cumulative = 0;
 
     patients.forEach((patient: any) => {
-      const month = patient.createdAt.toLocaleDateString('en-US', { month: 'short' });
+      const month = new Date(patient.createdAt).toLocaleDateString('en-US', { month: 'short' });
       cumulative++;
       monthlyData.set(month, cumulative);
     });
@@ -81,8 +93,9 @@ router.get('/patient-growth', authMiddleware, async (req: AuthRequest, res: Resp
     const chartData = Array.from(monthlyData, ([name, value]) => ({ name, value }));
 
     res.json(chartData);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch patient growth' });
+  } catch (error: any) {
+    console.error('[DASHBOARD PATIENT GROWTH] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch patient growth', details: error.message });
   }
 });
 
