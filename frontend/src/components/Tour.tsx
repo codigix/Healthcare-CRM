@@ -403,8 +403,14 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Ambulance module
     tour.addStep({
       id: "ambulance-module",
-      title: "Ambulance Management",
-      text: "Track ambulance calls, manage fleet availability, and coordinate emergency medical transportation services.",
+      title: "Ambulance Management - Emergency Medical Transportation",
+      text: `The Ambulance module provides comprehensive emergency transportation management with these sub-pages:
+
+• **Ambulance Call List**: View and manage all emergency ambulance calls with status tracking
+• **Ambulance List**: Manage your fleet of ambulances and their availability
+• **Ambulance Details**: Track ambulance maintenance, driver information, and equipment status
+
+Click to navigate to ambulance management and access emergency response features.`,
       attachTo: {
         element: '[data-tour="ambulance-nav"]',
         on: "right",
@@ -425,8 +431,15 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Pharmacy module
     tour.addStep({
       id: "pharmacy-module",
-      title: "Pharmacy Management",
-      text: "Manage medicine inventory, track prescriptions, and handle pharmaceutical supplies for your clinic.",
+      title: "Pharmacy Management - Complete Medicine Inventory System",
+      text: `The Pharmacy module offers comprehensive pharmaceutical management with these sub-pages:
+
+• **Medicine List**: Complete medicine inventory with stock levels and details
+• **Add Medicine**: Register new medicines with dosage, price, and expiry information
+• **Prescriptions**: Manage medicine prescriptions and dispensing to patients
+• **Medicine Templates**: Create and manage prescription templates for common treatments
+
+Click to navigate to pharmacy management and handle all pharmaceutical operations.`,
       attachTo: {
         element: '[data-tour="pharmacy-nav"]',
         on: "right",
@@ -447,8 +460,15 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Blood Bank module
     tour.addStep({
       id: "blood-bank-module",
-      title: "Blood Bank Management",
-      text: "Track blood inventory, manage donor records, handle blood requests, and monitor blood type availability.",
+      title: "Blood Bank Management - Complete Blood Supply System",
+      text: `The Blood Bank module provides comprehensive blood inventory management with these sub-pages:
+
+• **Blood Stock**: Track blood inventory by type and expiry status
+• **Blood Donors**: Manage donor database and donation history
+• **Blood Issued**: Monitor blood requests and issuance to patients
+• **Blood Records**: Maintain complete blood transfusion records and history
+
+Click to navigate to blood bank management and handle all blood-related operations.`,
       attachTo: {
         element: '[data-tour="blood-bank-nav"]',
         on: "right",
@@ -469,8 +489,15 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Departments module
     tour.addStep({
       id: "departments-module",
-      title: "Department Management",
-      text: "Organize your clinic into departments, manage services offered, and coordinate inter-departmental operations.",
+      title: "Department Management - Organize Clinic Operations",
+      text: `The Departments module enables comprehensive departmental organization with these sub-pages:
+
+• **All Departments**: View and manage all departments in your healthcare facility
+• **Add Department**: Create new departments with specialization information
+• **Department Services**: Manage services offered by each department
+• **Department Coordination**: Oversee inter-departmental operations and resources
+
+Click to navigate to departments management and coordinate your organizational structure.`,
       attachTo: {
         element: '[data-tour="departments-nav"]',
         on: "right",
@@ -491,8 +518,15 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Inventory module
     tour.addStep({
       id: "inventory-module",
-      title: "Inventory Management",
-      text: "Track medical supplies, manage stock levels, monitor suppliers, and handle procurement for your clinic.",
+      title: "Inventory Management - Complete Supply Chain System",
+      text: `The Inventory module provides comprehensive supply chain management with these sub-pages:
+
+• **Inventory List**: Track all medical supplies and equipment with stock levels
+• **Add Inventory**: Register new items with details and pricing information
+• **Suppliers**: Manage supplier information and procurement contacts
+• **Inventory Alerts**: Monitor low stock alerts and reorder requirements
+
+Click to navigate to inventory management and handle all supply operations.`,
       attachTo: {
         element: '[data-tour="inventory-nav"]',
         on: "right",
@@ -513,8 +547,15 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Staff module
     tour.addStep({
       id: "staff-module",
-      title: "Staff Management",
-      text: "Manage hospital staff, track attendance, assign roles and permissions, and coordinate workforce scheduling.",
+      title: "Staff Management - Complete Workforce Management",
+      text: `The Staff module enables comprehensive employee management with these sub-pages:
+
+• **Staff List**: View all hospital staff with roles and contact information
+• **Add Staff**: Register new staff members with complete profile details
+• **Staff Attendance**: Track daily attendance and work schedules
+• **Staff Roles**: Manage roles, permissions, and staff classifications
+
+Click to navigate to staff management and coordinate your workforce.`,
       attachTo: {
         element: '[data-tour="staff-nav"]',
         on: "right",
@@ -535,8 +576,15 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Records module
     tour.addStep({
       id: "records-module",
-      title: "Vital Records",
-      text: "Maintain birth and death records, manage certificates, and handle official documentation for your facility.",
+      title: "Vital Records - Complete Documentation System",
+      text: `The Records module provides comprehensive documentation management with these sub-pages:
+
+• **Birth Records**: Maintain birth certificates and newborn records
+• **Death Records**: Track and manage death certificates and documentation
+• **Medical Records**: Store complete medical history and patient documents
+• **Certificate Management**: Issue and manage official certificates
+
+Click to navigate to records management and handle vital documentation.`,
       attachTo: {
         element: '[data-tour="records-nav"]',
         on: "right",
@@ -557,8 +605,15 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Room Allotment module
     tour.addStep({
       id: "room-allotment-module",
-      title: "Room Allotment",
-      text: "Manage hospital rooms, assign patients to rooms, track occupancy, and coordinate room allocations by department.",
+      title: "Room Allotment - Complete Room Management System",
+      text: `The Room Allotment module enables comprehensive room management with these sub-pages:
+
+• **All Rooms**: View available rooms and their current status
+• **Add Room**: Register new rooms with specifications and capacity
+• **Allotted Rooms**: Manage patient assignments and occupancy
+• **By Department**: Organize rooms by department and specialization
+
+Click to navigate to room management and coordinate patient accommodations.`,
       attachTo: {
         element: '[data-tour="room-allotment-nav"]',
         on: "right",
@@ -579,8 +634,15 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Billing module
     tour.addStep({
       id: "billing-module",
-      title: "Billing & Invoicing",
-      text: "Create invoices, track payments, manage insurance claims, and handle all financial transactions for your clinic.",
+      title: "Billing & Invoicing - Complete Financial Management",
+      text: `The Billing module provides comprehensive financial transaction management with these sub-pages:
+
+• **All Invoices**: View and manage patient invoices and billing history
+• **Create Invoice**: Generate invoices for medical services and treatments
+• **Insurance Claims**: Track and manage insurance claim submissions
+• **Payment Tracking**: Monitor payment status and collections
+
+Click to navigate to billing management and handle all financial transactions.`,
       attachTo: {
         element: '[data-tour="billing-nav"]',
         on: "right",
@@ -601,8 +663,15 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Reports module
     tour.addStep({
       id: "reports-module",
-      title: "Reports & Analytics",
-      text: "Generate comprehensive reports on appointments, finances, patient visits, inventory, and staff performance.",
+      title: "Reports & Analytics - Complete Business Intelligence",
+      text: `The Reports module provides comprehensive analytics and reporting with these sub-pages:
+
+• **Financial Reports**: View revenue, expenses, and financial summaries
+• **Appointment Reports**: Analyze appointment trends and statistics
+• **Patient Reports**: Generate patient demographics and health statistics
+• **Staff Performance**: Track staff productivity and performance metrics
+
+Click to navigate to reports and access comprehensive business intelligence.`,
       attachTo: {
         element: '[data-tour="reports-nav"]',
         on: "right",
@@ -623,8 +692,15 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Reviews module
     tour.addStep({
       id: "reviews-module",
-      title: "Patient Reviews",
-      text: "Monitor patient feedback, track doctor ratings, and manage reviews to improve service quality.",
+      title: "Patient Reviews - Feedback Management System",
+      text: `The Reviews module enables comprehensive feedback management with these sub-pages:
+
+• **All Reviews**: View all patient and doctor reviews and ratings
+• **Doctor Reviews**: Track doctor ratings and performance feedback
+• **Service Reviews**: Monitor feedback on hospital services and facilities
+• **Review Analytics**: Analyze feedback trends to improve service quality
+
+Click to navigate to reviews management and monitor patient satisfaction.`,
       attachTo: {
         element: '[data-tour="reviews-nav"]',
         on: "right",
@@ -645,8 +721,15 @@ Click "Explore Appointments" to navigate to the appointments list and access all
     // Feedback module
     tour.addStep({
       id: "feedback-module",
-      title: "Feedback System",
-      text: "Collect and manage patient feedback, suggestions, and complaints to continuously improve your services.",
+      title: "Feedback System - Customer Experience Management",
+      text: `The Feedback module provides comprehensive feedback collection with these sub-pages:
+
+• **All Feedback**: View and manage all patient feedback submissions
+• **Collect Feedback**: Gather patient suggestions and improvement ideas
+• **Complaint Management**: Handle and track patient complaints and issues
+• **Feedback Analysis**: Analyze feedback to identify improvement opportunities
+
+Click to navigate to feedback management and improve service delivery.`,
       attachTo: {
         element: '[data-tour="feedback-nav"]',
         on: "right",
