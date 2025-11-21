@@ -391,3 +391,106 @@ body.light .divide-slate-700 > * + * {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Shepherd.js Tour Styles */
+.shepherd-theme-dark {
+  --shepherd-theme-primary: #10b981;
+  --shepherd-theme-secondary: #2d2d2d;
+  --shepherd-text-background: rgba(45, 45, 45, 0.95);
+  --shepherd-text-color: #ffffff;
+}
+
+.shepherd-theme-dark .shepherd-element {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.shepherd-theme-dark .shepherd-header {
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.shepherd-theme-dark .shepherd-title {
+  color: #000000;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.shepherd-theme-dark .shepherd-text {
+  color: #000000;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  padding: 1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 400px;
+  white-space: pre-line;
+}
+
+.shepherd-theme-dark .shepherd-element {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  max-width: 450px;
+  min-width: 300px;
+}
+
+.shepherd-theme-dark .shepherd-footer {
+  background: rgba(255, 255, 255, 0.95);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  border-radius: 0 0 8px 8px;
+}
+
+.shepherd-theme-dark .shepherd-button {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 0.5rem;
+}
+
+.shepherd-theme-dark .shepherd-button:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.shepherd-theme-dark .shepherd-button.shepherd-button-secondary {
+  background: rgba(0, 0, 0, 0.1);
+  color: #000000;
+}
+
+.shepherd-theme-dark .shepherd-button.shepherd-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.shepherd-theme-dark .shepherd-cancel-icon {
+  color: #000000;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.shepherd-theme-dark .shepherd-cancel-icon:hover {
+  opacity: 1;
+}
+
+.shepherd-theme-dark .shepherd-arrow::before {
+  border-color: rgba(255, 255, 255, 0.95);
+  border-width: 8px;
+}
+
+.shepherd-modal-overlay-container {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(2px);
+}

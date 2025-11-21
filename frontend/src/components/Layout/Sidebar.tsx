@@ -211,12 +211,12 @@ const menuItems = [
 ];
 
 const secondaryMenuItems = [
-  { icon: Settings, label: "Settings", href: "/settings" },
-  { icon: UserCheck, label: "Authentication", href: "/authentication" },
-  { icon: Calendar, label: "Calendar", href: "/calendar" },
-  { icon: CheckSquare, label: "Tasks", href: "/tasks" },
-  { icon: Users2, label: "Contacts", href: "/contacts" },
-  { icon: Mail, label: "Email", href: "/email" },
+  { icon: Settings, label: "Settings", href: "/settings", tourId: "settings-nav" },
+  { icon: UserCheck, label: "Authentication", href: "/authentication", tourId: "authentication-nav" },
+  { icon: Calendar, label: "Calendar", href: "/calendar", tourId: "calendar-nav" },
+  { icon: CheckSquare, label: "Tasks", href: "/tasks", tourId: "tasks-nav" },
+  { icon: Users2, label: "Contacts", href: "/contacts", tourId: "contacts-nav" },
+  { icon: Mail, label: "Email", href: "/email", tourId: "email-nav" },
 ];
 
 export default function Sidebar() {
@@ -270,6 +270,7 @@ export default function Sidebar() {
         className={`fixed lg:static top-0 left-0 h-screen w-64 sidebar transition-all duration-300 ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         } z-40 pt-16 lg:pt-0 flex flex-col`}
+        data-tour="sidebar"
       >
         <div className="p-6 border-b border-dark-tertiary">
           <div className="flex items-center gap-3">
@@ -298,6 +299,7 @@ export default function Sidebar() {
                           ? "bg-blue-600/10 text-blue-600"
                           : "text-gray-300 hover:bg-dark-tertiary"
                       }`}
+                      data-tour={item.label.toLowerCase().replace(' ', '-') + '-nav'}
                     >
                       <div className="flex items-center gap-3">
                         <Icon size={20} />
@@ -368,6 +370,7 @@ export default function Sidebar() {
                     ? "bg-emerald-500 text-white"
                     : "text-gray-300 hover:bg-dark-tertiary"
                 }`}
+                data-tour={item.tourId}
                 onClick={() => setIsOpen(false)}
               >
                 <Icon size={20} />

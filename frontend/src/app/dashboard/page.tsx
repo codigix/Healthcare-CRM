@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
+import Tour from '@/components/Tour';
 import { dashboardAPI } from '@/lib/api';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Users, UserCheck, Calendar, DollarSign, ArrowUp, ArrowDown } from 'lucide-react';
+import { Users, UserCheck, Calendar, DollarSign, ArrowUp, ArrowDown, HelpCircle } from 'lucide-react';
 
 interface Stats {
   totalDoctors: number;
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const [revenueData, setRevenueData] = useState([]);
   const [patientGrowth, setPatientGrowth] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showTour, setShowTour] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,9 +69,20 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-gray-400">Here's an overview of your clinic's performance.</p>
+        <div data-tour="dashboard-header">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+              <p className="text-gray-400">Here's an overview of your clinic's performance.</p>
+            </div>
+            <button
+              onClick={() => setShowTour(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            >
+              <HelpCircle size={18} />
+              Interactive Click Events Tour
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -78,7 +91,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-tour="metrics-cards">
               <div className="card card-hover">
                 <div className="flex justify-between items-start">
                   <div>
@@ -124,7 +137,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-tour="charts-section">
               <div className="card">
                 <h2 className="text-lg font-semibold mb-4">Revenue Trends</h2>
                 <ResponsiveContainer width="100%" height={300}>
@@ -184,6 +197,10 @@ export default function DashboardPage() {
           </>
         )}
       </div>
+
+      {showTour && (
+        <Tour onComplete={() => setShowTour(false)} />
+      )}
     </DashboardLayout>
   );
 }
