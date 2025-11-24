@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Upload, Loader, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { medicineAPI } from '@/lib/api';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { Upload, Loader, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { medicineAPI } from "@/lib/api";
 
 interface Medicine {
   id: string;
@@ -36,39 +36,43 @@ interface Medicine {
   status: string;
 }
 
-export default function EditMedicinePage({ params }: { params: { id: string } }) {
+export default function EditMedicinePage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('basic');
+  const [activeTab, setActiveTab] = useState("basic");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [fetchError, setFetchError] = useState('');
+  const [error, setError] = useState("");
+  const [fetchError, setFetchError] = useState("");
   const [formData, setFormData] = useState({
-    medicineName: '',
-    genericName: '',
-    category: '',
-    medicineType: '',
-    description: '',
-    medicineForm: 'tablet',
-    manufacturer: '',
-    supplier: '',
-    manufacturingDate: '',
-    expiryDate: '',
-    batchNumber: '',
-    dosage: '',
-    sideEffects: '',
-    precautions: '',
-    initialQuantity: '',
-    reorderLevel: '',
-    maximumLevel: '',
-    purchasePrice: '',
-    sellingPrice: '',
-    taxRate: '',
+    medicineName: "",
+    genericName: "",
+    category: "",
+    medicineType: "",
+    description: "",
+    medicineForm: "tablet",
+    manufacturer: "",
+    supplier: "",
+    manufacturingDate: "",
+    expiryDate: "",
+    batchNumber: "",
+    dosage: "",
+    sideEffects: "",
+    precautions: "",
+    initialQuantity: "",
+    reorderLevel: "",
+    maximumLevel: "",
+    purchasePrice: "",
+    sellingPrice: "",
+    taxRate: "",
     roomTemperature: false,
     frozen: false,
     refrigerated: false,
     protectFromLight: false,
-    activeForSale: true
+    activeForSale: true,
   });
 
   useEffect(() => {
@@ -78,10 +82,10 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
   const fetchMedicine = async () => {
     try {
       setLoading(true);
-      setFetchError('');
+      setFetchError("");
       const response = await medicineAPI.get(params.id);
       const medicine: Medicine = response.data;
-      
+
       setFormData({
         medicineName: medicine.name,
         genericName: medicine.genericName,
@@ -91,8 +95,12 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
         medicineForm: medicine.medicineForm,
         manufacturer: medicine.manufacturer,
         supplier: medicine.supplier,
-        manufacturingDate: medicine.manufacturingDate ? medicine.manufacturingDate.split('T')[0] : '',
-        expiryDate: medicine.expiryDate ? medicine.expiryDate.split('T')[0] : '',
+        manufacturingDate: medicine.manufacturingDate
+          ? medicine.manufacturingDate.split("T")[0]
+          : "",
+        expiryDate: medicine.expiryDate
+          ? medicine.expiryDate.split("T")[0]
+          : "",
         batchNumber: medicine.batchNumber,
         dosage: medicine.dosage,
         sideEffects: medicine.sideEffects,
@@ -107,38 +115,49 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
         frozen: medicine.frozen,
         refrigerated: medicine.refrigerated,
         protectFromLight: medicine.protectFromLight,
-        activeForSale: medicine.status === 'Active'
+        activeForSale: medicine.status === "Active",
       });
     } catch (err: any) {
-      setFetchError('Failed to load medicine details');
+      setFetchError("Failed to load medicine details");
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value, type } = e.target;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.medicineName || !formData.genericName || !formData.category || !formData.medicineType || !formData.purchasePrice || !formData.sellingPrice) {
-      setError('Please fill all required fields');
+
+    if (
+      !formData.medicineName ||
+      !formData.genericName ||
+      !formData.category ||
+      !formData.medicineType ||
+      !formData.purchasePrice ||
+      !formData.sellingPrice
+    ) {
+      setError("Please fill all required fields");
       return;
     }
 
     try {
       setSaving(true);
-      setError('');
-      
+      setError("");
+
       const medicineData = {
         name: formData.medicineName,
         genericName: formData.genericName,
@@ -164,13 +183,13 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
         frozen: formData.frozen,
         refrigerated: formData.refrigerated,
         protectFromLight: formData.protectFromLight,
-        status: formData.activeForSale ? 'Active' : 'Inactive',
+        status: formData.activeForSale ? "Active" : "Inactive",
       };
 
       await medicineAPI.update(params.id, medicineData);
       router.push(`/pharmacy/medicines/${params.id}`);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update medicine');
+      setError(err.response?.data?.error || "Failed to update medicine");
     } finally {
       setSaving(false);
     }
@@ -212,9 +231,7 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
             <h1 className="text-3xl font-bold mb-2">Edit Medicine</h1>
           </div>
           <Link href={`/pharmacy/medicines/${params.id}`}>
-            <button className="btn-secondary">
-              Cancel
-            </button>
+            <button className="btn-secondary">Cancel</button>
           </Link>
         </div>
 
@@ -227,31 +244,31 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
 
           <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
             <button
-              onClick={() => setActiveTab('basic')}
+              onClick={() => setActiveTab("basic")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'basic'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "basic"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Basic Information
             </button>
             <button
-              onClick={() => setActiveTab('detailed')}
+              onClick={() => setActiveTab("detailed")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'detailed'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "detailed"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Detailed Information
             </button>
             <button
-              onClick={() => setActiveTab('inventory')}
+              onClick={() => setActiveTab("inventory")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'inventory'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "inventory"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Inventory & Pricing
@@ -259,14 +276,18 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
           </div>
 
           <form onSubmit={handleSubmit}>
-            {activeTab === 'basic' && (
+            {activeTab === "basic" && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
-                <p className="text-gray-400 text-sm mb-6">Edit the basic details of the medicine</p>
+                <h2 className="text-xl font-semibold mb-4">
+                  Basic Information
+                </h2>
+                <p className="text-gray-400 text-mdmb-6">
+                  Edit the basic details of the medicine
+                </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Medicine Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -281,7 +302,7 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Generic Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -296,7 +317,7 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Category <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -310,7 +331,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                       <option value="Antibiotics">Antibiotics</option>
                       <option value="Analgesics">Analgesics</option>
                       <option value="Antidiabetics">Antidiabetics</option>
-                      <option value="Antihypertensives">Antihypertensives</option>
+                      <option value="Antihypertensives">
+                        Antihypertensives
+                      </option>
                       <option value="Antihistamines">Antihistamines</option>
                       <option value="Statins">Statins</option>
                       <option value="Anxiolytics">Anxiolytics</option>
@@ -319,7 +342,7 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Medicine Type <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -338,7 +361,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Description</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Description
+                  </label>
                   <textarea
                     name="description"
                     value={formData.description}
@@ -350,10 +375,23 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-3">Medicine Form</label>
+                  <label className="block text-mdfont-medium mb-3">
+                    Medicine Form
+                  </label>
                   <div className="flex flex-wrap gap-4">
-                    {['tablet', 'capsule', 'syrup', 'injection', 'cream/ointment', 'drops', 'other'].map((form) => (
-                      <label key={form} className="flex items-center gap-2 cursor-pointer">
+                    {[
+                      "tablet",
+                      "capsule",
+                      "syrup",
+                      "injection",
+                      "cream/ointment",
+                      "drops",
+                      "other",
+                    ].map((form) => (
+                      <label
+                        key={form}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
                         <input
                           type="radio"
                           name="medicineForm"
@@ -362,7 +400,7 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                           onChange={handleInputChange}
                           className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 focus:ring-emerald-500"
                         />
-                        <span className="text-sm capitalize">{form}</span>
+                        <span className="text-mdcapitalize">{form}</span>
                       </label>
                     ))}
                   </div>
@@ -376,7 +414,7 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </Link>
                   <button
                     type="button"
-                    onClick={() => setActiveTab('detailed')}
+                    onClick={() => setActiveTab("detailed")}
                     className="btn-primary"
                   >
                     Next
@@ -385,14 +423,20 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
               </div>
             )}
 
-            {activeTab === 'detailed' && (
+            {activeTab === "detailed" && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold mb-4">Detailed Information</h2>
-                <p className="text-gray-400 text-sm mb-6">Edit detailed specifications of the medicine</p>
+                <h2 className="text-xl font-semibold mb-4">
+                  Detailed Information
+                </h2>
+                <p className="text-gray-400 text-mdmb-6">
+                  Edit detailed specifications of the medicine
+                </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Manufacturer</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Manufacturer
+                    </label>
                     <input
                       type="text"
                       name="manufacturer"
@@ -404,7 +448,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Supplier</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Supplier
+                    </label>
                     <input
                       type="text"
                       name="supplier"
@@ -416,7 +462,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Manufacturing Date</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Manufacturing Date
+                    </label>
                     <input
                       type="date"
                       name="manufacturingDate"
@@ -427,7 +475,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Expiry Date</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Expiry Date
+                    </label>
                     <input
                       type="date"
                       name="expiryDate"
@@ -438,7 +488,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Batch Number</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Batch Number
+                    </label>
                     <input
                       type="text"
                       name="batchNumber"
@@ -450,7 +502,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Dosage</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Dosage
+                    </label>
                     <input
                       type="text"
                       name="dosage"
@@ -463,7 +517,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Side Effects</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Side Effects
+                  </label>
                   <textarea
                     name="sideEffects"
                     value={formData.sideEffects}
@@ -475,7 +531,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Precautions & Warnings</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Precautions & Warnings
+                  </label>
                   <textarea
                     name="precautions"
                     value={formData.precautions}
@@ -489,14 +547,14 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                 <div className="flex justify-end gap-3 pt-4">
                   <button
                     type="button"
-                    onClick={() => setActiveTab('basic')}
+                    onClick={() => setActiveTab("basic")}
                     className="btn-secondary"
                   >
                     Previous
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveTab('inventory')}
+                    onClick={() => setActiveTab("inventory")}
                     className="btn-primary"
                   >
                     Next
@@ -505,14 +563,18 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
               </div>
             )}
 
-            {activeTab === 'inventory' && (
+            {activeTab === "inventory" && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold mb-4">Inventory & Pricing</h2>
-                <p className="text-gray-400 text-sm mb-6">Edit inventory and pricing details</p>
+                <h2 className="text-xl font-semibold mb-4">
+                  Inventory & Pricing
+                </h2>
+                <p className="text-gray-400 text-mdmb-6">
+                  Edit inventory and pricing details
+                </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Initial Quantity <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -527,7 +589,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Reorder Level</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Reorder Level
+                    </label>
                     <input
                       type="number"
                       name="reorderLevel"
@@ -539,7 +603,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Maximum Level</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Maximum Level
+                    </label>
                     <input
                       type="number"
                       name="maximumLevel"
@@ -551,7 +617,7 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Purchase Price <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -566,7 +632,7 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Selling Price <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -581,7 +647,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Tax Rate (%)</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Tax Rate (%)
+                    </label>
                     <input
                       type="number"
                       name="taxRate"
@@ -594,7 +662,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-3">Storage Conditions</label>
+                  <label className="block text-mdfont-medium mb-3">
+                    Storage Conditions
+                  </label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -648,14 +718,16 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                       onChange={handleInputChange}
                       className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 rounded focus:ring-emerald-500"
                     />
-                    <span className="text-sm font-medium">Active (Available for sale)</span>
+                    <span className="text-mdfont-medium">
+                      Active (Available for sale)
+                    </span>
                   </label>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
                   <button
                     type="button"
-                    onClick={() => setActiveTab('detailed')}
+                    onClick={() => setActiveTab("detailed")}
                     className="btn-secondary"
                     disabled={saving}
                   >
@@ -672,7 +744,7 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
                         Saving...
                       </>
                     ) : (
-                      'Update Medicine'
+                      "Update Medicine"
                     )}
                   </button>
                 </div>
@@ -681,8 +753,9 @@ export default function EditMedicinePage({ params }: { params: { id: string } })
           </form>
 
           <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <p className="text-sm text-blue-400">
-              Fields marked with <span className="text-red-500">*</span> are required. Make sure to fill all required fields before submitting.
+            <p className="text-mdtext-blue-400">
+              Fields marked with <span className="text-red-500">*</span> are
+              required. Make sure to fill all required fields before submitting.
             </p>
           </div>
         </div>

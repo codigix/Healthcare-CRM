@@ -1,48 +1,48 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ArrowLeft, Upload } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { patientAPI } from '@/lib/api';
+import { useState } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ArrowLeft, Upload } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { patientAPI } from "@/lib/api";
 
-type TabType = 'personal' | 'medical' | 'insurance' | 'consent';
+type TabType = "personal" | "medical" | "insurance" | "consent";
 
 export default function AddPatientPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabType>('personal');
+  const [activeTab, setActiveTab] = useState<TabType>("personal");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    dateOfBirth: '',
-    gender: '',
-    maritalStatus: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    email: '',
-    phone: '',
-    alternativePhone: '',
-    preferredContactMethod: 'phone',
-    emergencyContactName: '',
-    emergencyContactRelationship: '',
-    emergencyContactPhone: '',
-    emergencyContactEmail: '',
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    dateOfBirth: "",
+    gender: "",
+    maritalStatus: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    email: "",
+    phone: "",
+    alternativePhone: "",
+    preferredContactMethod: "phone",
+    emergencyContactName: "",
+    emergencyContactRelationship: "",
+    emergencyContactPhone: "",
+    emergencyContactEmail: "",
     profilePhoto: null as File | null,
-    bloodType: '',
-    height: '',
-    weight: '',
-    allergies: '',
-    currentMedications: '',
-    chronicConditions: '',
-    pastSurgeries: '',
-    previousHospitalizations: '',
+    bloodType: "",
+    height: "",
+    weight: "",
+    allergies: "",
+    currentMedications: "",
+    chronicConditions: "",
+    pastSurgeries: "",
+    previousHospitalizations: "",
     familyMedicalHistory: {
       diabetes: false,
       hypertension: false,
@@ -51,20 +51,20 @@ export default function AddPatientPage() {
       cancer: false,
       mentalHealthConditions: false,
     },
-    additionalFamilyHistory: '',
-    smokingStatus: '',
-    alcoholConsumption: '',
-    exerciseFrequency: '',
-    dietaryHabits: '',
-    primaryInsuranceProvider: '',
-    primaryPolicyNumber: '',
-    primaryGroupNumber: '',
-    primaryPolicyHolderName: '',
-    primaryRelationshipToPatient: '',
-    primaryInsurancePhone: '',
-    secondaryInsuranceProvider: '',
-    secondaryPolicyNumber: '',
-    preferredBillingMethod: '',
+    additionalFamilyHistory: "",
+    smokingStatus: "",
+    alcoholConsumption: "",
+    exerciseFrequency: "",
+    dietaryHabits: "",
+    primaryInsuranceProvider: "",
+    primaryPolicyNumber: "",
+    primaryGroupNumber: "",
+    primaryPolicyHolderName: "",
+    primaryRelationshipToPatient: "",
+    primaryInsurancePhone: "",
+    secondaryInsuranceProvider: "",
+    secondaryPolicyNumber: "",
+    preferredBillingMethod: "",
     paymentMethods: {
       creditCard: false,
       cash: false,
@@ -81,48 +81,58 @@ export default function AddPatientPage() {
     },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value, type } = e.target;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      if (name.startsWith('familyMedicalHistory.')) {
-        const field = name.split('.')[1];
-        setFormData(prev => ({
+      if (name.startsWith("familyMedicalHistory.")) {
+        const field = name.split(".")[1];
+        setFormData((prev) => ({
           ...prev,
-          familyMedicalHistory: { ...prev.familyMedicalHistory, [field]: checked }
+          familyMedicalHistory: {
+            ...prev.familyMedicalHistory,
+            [field]: checked,
+          },
         }));
-      } else if (name.startsWith('paymentMethods.')) {
-        const field = name.split('.')[1];
-        setFormData(prev => ({
+      } else if (name.startsWith("paymentMethods.")) {
+        const field = name.split(".")[1];
+        setFormData((prev) => ({
           ...prev,
-          paymentMethods: { ...prev.paymentMethods, [field]: checked }
+          paymentMethods: { ...prev.paymentMethods, [field]: checked },
         }));
-      } else if (name.startsWith('communicationPreferences.')) {
-        const field = name.split('.')[1];
-        setFormData(prev => ({
+      } else if (name.startsWith("communicationPreferences.")) {
+        const field = name.split(".")[1];
+        setFormData((prev) => ({
           ...prev,
-          communicationPreferences: { ...prev.communicationPreferences, [field]: checked }
+          communicationPreferences: {
+            ...prev.communicationPreferences,
+            [field]: checked,
+          },
         }));
       } else {
-        setFormData(prev => ({ ...prev, [name]: checked }));
+        setFormData((prev) => ({ ...prev, [name]: checked }));
       }
-    } else if (type === 'radio') {
-      setFormData(prev => ({ ...prev, [name]: value }));
+    } else if (type === "radio") {
+      setFormData((prev) => ({ ...prev, [name]: value }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFormData(prev => ({ ...prev, profilePhoto: e.target.files![0] }));
+      setFormData((prev) => ({ ...prev, profilePhoto: e.target.files![0] }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const patientData = {
@@ -135,31 +145,36 @@ export default function AddPatientPage() {
       };
 
       await patientAPI.create(patientData);
-      router.push('/patients');
+      router.push("/patients");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to add patient');
+      setError(err.response?.data?.error || "Failed to add patient");
     } finally {
       setLoading(false);
     }
   };
 
   const tabs = [
-    { id: 'personal' as TabType, label: 'Personal Information' },
-    { id: 'medical' as TabType, label: 'Medical Information' },
-    { id: 'insurance' as TabType, label: 'Insurance & Billing' },
-    { id: 'consent' as TabType, label: 'Consent & Documents' },
+    { id: "personal" as TabType, label: "Personal Information" },
+    { id: "medical" as TabType, label: "Medical Information" },
+    { id: "insurance" as TabType, label: "Insurance & Billing" },
+    { id: "consent" as TabType, label: "Consent & Documents" },
   ];
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Link href="/patients" className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors">
+          <Link
+            href="/patients"
+            className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
+          >
             <ArrowLeft size={20} />
           </Link>
           <div>
             <h1 className="text-3xl font-bold mb-2">Add Patient</h1>
-            <p className="text-gray-400">Register a new patient in your clinic.</p>
+            <p className="text-gray-400">
+              Register a new patient in your clinic.
+            </p>
           </div>
         </div>
 
@@ -172,8 +187,8 @@ export default function AddPatientPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-6 py-3 font-medium transition-colors relative ${
                     activeTab === tab.id
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-gray-300'
+                      ? "text-white"
+                      : "text-gray-400 hover:text-gray-300"
                   }`}
                 >
                   {tab.label}
@@ -186,16 +201,20 @@ export default function AddPatientPage() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            {activeTab === 'personal' && (
+            {activeTab === "personal" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
-                  <p className="text-sm text-gray-400 mb-6">Enter the patient's personal details.</p>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Personal Information
+                  </h3>
+                  <p className="text-mdtext-gray-400 mb-6">
+                    Enter the patient's personal details.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       First Name
                     </label>
                     <input
@@ -210,7 +229,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Middle Name (Optional)
                     </label>
                     <input
@@ -224,7 +243,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Last Name
                     </label>
                     <input
@@ -239,7 +258,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Date of Birth
                     </label>
                     <input
@@ -253,7 +272,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Gender
                     </label>
                     <select
@@ -271,7 +290,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Marital Status
                     </label>
                     <select
@@ -290,7 +309,7 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Address
                   </label>
                   <textarea
@@ -305,7 +324,7 @@ export default function AddPatientPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       City
                     </label>
                     <input
@@ -319,7 +338,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       State
                     </label>
                     <input
@@ -333,7 +352,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Zip Code
                     </label>
                     <input
@@ -348,12 +367,14 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-4 mt-8">Contact Information</h3>
+                  <h3 className="text-lg font-semibold mb-4 mt-8">
+                    Contact Information
+                  </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Email
                     </label>
                     <input
@@ -368,7 +389,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Phone Number
                     </label>
                     <input
@@ -383,7 +404,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Alternative Phone (Optional)
                     </label>
                     <input
@@ -398,7 +419,7 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                  <label className="block text-mdfont-medium text-gray-300 mb-3">
                     Preferred Contact Method
                   </label>
                   <div className="flex gap-6">
@@ -407,7 +428,7 @@ export default function AddPatientPage() {
                         type="radio"
                         name="preferredContactMethod"
                         value="phone"
-                        checked={formData.preferredContactMethod === 'phone'}
+                        checked={formData.preferredContactMethod === "phone"}
                         onChange={handleChange}
                         className="w-4 h-4 text-emerald-500"
                       />
@@ -418,7 +439,7 @@ export default function AddPatientPage() {
                         type="radio"
                         name="preferredContactMethod"
                         value="email"
-                        checked={formData.preferredContactMethod === 'email'}
+                        checked={formData.preferredContactMethod === "email"}
                         onChange={handleChange}
                         className="w-4 h-4 text-emerald-500"
                       />
@@ -429,7 +450,7 @@ export default function AddPatientPage() {
                         type="radio"
                         name="preferredContactMethod"
                         value="sms"
-                        checked={formData.preferredContactMethod === 'sms'}
+                        checked={formData.preferredContactMethod === "sms"}
                         onChange={handleChange}
                         className="w-4 h-4 text-emerald-500"
                       />
@@ -439,12 +460,14 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-4 mt-8">Emergency Contact</h3>
+                  <h3 className="text-lg font-semibold mb-4 mt-8">
+                    Emergency Contact
+                  </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Contact Name
                     </label>
                     <input
@@ -458,7 +481,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Relationship
                     </label>
                     <input
@@ -472,7 +495,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Phone Number
                     </label>
                     <input
@@ -486,7 +509,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Email (Optional)
                     </label>
                     <input
@@ -501,11 +524,13 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-4 mt-8">Profile Photo</h3>
+                  <h3 className="text-lg font-semibold mb-4 mt-8">
+                    Profile Photo
+                  </h3>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Upload Photo
                   </label>
                   <div className="flex items-center gap-4">
@@ -535,16 +560,20 @@ export default function AddPatientPage() {
               </div>
             )}
 
-            {activeTab === 'medical' && (
+            {activeTab === "medical" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Medical Information</h3>
-                  <p className="text-sm text-gray-400 mb-6">Enter the patient's medical history and details.</p>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Medical Information
+                  </h3>
+                  <p className="text-mdtext-gray-400 mb-6">
+                    Enter the patient's medical history and details.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Blood Type
                     </label>
                     <select
@@ -566,7 +595,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Height (cm)
                     </label>
                     <input
@@ -580,7 +609,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Weight (kg)
                     </label>
                     <input
@@ -595,7 +624,7 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Allergies
                   </label>
                   <textarea
@@ -609,7 +638,7 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Current Medications
                   </label>
                   <textarea
@@ -623,7 +652,7 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Chronic Conditions
                   </label>
                   <textarea
@@ -637,11 +666,13 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-4 mt-8">Medical History</h3>
+                  <h3 className="text-lg font-semibold mb-4 mt-8">
+                    Medical History
+                  </h3>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Past Surgeries
                   </label>
                   <textarea
@@ -655,7 +686,7 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Previous Hospitalizations
                   </label>
                   <textarea
@@ -669,7 +700,9 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-4 mt-8">Family Medical History</h3>
+                  <h3 className="text-lg font-semibold mb-4 mt-8">
+                    Family Medical History
+                  </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -732,16 +765,20 @@ export default function AddPatientPage() {
                     <input
                       type="checkbox"
                       name="familyMedicalHistory.mentalHealthConditions"
-                      checked={formData.familyMedicalHistory.mentalHealthConditions}
+                      checked={
+                        formData.familyMedicalHistory.mentalHealthConditions
+                      }
                       onChange={handleChange}
                       className="w-4 h-4"
                     />
-                    <span className="text-gray-300">Mental Health Conditions</span>
+                    <span className="text-gray-300">
+                      Mental Health Conditions
+                    </span>
                   </label>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Additional Family History Notes
                   </label>
                   <textarea
@@ -755,12 +792,14 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-4 mt-8">Lifestyle Information</h3>
+                  <h3 className="text-lg font-semibold mb-4 mt-8">
+                    Lifestyle Information
+                  </h3>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Smoking Status
                     </label>
                     <select
@@ -777,7 +816,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Alcohol Consumption
                     </label>
                     <select
@@ -795,7 +834,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Exercise Frequency
                     </label>
                     <select
@@ -814,7 +853,7 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Dietary Habits
                   </label>
                   <textarea
@@ -829,11 +868,15 @@ export default function AddPatientPage() {
               </div>
             )}
 
-            {activeTab === 'insurance' && (
+            {activeTab === "insurance" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Insurance & Billing Information</h3>
-                  <p className="text-sm text-gray-400 mb-6">Enter the patient's insurance and payment details.</p>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Insurance & Billing Information
+                  </h3>
+                  <p className="text-mdtext-gray-400 mb-6">
+                    Enter the patient's insurance and payment details.
+                  </p>
                 </div>
 
                 <div>
@@ -842,7 +885,7 @@ export default function AddPatientPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Insurance Provider
                     </label>
                     <input
@@ -856,7 +899,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Policy Number
                     </label>
                     <input
@@ -870,7 +913,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Group Number
                     </label>
                     <input
@@ -884,7 +927,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Policy Holder Name
                     </label>
                     <input
@@ -898,7 +941,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Relationship to Patient
                     </label>
                     <select
@@ -917,7 +960,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Insurance Phone Number
                     </label>
                     <input
@@ -932,16 +975,20 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <h4 className="font-semibold mb-4 mt-8">Secondary Insurance</h4>
+                  <h4 className="font-semibold mb-4 mt-8">
+                    Secondary Insurance
+                  </h4>
                   <label className="flex items-center gap-2 mb-4">
                     <input type="checkbox" className="w-4 h-4" />
-                    <span className="text-gray-300 text-sm">Enable secondary insurance</span>
+                    <span className="text-gray-300 text-sm">
+                      Enable secondary insurance
+                    </span>
                   </label>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Insurance Provider
                     </label>
                     <input
@@ -956,7 +1003,7 @@ export default function AddPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Policy Number
                     </label>
                     <input
@@ -972,11 +1019,13 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <h4 className="font-semibold mb-4 mt-8">Billing Preferences</h4>
+                  <h4 className="font-semibold mb-4 mt-8">
+                    Billing Preferences
+                  </h4>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Preferred Billing Method
                   </label>
                   <select
@@ -993,7 +1042,7 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                  <label className="block text-mdfont-medium text-gray-300 mb-3">
                     Payment Methods
                   </label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1056,11 +1105,15 @@ export default function AddPatientPage() {
               </div>
             )}
 
-            {activeTab === 'consent' && (
+            {activeTab === "consent" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Consent & Documents</h3>
-                  <p className="text-sm text-gray-400 mb-6">Manage patient consent forms and documents.</p>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Consent & Documents
+                  </h3>
+                  <p className="text-mdtext-gray-400 mb-6">
+                    Manage patient consent forms and documents.
+                  </p>
                 </div>
 
                 <div>
@@ -1071,7 +1124,10 @@ export default function AddPatientPage() {
                   <div className="flex items-center justify-between p-4 bg-dark-tertiary rounded-lg">
                     <div>
                       <p className="font-medium">HIPAA Consent Form</p>
-                      <p className="text-sm text-gray-400">Patient consent for use and disclosure of health information</p>
+                      <p className="text-mdtext-gray-400">
+                        Patient consent for use and disclosure of health
+                        information
+                      </p>
                     </div>
                     <button className="btn-secondary">Upload</button>
                   </div>
@@ -1079,7 +1135,9 @@ export default function AddPatientPage() {
                   <div className="flex items-center justify-between p-4 bg-dark-tertiary rounded-lg">
                     <div>
                       <p className="font-medium">Treatment Consent</p>
-                      <p className="text-sm text-gray-400">Consent to receive medical treatment</p>
+                      <p className="text-mdtext-gray-400">
+                        Consent to receive medical treatment
+                      </p>
                     </div>
                     <button className="btn-secondary">Upload</button>
                   </div>
@@ -1087,18 +1145,22 @@ export default function AddPatientPage() {
                   <div className="flex items-center justify-between p-4 bg-dark-tertiary rounded-lg">
                     <div>
                       <p className="font-medium">Financial Agreement</p>
-                      <p className="text-sm text-gray-400">Agreement to pay for services</p>
+                      <p className="text-mdtext-gray-400">
+                        Agreement to pay for services
+                      </p>
                     </div>
                     <button className="btn-secondary">Upload</button>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-semibold mb-4 mt-8">Additional Documents</h4>
+                  <h4 className="font-semibold mb-4 mt-8">
+                    Additional Documents
+                  </h4>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Document Type
                   </label>
                   <select className="input-field w-full">
@@ -1111,12 +1173,15 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Upload Document
                   </label>
                   <div className="border-2 border-dashed border-dark-tertiary rounded-lg p-8 text-center">
                     <Upload size={48} className="mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-300 mb-2">Upload additional patient documents. PDF, JPG or PNG. Max 10MB.</p>
+                    <p className="text-gray-300 mb-2">
+                      Upload additional patient documents. PDF, JPG or PNG. Max
+                      10MB.
+                    </p>
                     <button type="button" className="btn-secondary mt-2">
                       Choose File
                     </button>
@@ -1124,7 +1189,9 @@ export default function AddPatientPage() {
                 </div>
 
                 <div>
-                  <h4 className="font-semibold mb-4 mt-8">Communication Preferences</h4>
+                  <h4 className="font-semibold mb-4 mt-8">
+                    Communication Preferences
+                  </h4>
                 </div>
 
                 <div className="space-y-4">
@@ -1132,44 +1199,62 @@ export default function AddPatientPage() {
                     <input
                       type="checkbox"
                       name="communicationPreferences.appointmentReminders"
-                      checked={formData.communicationPreferences.appointmentReminders}
+                      checked={
+                        formData.communicationPreferences.appointmentReminders
+                      }
                       onChange={handleChange}
                       className="w-4 h-4"
                     />
-                    <span className="text-gray-300">Receive appointment reminders</span>
+                    <span className="text-gray-300">
+                      Receive appointment reminders
+                    </span>
                   </label>
 
                   <label className="flex items-center gap-3 p-3 bg-dark-tertiary rounded-lg cursor-pointer">
                     <input
                       type="checkbox"
                       name="communicationPreferences.labResultNotifications"
-                      checked={formData.communicationPreferences.labResultNotifications}
+                      checked={
+                        formData.communicationPreferences.labResultNotifications
+                      }
                       onChange={handleChange}
                       className="w-4 h-4"
                     />
-                    <span className="text-gray-300">Receive lab result notifications</span>
+                    <span className="text-gray-300">
+                      Receive lab result notifications
+                    </span>
                   </label>
 
                   <label className="flex items-center gap-3 p-3 bg-dark-tertiary rounded-lg cursor-pointer">
                     <input
                       type="checkbox"
                       name="communicationPreferences.prescriptionNotifications"
-                      checked={formData.communicationPreferences.prescriptionNotifications}
+                      checked={
+                        formData.communicationPreferences
+                          .prescriptionNotifications
+                      }
                       onChange={handleChange}
                       className="w-4 h-4"
                     />
-                    <span className="text-gray-300">Receive prescription notifications</span>
+                    <span className="text-gray-300">
+                      Receive prescription notifications
+                    </span>
                   </label>
 
                   <label className="flex items-center gap-3 p-3 bg-dark-tertiary rounded-lg cursor-pointer">
                     <input
                       type="checkbox"
                       name="communicationPreferences.clinicNewsletterUpdates"
-                      checked={formData.communicationPreferences.clinicNewsletterUpdates}
+                      checked={
+                        formData.communicationPreferences
+                          .clinicNewsletterUpdates
+                      }
                       onChange={handleChange}
                       className="w-4 h-4"
                     />
-                    <span className="text-gray-300">Receive clinic newsletter and updates</span>
+                    <span className="text-gray-300">
+                      Receive clinic newsletter and updates
+                    </span>
                   </label>
                 </div>
               </div>
@@ -1185,12 +1270,8 @@ export default function AddPatientPage() {
               <Link href="/patients" className="btn-secondary">
                 Cancel
               </Link>
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary"
-              >
-                {loading ? 'Registering...' : 'Register Patient'}
+              <button type="submit" disabled={loading} className="btn-primary">
+                {loading ? "Registering..." : "Register Patient"}
               </button>
             </div>
           </form>

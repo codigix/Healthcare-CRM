@@ -1,19 +1,23 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { authAPI } from '@/lib/api';
-import { useAuthStore } from '@/lib/store';
-import { Save } from 'lucide-react';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { authAPI } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
+import { Save } from "lucide-react";
 
 export default function SettingsPage() {
   const { user, setUser } = useAuthStore();
-  const [formData, setFormData] = useState({ name: '', email: '' });
-  const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [formData, setFormData] = useState({ name: "", email: "" });
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('profile');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
     if (user) {
@@ -34,15 +38,15 @@ export default function SettingsPage() {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
-    setError('');
+    setMessage("");
+    setError("");
 
     try {
       const response = await authAPI.updateProfile(formData);
       setUser(response.data);
-      setMessage('Profile updated successfully!');
+      setMessage("Profile updated successfully!");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update profile');
+      setError(err.response?.data?.error || "Failed to update profile");
     } finally {
       setLoading(false);
     }
@@ -51,11 +55,11 @@ export default function SettingsPage() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
-    setError('');
+    setMessage("");
+    setError("");
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       setLoading(false);
       return;
     }
@@ -65,10 +69,14 @@ export default function SettingsPage() {
         oldPassword: passwordData.oldPassword,
         newPassword: passwordData.newPassword,
       });
-      setMessage('Password changed successfully!');
-      setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      setMessage("Password changed successfully!");
+      setPasswordData({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to change password');
+      setError(err.response?.data?.error || "Failed to change password");
     } finally {
       setLoading(false);
     }
@@ -85,41 +93,41 @@ export default function SettingsPage() {
         <div className="card">
           <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
             <button
-              onClick={() => setActiveTab('profile')}
+              onClick={() => setActiveTab("profile")}
               className={`py-3 px-4 font-medium transition-colors ${
-                activeTab === 'profile'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "profile"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Profile
             </button>
             <button
-              onClick={() => setActiveTab('security')}
+              onClick={() => setActiveTab("security")}
               className={`py-3 px-4 font-medium transition-colors ${
-                activeTab === 'security'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "security"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Security
             </button>
             <button
-              onClick={() => setActiveTab('preferences')}
+              onClick={() => setActiveTab("preferences")}
               className={`py-3 px-4 font-medium transition-colors ${
-                activeTab === 'preferences'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "preferences"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Preferences
             </button>
           </div>
 
-          {activeTab === 'profile' && (
+          {activeTab === "profile" && (
             <form onSubmit={handleUpdateProfile} className="space-y-4 max-w-md">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
                   Full Name
                 </label>
                 <input
@@ -132,7 +140,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
                   Email
                 </label>
                 <input
@@ -145,12 +153,12 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
                   Role
                 </label>
                 <input
                   type="text"
-                  value={user?.role || ''}
+                  value={user?.role || ""}
                   disabled
                   className="input-field w-full opacity-50"
                 />
@@ -168,17 +176,24 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <button type="submit" disabled={loading} className="btn-primary flex items-center gap-2 w-full">
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary flex items-center gap-2 w-full"
+              >
                 <Save size={20} />
-                {loading ? 'Saving...' : 'Save Changes'}
+                {loading ? "Saving..." : "Save Changes"}
               </button>
             </form>
           )}
 
-          {activeTab === 'security' && (
-            <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+          {activeTab === "security" && (
+            <form
+              onSubmit={handleChangePassword}
+              className="space-y-4 max-w-md"
+            >
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
                   Current Password
                 </label>
                 <input
@@ -193,7 +208,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
                   New Password
                 </label>
                 <input
@@ -208,7 +223,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
                   Confirm Password
                 </label>
                 <input
@@ -234,18 +249,24 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <button type="submit" disabled={loading} className="btn-primary w-full">
-                {loading ? 'Updating...' : 'Update Password'}
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary w-full"
+              >
+                {loading ? "Updating..." : "Update Password"}
               </button>
             </form>
           )}
 
-          {activeTab === 'preferences' && (
+          {activeTab === "preferences" && (
             <div className="space-y-4 max-w-md">
               <div className="flex items-center justify-between p-4 bg-dark-tertiary rounded-lg">
                 <div>
                   <p className="font-medium">Email Notifications</p>
-                  <p className="text-sm text-gray-400">Receive appointment reminders</p>
+                  <p className="text-mdtext-gray-400">
+                    Receive appointment reminders
+                  </p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5" />
               </div>
@@ -253,7 +274,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between p-4 bg-dark-tertiary rounded-lg">
                 <div>
                   <p className="font-medium">Dark Mode</p>
-                  <p className="text-sm text-gray-400">Always enabled</p>
+                  <p className="text-mdtext-gray-400">Always enabled</p>
                 </div>
                 <input type="checkbox" checked disabled className="w-5 h-5" />
               </div>
@@ -261,7 +282,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between p-4 bg-dark-tertiary rounded-lg">
                 <div>
                   <p className="font-medium">Two-Factor Authentication</p>
-                  <p className="text-sm text-gray-400">Enhanced security</p>
+                  <p className="text-mdtext-gray-400">Enhanced security</p>
                 </div>
                 <input type="checkbox" className="w-5 h-5" />
               </div>

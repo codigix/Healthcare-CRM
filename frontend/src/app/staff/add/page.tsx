@@ -1,52 +1,56 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ArrowLeft, Save, Upload } from 'lucide-react';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ArrowLeft, Save, Upload } from "lucide-react";
+import Link from "next/link";
 
 export default function AddStaffPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('personal');
+  const [activeTab, setActiveTab] = useState("personal");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    dateOfBirth: '',
-    gender: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    postalCode: '',
-    country: '',
-    emergencyContact: '',
-    emergencyPhone: '',
-    relationship: '',
-    role: '',
-    department: '',
-    status: 'Active',
+    firstName: "",
+    lastName: "",
+    dateOfBirth: "",
+    gender: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    postalCode: "",
+    country: "",
+    emergencyContact: "",
+    emergencyPhone: "",
+    relationship: "",
+    role: "",
+    department: "",
+    status: "Active",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/staff`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(formData),
       });
@@ -54,14 +58,14 @@ export default function AddStaffPage() {
       if (response.ok) {
         setSuccess(true);
         setTimeout(() => {
-          router.push('/staff');
+          router.push("/staff");
         }, 1500);
       } else {
         const data = await response.json();
-        setError(data.error || 'Failed to add staff member');
+        setError(data.error || "Failed to add staff member");
       }
     } catch (err) {
-      setError('Failed to add staff member');
+      setError("Failed to add staff member");
       console.error(err);
     } finally {
       setLoading(false);
@@ -72,7 +76,10 @@ export default function AddStaffPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Link href="/staff" className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors">
+          <Link
+            href="/staff"
+            className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
+          >
             <ArrowLeft size={24} />
           </Link>
           <div>
@@ -84,41 +91,41 @@ export default function AddStaffPage() {
         <div className="card">
           <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
             <button
-              onClick={() => setActiveTab('personal')}
+              onClick={() => setActiveTab("personal")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'personal'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "personal"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Personal Info
             </button>
             <button
-              onClick={() => setActiveTab('professional')}
+              onClick={() => setActiveTab("professional")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'professional'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "professional"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Professional
             </button>
             <button
-              onClick={() => setActiveTab('employment')}
+              onClick={() => setActiveTab("employment")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'employment'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "employment"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Employment
             </button>
             <button
-              onClick={() => setActiveTab('access')}
+              onClick={() => setActiveTab("access")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'access'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "access"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Access & Roles
@@ -126,27 +133,38 @@ export default function AddStaffPage() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            {activeTab === 'personal' && (
+            {activeTab === "personal" && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
-                  <p className="text-gray-400 text-sm mb-6">Enter the staff member&apos;s basic personal information</p>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Personal Information
+                  </h2>
+                  <p className="text-gray-400 text-mdmb-6">
+                    Enter the staff member&apos;s basic personal information
+                  </p>
 
                   <div className="flex justify-center mb-6">
                     <div className="relative">
                       <div className="w-32 h-32 bg-dark-tertiary rounded-full flex items-center justify-center">
                         <Upload className="text-gray-400" size={32} />
                       </div>
-                      <button type="button" className="absolute bottom-0 right-0 bg-emerald-500 text-white p-2 rounded-full hover:bg-emerald-600 transition-colors">
+                      <button
+                        type="button"
+                        className="absolute bottom-0 right-0 bg-emerald-500 text-white p-2 rounded-full hover:bg-emerald-600 transition-colors"
+                      >
                         <Upload size={16} />
                       </button>
-                      <p className="text-center text-sm text-gray-400 mt-2">Upload photo</p>
+                      <p className="text-center text-mdtext-gray-400 mt-2">
+                        Upload photo
+                      </p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium mb-2">First Name</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        First Name
+                      </label>
                       <input
                         type="text"
                         name="firstName"
@@ -159,7 +177,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Last Name</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Last Name
+                      </label>
                       <input
                         type="text"
                         name="lastName"
@@ -172,7 +192,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Date of Birth</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Date of Birth
+                      </label>
                       <input
                         type="date"
                         name="dateOfBirth"
@@ -184,7 +206,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Gender</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Gender
+                      </label>
                       <select
                         name="gender"
                         value={formData.gender}
@@ -200,7 +224,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Email Address</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Email Address
+                      </label>
                       <input
                         type="email"
                         name="email"
@@ -213,7 +239,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Phone Number</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Phone Number
+                      </label>
                       <input
                         type="tel"
                         name="phone"
@@ -226,7 +254,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium mb-2">Address</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Address
+                      </label>
                       <input
                         type="text"
                         name="address"
@@ -238,7 +268,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">City</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        City
+                      </label>
                       <input
                         type="text"
                         name="city"
@@ -250,7 +282,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">State/Province</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        State/Province
+                      </label>
                       <input
                         type="text"
                         name="state"
@@ -260,7 +294,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Postal Code</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Postal Code
+                      </label>
                       <input
                         type="text"
                         name="postalCode"
@@ -272,7 +308,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Country</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Country
+                      </label>
                       <select
                         name="country"
                         value={formData.country}
@@ -290,10 +328,14 @@ export default function AddStaffPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Emergency Contact</h3>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Emergency Contact
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Contact name</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Contact name
+                      </label>
                       <input
                         type="text"
                         name="emergencyContact"
@@ -305,7 +347,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Contact phone</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Contact phone
+                      </label>
                       <input
                         type="tel"
                         name="emergencyPhone"
@@ -317,7 +361,9 @@ export default function AddStaffPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Relationship</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Relationship
+                      </label>
                       <input
                         type="text"
                         name="relationship"
@@ -332,14 +378,20 @@ export default function AddStaffPage() {
               </div>
             )}
 
-            {activeTab === 'professional' && (
+            {activeTab === "professional" && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Professional Information</h2>
-                  <p className="text-gray-400 text-sm mb-6">Enter professional qualifications and experience</p>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Professional Information
+                  </h2>
+                  <p className="text-gray-400 text-mdmb-6">
+                    Enter professional qualifications and experience
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Role</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Role
+                      </label>
                       <input
                         type="text"
                         name="role"
@@ -351,7 +403,9 @@ export default function AddStaffPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">Department</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Department
+                      </label>
                       <select
                         name="department"
                         value={formData.department}
@@ -375,14 +429,20 @@ export default function AddStaffPage() {
               </div>
             )}
 
-            {activeTab === 'employment' && (
+            {activeTab === "employment" && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Employment Details</h2>
-                  <p className="text-gray-400 text-sm mb-6">Configure employment details</p>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Employment Details
+                  </h2>
+                  <p className="text-gray-400 text-mdmb-6">
+                    Configure employment details
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Status</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Status
+                      </label>
                       <select
                         name="status"
                         value={formData.status}
@@ -399,11 +459,13 @@ export default function AddStaffPage() {
               </div>
             )}
 
-            {activeTab === 'access' && (
+            {activeTab === "access" && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-4">Access & Roles</h2>
-                  <p className="text-gray-400 text-sm mb-6">Set user access and permissions</p>
+                  <p className="text-gray-400 text-mdmb-6">
+                    Set user access and permissions
+                  </p>
                   <div className="p-4 bg-dark-tertiary/30 rounded-lg text-gray-400">
                     Access control configuration will be set up in the future.
                   </div>
@@ -433,7 +495,7 @@ export default function AddStaffPage() {
                 className="btn-primary flex items-center gap-2 disabled:opacity-50"
               >
                 <Save size={18} />
-                {loading ? 'Saving...' : 'Save & Continue'}
+                {loading ? "Saving..." : "Save & Continue"}
               </button>
             </div>
           </form>

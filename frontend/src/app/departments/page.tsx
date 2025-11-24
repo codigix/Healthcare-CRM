@@ -1,10 +1,20 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Search, Building2, Users, Stethoscope, MoreVertical, Edit, Trash2, Plus, Eye } from 'lucide-react';
-import Link from 'next/link';
-import { departmentAPI } from '@/lib/api';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import {
+  Search,
+  Building2,
+  Users,
+  Stethoscope,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Plus,
+  Eye,
+} from "lucide-react";
+import Link from "next/link";
+import { departmentAPI } from "@/lib/api";
 
 interface Department {
   id: string;
@@ -12,7 +22,7 @@ interface Department {
   head: string;
   staffCount: number;
   services: number;
-  status: 'Active' | 'Inactive';
+  status: "Active" | "Inactive";
   location: string;
 }
 
@@ -24,9 +34,9 @@ interface Statistics {
 }
 
 export default function DepartmentsPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -40,12 +50,12 @@ export default function DepartmentsPage() {
     totalServices: 0,
   });
   const [editForm, setEditForm] = useState({
-    name: '',
-    head: '',
-    location: '',
+    name: "",
+    head: "",
+    location: "",
     staffCount: 0,
     services: 0,
-    status: 'Active' as 'Active' | 'Inactive',
+    status: "Active" as "Active" | "Inactive",
   });
 
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -63,7 +73,7 @@ export default function DepartmentsPage() {
         setStatistics(statsRes.data);
         setError(null);
       } catch (err) {
-        setError('Failed to fetch departments');
+        setError("Failed to fetch departments");
         console.error(err);
       } finally {
         setLoading(false);
@@ -75,12 +85,12 @@ export default function DepartmentsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active':
-        return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20';
-      case 'Inactive':
-        return 'bg-gray-500/10 text-gray-400 border border-gray-500/20';
+      case "Active":
+        return "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+      case "Inactive":
+        return "bg-gray-500/10 text-gray-400 border border-gray-500/20";
       default:
-        return 'bg-gray-500/10 text-gray-400 border border-gray-500/20';
+        return "bg-gray-500/10 text-gray-400 border border-gray-500/20";
     }
   };
 
@@ -118,31 +128,34 @@ export default function DepartmentsPage() {
         setDepartments(deptRes.data.departments || []);
         setEditingId(null);
       } catch (err) {
-        console.error('Failed to update department', err);
+        console.error("Failed to update department", err);
       }
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this department?')) {
+    if (confirm("Are you sure you want to delete this department?")) {
       try {
         await departmentAPI.delete(id);
-        setDepartments(prev => prev.filter(dept => dept.id !== id));
+        setDepartments((prev) => prev.filter((dept) => dept.id !== id));
         setOpenMenuId(null);
       } catch (err) {
-        console.error('Failed to delete department', err);
+        console.error("Failed to delete department", err);
       }
     }
   };
 
-  const filteredDepartments = departments.filter(dept => {
-    const matchesSearch = dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         dept.head.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         dept.id.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || dept.status === statusFilter;
-    const matchesTab = activeTab === 'all' || 
-                      (activeTab === 'active' && dept.status === 'Active') ||
-                      (activeTab === 'inactive' && dept.status === 'Inactive');
+  const filteredDepartments = departments.filter((dept) => {
+    const matchesSearch =
+      dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dept.head.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dept.id.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || dept.status === statusFilter;
+    const matchesTab =
+      activeTab === "all" ||
+      (activeTab === "active" && dept.status === "Active") ||
+      (activeTab === "inactive" && dept.status === "Inactive");
     return matchesSearch && matchesStatus && matchesTab;
   });
 
@@ -152,7 +165,9 @@ export default function DepartmentsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold mb-2">Departments</h1>
-            <p className="text-gray-400">Manage your clinic's departments and staff assignments</p>
+            <p className="text-gray-400">
+              Manage your clinic's departments and staff assignments
+            </p>
           </div>
           <div className="flex gap-3">
             <Link href="/departments/add" className="btn-primary">
@@ -177,9 +192,13 @@ export default function DepartmentsPage() {
                   <Building2 className="text-blue-500" size={24} />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{statistics.totalDepartments}</div>
-                  <div className="text-sm text-gray-400">Total Departments</div>
-                  <div className="text-xs text-blue-500">{statistics.activeDepartments} active</div>
+                  <div className="text-2xl font-bold">
+                    {statistics.totalDepartments}
+                  </div>
+                  <div className="text-mdtext-gray-400">Total Departments</div>
+                  <div className="text-xs text-blue-500">
+                    {statistics.activeDepartments} active
+                  </div>
                 </div>
               </div>
             </div>
@@ -190,9 +209,13 @@ export default function DepartmentsPage() {
                   <Users className="text-emerald-500" size={24} />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{statistics.totalStaff}</div>
-                  <div className="text-sm text-gray-400">Total Staff</div>
-                  <div className="text-xs text-emerald-500">Across all departments</div>
+                  <div className="text-2xl font-bold">
+                    {statistics.totalStaff}
+                  </div>
+                  <div className="text-mdtext-gray-400">Total Staff</div>
+                  <div className="text-xs text-emerald-500">
+                    Across all departments
+                  </div>
                 </div>
               </div>
             </div>
@@ -203,9 +226,13 @@ export default function DepartmentsPage() {
                   <Stethoscope className="text-purple-500" size={24} />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{statistics.totalServices}</div>
-                  <div className="text-sm text-gray-400">Services Offered</div>
-                  <div className="text-xs text-purple-500">Total available services</div>
+                  <div className="text-2xl font-bold">
+                    {statistics.totalServices}
+                  </div>
+                  <div className="text-mdtext-gray-400">Services Offered</div>
+                  <div className="text-xs text-purple-500">
+                    Total available services
+                  </div>
                 </div>
               </div>
             </div>
@@ -214,7 +241,9 @@ export default function DepartmentsPage() {
 
         <div className="card">
           <h2 className="text-xl font-semibold mb-6">Department List</h2>
-          <p className="text-gray-400 text-sm mb-6">View and manage all departments in your clinic</p>
+          <p className="text-gray-400 text-mdmb-6">
+            View and manage all departments in your clinic
+          </p>
 
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-dark-tertiary">
             <Search size={20} className="text-gray-400" />
@@ -229,31 +258,31 @@ export default function DepartmentsPage() {
 
           <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
             <button
-              onClick={() => setActiveTab('all')}
+              onClick={() => setActiveTab("all")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'all'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "all"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               All Departments
             </button>
             <button
-              onClick={() => setActiveTab('active')}
+              onClick={() => setActiveTab("active")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'active'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "active"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Active
             </button>
             <button
-              onClick={() => setActiveTab('inactive')}
+              onClick={() => setActiveTab("inactive")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'inactive'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "inactive"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Inactive
@@ -270,7 +299,10 @@ export default function DepartmentsPage() {
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
             </select>
-            <Link href="/departments/add" className="btn-primary ml-auto flex items-center gap-2">
+            <Link
+              href="/departments/add"
+              className="btn-primary ml-auto flex items-center gap-2"
+            >
               <Plus size={20} />
               Add Department
             </Link>
@@ -281,36 +313,63 @@ export default function DepartmentsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-dark-tertiary">
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Department Name</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Head of Department</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Staff Count</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Services</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Status</th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>
+                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                    Department Name
+                  </th>
+                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                    Head of Department
+                  </th>
+                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                    Staff Count
+                  </th>
+                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                    Services
+                  </th>
+                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                    Status
+                  </th>
+                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredDepartments.map((dept) => (
-                  <tr key={dept.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
+                  <tr
+                    key={dept.id}
+                    className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
+                  >
                     <td className="py-4 px-4">
                       <div className="font-medium text-white">{dept.name}</div>
-                      <div className="text-sm text-gray-400">{dept.location}</div>
+                      <div className="text-mdtext-gray-400">
+                        {dept.location}
+                      </div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="text-white">{dept.head}</div>
-                      <div className="text-sm text-gray-400">{dept.id}</div>
+                      <div className="text-mdtext-gray-400">{dept.id}</div>
                     </td>
-                    <td className="py-4 px-4 text-gray-300">{dept.staffCount}</td>
+                    <td className="py-4 px-4 text-gray-300">
+                      {dept.staffCount}
+                    </td>
                     <td className="py-4 px-4 text-gray-300">{dept.services}</td>
                     <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(dept.status)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          dept.status
+                        )}`}
+                      >
                         {dept.status}
                       </span>
                     </td>
                     <td className="py-4 px-4 relative">
                       <div className="flex items-center justify-center">
                         <button
-                          onClick={() => setOpenMenuId(openMenuId === dept.id ? null : dept.id)}
+                          onClick={() =>
+                            setOpenMenuId(
+                              openMenuId === dept.id ? null : dept.id
+                            )
+                          }
                           className="p-2 hover:bg-dark-tertiary rounded transition-colors"
                         >
                           <MoreVertical size={18} className="text-gray-400" />
@@ -353,40 +412,70 @@ export default function DepartmentsPage() {
         {viewingId && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-              {departments.find(d => d.id === viewingId) && (
+              {departments.find((d) => d.id === viewingId) && (
                 <>
-                  <h3 className="text-xl font-semibold mb-6">{departments.find(d => d.id === viewingId)?.name}</h3>
+                  <h3 className="text-xl font-semibold mb-6">
+                    {departments.find((d) => d.id === viewingId)?.name}
+                  </h3>
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Department ID</label>
+                      <label className="block text-mdfont-medium text-gray-300 mb-1">
+                        Department ID
+                      </label>
                       <p className="text-gray-400">{viewingId}</p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Head of Department</label>
-                      <p className="text-gray-400">{departments.find(d => d.id === viewingId)?.head}</p>
+                      <label className="block text-mdfont-medium text-gray-300 mb-1">
+                        Head of Department
+                      </label>
+                      <p className="text-gray-400">
+                        {departments.find((d) => d.id === viewingId)?.head}
+                      </p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Location</label>
-                      <p className="text-gray-400">{departments.find(d => d.id === viewingId)?.location}</p>
+                      <label className="block text-mdfont-medium text-gray-300 mb-1">
+                        Location
+                      </label>
+                      <p className="text-gray-400">
+                        {departments.find((d) => d.id === viewingId)?.location}
+                      </p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Staff Count</label>
-                      <p className="text-gray-400">{departments.find(d => d.id === viewingId)?.staffCount}</p>
+                      <label className="block text-mdfont-medium text-gray-300 mb-1">
+                        Staff Count
+                      </label>
+                      <p className="text-gray-400">
+                        {
+                          departments.find((d) => d.id === viewingId)
+                            ?.staffCount
+                        }
+                      </p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Services Offered</label>
-                      <p className="text-gray-400">{departments.find(d => d.id === viewingId)?.services}</p>
+                      <label className="block text-mdfont-medium text-gray-300 mb-1">
+                        Services Offered
+                      </label>
+                      <p className="text-gray-400">
+                        {departments.find((d) => d.id === viewingId)?.services}
+                      </p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Status</label>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(departments.find(d => d.id === viewingId)?.status || 'Active')}`}>
-                        {departments.find(d => d.id === viewingId)?.status}
+                      <label className="block text-mdfont-medium text-gray-300 mb-1">
+                        Status
+                      </label>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          departments.find((d) => d.id === viewingId)?.status ||
+                            "Active"
+                        )}`}
+                      >
+                        {departments.find((d) => d.id === viewingId)?.status}
                       </span>
                     </div>
                   </div>
@@ -412,65 +501,101 @@ export default function DepartmentsPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Department Name</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Department Name
+                  </label>
                   <input
                     type="text"
                     value={editForm.name}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({ ...prev, name: e.target.value }))
+                    }
                     className="input-field w-full"
                     placeholder="Department name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Head of Department</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Head of Department
+                  </label>
                   <input
                     type="text"
                     value={editForm.head}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, head: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({ ...prev, head: e.target.value }))
+                    }
                     className="input-field w-full"
                     placeholder="Doctor name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Location</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Location
+                  </label>
                   <input
                     type="text"
                     value={editForm.location}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        location: e.target.value,
+                      }))
+                    }
                     className="input-field w-full"
                     placeholder="Location"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Staff Count</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Staff Count
+                  </label>
                   <input
                     type="number"
                     value={editForm.staffCount}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, staffCount: parseInt(e.target.value) || 0 }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        staffCount: parseInt(e.target.value) || 0,
+                      }))
+                    }
                     className="input-field w-full"
                     placeholder="0"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Services Offered</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Services Offered
+                  </label>
                   <input
                     type="number"
                     value={editForm.services}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, services: parseInt(e.target.value) || 0 }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        services: parseInt(e.target.value) || 0,
+                      }))
+                    }
                     className="input-field w-full"
                     placeholder="0"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Status
+                  </label>
                   <select
                     value={editForm.status}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value as 'Active' | 'Inactive' }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        status: e.target.value as "Active" | "Inactive",
+                      }))
+                    }
                     className="input-field w-full"
                   >
                     <option value="Active">Active</option>
@@ -480,10 +605,7 @@ export default function DepartmentsPage() {
               </div>
 
               <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleSaveEdit}
-                  className="flex-1 btn-primary"
-                >
+                <button onClick={handleSaveEdit} className="flex-1 btn-primary">
                   Save
                 </button>
                 <button

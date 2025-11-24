@@ -28,35 +28,35 @@ export default function Tour({ onComplete }: TourProps) {
     tour.steps = [];
 
     // Add steps based on current page
-    if (pathname === '/dashboard') {
+    if (pathname === "/dashboard") {
       addDashboardSteps(tour);
-    } else if (pathname === '/doctors') {
+    } else if (pathname === "/doctors") {
       addDoctorsPageSteps(tour);
-    } else if (pathname === '/patients') {
+    } else if (pathname === "/patients") {
       addPatientsPageSteps(tour);
-    } else if (pathname === '/appointments') {
+    } else if (pathname === "/appointments") {
       addAppointmentsPageSteps(tour);
-    } else if (pathname.startsWith('/blood-bank')) {
+    } else if (pathname.startsWith("/blood-bank")) {
       addBloodBankPageSteps(tour, pathname);
-    } else if (pathname.startsWith('/billing')) {
+    } else if (pathname.startsWith("/billing")) {
       addBillingPageSteps(tour, pathname);
-    } else if (pathname.startsWith('/inventory')) {
+    } else if (pathname.startsWith("/inventory")) {
       addInventoryPageSteps(tour, pathname);
-    } else if (pathname.startsWith('/staff')) {
+    } else if (pathname.startsWith("/staff")) {
       addStaffPageSteps(tour, pathname);
-    } else if (pathname.startsWith('/pharmacy')) {
+    } else if (pathname.startsWith("/pharmacy")) {
       addPharmacyPageSteps(tour, pathname);
-    } else if (pathname === '/departments') {
+    } else if (pathname === "/departments") {
       addDepartmentsPageSteps(tour);
-    } else if (pathname.startsWith('/records')) {
+    } else if (pathname.startsWith("/records")) {
       addRecordsPageSteps(tour, pathname);
-    } else if (pathname.startsWith('/reports')) {
+    } else if (pathname.startsWith("/reports")) {
       addReportsPageSteps(tour, pathname);
-    } else if (pathname.startsWith('/reviews')) {
+    } else if (pathname.startsWith("/reviews")) {
       addReviewsPageSteps(tour, pathname);
-    } else if (pathname.startsWith('/room-allotment')) {
+    } else if (pathname.startsWith("/room-allotment")) {
       addRoomAllotmentPageSteps(tour, pathname);
-    } else if (pathname.startsWith('/prescriptions')) {
+    } else if (pathname.startsWith("/prescriptions")) {
       addPrescriptionsPageSteps(tour, pathname);
     } else {
       // Default to dashboard steps if on unknown page
@@ -75,23 +75,137 @@ export default function Tour({ onComplete }: TourProps) {
   }, [pathname, onComplete]);
 
   const addDashboardSteps = (tour: Shepherd.Tour) => {
-
     // Welcome step
     tour.addStep({
       id: "welcome",
-      title: "Welcome to MedixPro!",
-      text: "Welcome to your comprehensive healthcare management system. This interactive tour will demonstrate EVERY click event and user interaction. Let's explore what happens when you click on different elements!",
-      buttons: [
-        {
-          text: "Skip Tour",
-          action: tour.cancel,
-          classes: "shepherd-button-secondary",
+      title: "",
+      text: "",
+      canClickTarget: false,
+      buttons: [],
+      when: {
+        show: function () {
+          const tourElement = document.querySelector(".shepherd-element");
+          if (tourElement) {
+            tourElement.innerHTML = `
+              <div style="background: white; border-radius: 16px; padding: 48px; max-width: 600px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1);">
+                <div style="margin-bottom: 40px;">
+                  <svg width="180" height="200" viewBox="0 0 180 200" style="margin: 0 auto; display: block;">
+                    <!-- Background circle -->
+                    <circle cx="90" cy="70" r="65" fill="#D6EAF8" opacity="0.8"/>
+                    
+                    <!-- Head -->
+                    <circle cx="90" cy="55" r="28" fill="#DDB892"/>
+                    
+                    <!-- Hair -->
+                    <path d="M 62 55 Q 62 25 90 20 Q 118 25 118 55 Z" fill="#1A1A2E"/>
+                    
+                    <!-- Ears -->
+                    <ellipse cx="62" cy="55" rx="6" ry="14" fill="#DDB892"/>
+                    <ellipse cx="118" cy="55" rx="6" ry="14" fill="#DDB892"/>
+                    
+                    <!-- Face details -->
+                    <!-- Left eye white -->
+                    <circle cx="78" cy="48" r="6" fill="white"/>
+                    <!-- Right eye white -->
+                    <circle cx="102" cy="48" r="6" fill="white"/>
+                    
+                    <!-- Glasses frames -->
+                    <circle cx="78" cy="48" r="8" fill="none" stroke="#333333" stroke-width="2"/>
+                    <circle cx="102" cy="48" r="8" fill="none" stroke="#333333" stroke-width="2"/>
+                    <line x1="86" y1="48" x2="94" y2="48" stroke="#333333" stroke-width="2"/>
+                    <line x1="110" y1="48" x2="116" y2="44" stroke="#333333" stroke-width="1.5"/>
+                    
+                    <!-- Pupils -->
+                    <circle cx="78" cy="49" r="3.5" fill="#1A1A2E"/>
+                    <circle cx="102" cy="49" r="3.5" fill="#1A1A2E"/>
+                    
+                    <!-- Nose -->
+                    <line x1="90" y1="48" x2="90" y2="62" stroke="#C9A876" stroke-width="1.5"/>
+                    <circle cx="87" cy="62" r="2" fill="#C9A876"/>
+                    <circle cx="93" cy="62" r="2" fill="#C9A876"/>
+                    
+                    <!-- Mouth smile -->
+                    <path d="M 78 68 Q 90 75 102 68" stroke="#8B6F47" stroke-width="1.5" fill="none"/>
+                    
+                    <!-- Neck -->
+                    <rect x="82" y="82" width="16" height="12" fill="#DDB892"/>
+                    
+                    <!-- Shirt/White coat -->
+                    <path d="M 55 94 L 55 160 Q 55 170 65 170 L 115 170 Q 125 170 125 160 L 125 94 Z" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+                    
+                    <!-- Coat lapels -->
+                    <polygon points="90,94 70,130 90,140" fill="#F5F5F5"/>
+                    <polygon points="90,94 110,130 90,140" fill="#F5F5F5"/>
+                    
+                    <!-- Blue tie -->
+                    <rect x="85" y="94" width="10" height="35" fill="#1E40AF" rx="2"/>
+                    <polygon points="85,94 80,110 90,115" fill="#0D2C6B"/>
+                    <polygon points="95,94 100,110 90,115" fill="#0D2C6B"/>
+                    
+                    <!-- Stethoscope - left side -->
+                    <circle cx="65" cy="110" r="8" fill="none" stroke="#555555" stroke-width="3"/>
+                    <path d="M 65 118 Q 50 130 45 155" fill="none" stroke="#555555" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="45" cy="155" r="4" fill="#666666"/>
+                    
+                    <!-- Stethoscope - right side -->
+                    <circle cx="65" cy="110" r="8" fill="none" stroke="#555555" stroke-width="3"/>
+                    <path d="M 65 118 Q 70 135 75 160" fill="none" stroke="#555555" stroke-width="2.5" stroke-linecap="round"/>
+                    <circle cx="75" cy="160" r="4" fill="#666666"/>
+                    
+                    <!-- Stethoscope earpieces -->
+                    <path d="M 55 90 Q 65 100 75 95" fill="none" stroke="#555555" stroke-width="2"/>
+                    
+                    <!-- Pocket -->
+                    <rect x="75" y="115" width="12" height="20" fill="none" stroke="#D0D0D0" stroke-width="0.5"/>
+                    
+                    <!-- Buttons -->
+                    <circle cx="90" cy="120" r="1.5" fill="#CCCCCC"/>
+                    <circle cx="90" cy="130" r="1.5" fill="#CCCCCC"/>
+                  </svg>
+                </div>
+                <h1 style="font-size: 32px; font-weight: 700; color: #1F2937; margin-bottom: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Welcome Multi-Hospital Management System</h1>
+                <p style="font-size: 16px; color: #4B5563; line-height: 1.6; margin-bottom: 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Hospital volunteering is another way in which you can help us in our mission of providing superior care.</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                  <button id="skip-welcome" style="padding: 12px 32px; background-color: #F3F4F6; color: #1F2937; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s;">Skip</button>
+                  <button id="start-welcome" style="padding: 12px 32px; background-color: #1abc9c; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s;">Let's start tour</button>
+                </div>
+              </div>
+            `;
+
+            document
+              .getElementById("skip-welcome")
+              ?.addEventListener("click", () => {
+                tour.cancel();
+              });
+
+            document
+              .getElementById("start-welcome")
+              ?.addEventListener("click", () => {
+                tour.next();
+              });
+
+            const skipBtn = document.getElementById("skip-welcome");
+            if (skipBtn) {
+              skipBtn.addEventListener("mouseover", function () {
+                this.style.backgroundColor = "#E5E7EB";
+              });
+              skipBtn.addEventListener("mouseout", function () {
+                this.style.backgroundColor = "#F3F4F6";
+              });
+            }
+
+            const startBtn = document.getElementById("start-welcome");
+            if (startBtn) {
+              startBtn.addEventListener("mouseover", function () {
+                this.style.backgroundColor = "#059669";
+              });
+              startBtn.addEventListener("mouseout", function () {
+                this.style.backgroundColor = "#1abc9c";
+              });
+            }
+          }
         },
-        {
-          text: "Start Interactive Tour",
-          action: tour.next,
-        },
-      ],
+      },
     });
 
     // Dashboard overview
@@ -317,7 +431,7 @@ Click "Explore Doctors" to navigate to the doctors list and see all available fu
         {
           text: "Explore Doctors",
           action: () => {
-            window.location.href = '/doctors';
+            window.location.href = "/doctors";
           },
           classes: "shepherd-button-primary",
         },
@@ -353,7 +467,7 @@ Click "Explore Patients" to navigate to the patients list and access all patient
         {
           text: "Explore Patients",
           action: () => {
-            window.location.href = '/patients';
+            window.location.href = "/patients";
           },
           classes: "shepherd-button-primary",
         },
@@ -389,7 +503,7 @@ Click "Explore Appointments" to navigate to the appointments list and access all
         {
           text: "Explore Appointments",
           action: () => {
-            window.location.href = '/appointments';
+            window.location.href = "/appointments";
           },
           classes: "shepherd-button-primary",
         },
@@ -1095,7 +1209,7 @@ Use the sidebar submenu to navigate between these sections. Let's explore the cu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
           classes: "shepherd-button-secondary",
         },
@@ -1146,7 +1260,7 @@ Use the sidebar submenu to navigate between these sections. Let's explore the cu
         {
           text: "Try Adding Doctor",
           action: () => {
-            window.location.href = '/doctors/add';
+            window.location.href = "/doctors/add";
           },
           classes: "shepherd-button-primary",
         },
@@ -1163,7 +1277,7 @@ Use the sidebar submenu to navigate between these sections. Let's explore the cu
       title: "Doctor Management Actions",
       text: "Each doctor row includes action buttons: View profile details, Edit information, Manage schedule, or Remove from system. Click any doctor's name to see their complete profile and patient history.",
       attachTo: {
-        element: 'table tbody tr:first-child',
+        element: "table tbody tr:first-child",
         on: "top",
       },
       buttons: [
@@ -1175,7 +1289,7 @@ Use the sidebar submenu to navigate between these sections. Let's explore the cu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1199,7 +1313,7 @@ The sidebar submenu provides access to all patient-related functions. Let's expl
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
           classes: "shepherd-button-secondary",
         },
@@ -1228,7 +1342,7 @@ The sidebar submenu provides access to all patient-related functions. Let's expl
         {
           text: "Try Adding Patient",
           action: () => {
-            window.location.href = '/patients/add';
+            window.location.href = "/patients/add";
           },
           classes: "shepherd-button-primary",
         },
@@ -1245,7 +1359,7 @@ The sidebar submenu provides access to all patient-related functions. Let's expl
       title: "Patient Records Management",
       text: "Click on any patient's name to view their complete medical profile, appointment history, prescriptions, and treatment records. Edit patient information or manage their care plan.",
       attachTo: {
-        element: 'table tbody tr:first-child',
+        element: "table tbody tr:first-child",
         on: "top",
       },
       buttons: [
@@ -1257,7 +1371,7 @@ The sidebar submenu provides access to all patient-related functions. Let's expl
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1281,7 +1395,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
           classes: "shepherd-button-secondary",
         },
@@ -1310,7 +1424,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "View Calendar",
           action: () => {
-            window.location.href = '/appointments/calendar';
+            window.location.href = "/appointments/calendar";
           },
           classes: "shepherd-button-primary",
         },
@@ -1339,7 +1453,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Schedule Appointment",
           action: () => {
-            window.location.href = '/appointments/add';
+            window.location.href = "/appointments/add";
           },
           classes: "shepherd-button-primary",
         },
@@ -1356,7 +1470,7 @@ Navigate using the sidebar submenu to access different appointment management fu
       title: "Appointment Status Management",
       text: "View all appointments with status indicators. Click to edit appointment details, mark as completed, cancel appointments, or reschedule. Filter by date, doctor, or status.",
       attachTo: {
-        element: 'table tbody tr:first-child',
+        element: "table tbody tr:first-child",
         on: "top",
       },
       buttons: [
@@ -1368,7 +1482,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1385,7 +1499,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1401,7 +1515,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1417,7 +1531,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1433,7 +1547,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1449,7 +1563,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1465,7 +1579,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1481,7 +1595,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1497,7 +1611,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1513,7 +1627,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1529,7 +1643,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],
@@ -1545,7 +1659,7 @@ Navigate using the sidebar submenu to access different appointment management fu
         {
           text: "Back to Dashboard",
           action: () => {
-            window.location.href = '/dashboard';
+            window.location.href = "/dashboard";
           },
         },
       ],

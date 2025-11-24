@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { appointmentAPI } from '@/lib/api';
+import { useState, useEffect } from "react";
+import { appointmentAPI } from "@/lib/api";
 
 interface Appointment {
   id?: string;
@@ -32,30 +32,39 @@ interface AppointmentFormProps {
   onSuccess: () => void;
 }
 
-export default function AppointmentForm({ appointment, doctors, patients, onSuccess }: AppointmentFormProps) {
+export default function AppointmentForm({
+  appointment,
+  doctors,
+  patients,
+  onSuccess,
+}: AppointmentFormProps) {
   const [formData, setFormData] = useState<Appointment>({
-    doctorId: '',
-    patientId: '',
-    date: '',
-    time: '',
-    status: 'pending',
-    notes: '',
+    doctorId: "",
+    patientId: "",
+    date: "",
+    time: "",
+    status: "pending",
+    notes: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (appointment) {
       setFormData({
         ...appointment,
-        doctorId: appointment.doctor?.id || '',
-        patientId: appointment.patient?.id || '',
-        date: appointment.date.split('T')[0],
+        doctorId: appointment.doctor?.id || "",
+        patientId: appointment.patient?.id || "",
+        date: appointment.date.split("T")[0],
       });
     }
   }, [appointment]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -66,7 +75,7 @@ export default function AppointmentForm({ appointment, doctors, patients, onSucc
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       if (appointment?.id) {
@@ -76,7 +85,7 @@ export default function AppointmentForm({ appointment, doctors, patients, onSucc
       }
       onSuccess();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to save appointment');
+      setError(err.response?.data?.error || "Failed to save appointment");
     } finally {
       setLoading(false);
     }
@@ -85,7 +94,7 @@ export default function AppointmentForm({ appointment, doctors, patients, onSucc
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Patient
         </label>
         <select
@@ -105,7 +114,7 @@ export default function AppointmentForm({ appointment, doctors, patients, onSucc
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Doctor
         </label>
         <select
@@ -125,7 +134,7 @@ export default function AppointmentForm({ appointment, doctors, patients, onSucc
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Date
         </label>
         <input
@@ -139,7 +148,7 @@ export default function AppointmentForm({ appointment, doctors, patients, onSucc
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Time
         </label>
         <input
@@ -153,7 +162,7 @@ export default function AppointmentForm({ appointment, doctors, patients, onSucc
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Status
         </label>
         <select
@@ -169,7 +178,7 @@ export default function AppointmentForm({ appointment, doctors, patients, onSucc
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Notes
         </label>
         <textarea
@@ -188,12 +197,8 @@ export default function AppointmentForm({ appointment, doctors, patients, onSucc
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-primary w-full"
-      >
-        {loading ? 'Saving...' : 'Save Appointment'}
+      <button type="submit" disabled={loading} className="btn-primary w-full">
+        {loading ? "Saving..." : "Save Appointment"}
       </button>
     </form>
   );

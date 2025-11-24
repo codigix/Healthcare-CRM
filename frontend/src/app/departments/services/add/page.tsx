@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ArrowLeft } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 interface Department {
   id: string;
@@ -16,15 +16,15 @@ export default function AddServicePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [departments, setDepartments] = useState<Department[]>([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    name: '',
-    departmentId: '',
-    type: 'Diagnostic',
-    duration: '',
-    price: '',
-    description: '',
-    status: 'Active',
+    name: "",
+    departmentId: "",
+    type: "Diagnostic",
+    duration: "",
+    price: "",
+    description: "",
+    status: "Active",
   });
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function AddServicePage() {
     try {
       const res = await fetch(`${API_URL}/departments?limit=100`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
       if (res.ok) {
@@ -43,26 +43,30 @@ export default function AddServicePage() {
         setDepartments(data.departments);
       }
     } catch (err) {
-      console.error('Failed to fetch departments', err);
+      console.error("Failed to fetch departments", err);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       const res = await fetch(`${API_URL}/departments/services`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
           ...formData,
@@ -73,12 +77,12 @@ export default function AddServicePage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Failed to create service');
+        throw new Error(data.error || "Failed to create service");
       }
 
-      router.push('/departments/services');
+      router.push("/departments/services");
     } catch (err: any) {
-      setError(err.message || 'Failed to create service');
+      setError(err.message || "Failed to create service");
     } finally {
       setLoading(false);
     }
@@ -110,7 +114,7 @@ export default function AddServicePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
                   Service Name
                 </label>
                 <input
@@ -125,7 +129,7 @@ export default function AddServicePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
                   Department
                 </label>
                 <select
@@ -136,8 +140,10 @@ export default function AddServicePage() {
                   className="w-full input-field"
                 >
                   <option value="">Select Department</option>
-                  {departments.map(dept => (
-                    <option key={dept.id} value={dept.id}>{dept.name}</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -145,7 +151,7 @@ export default function AddServicePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
                   Service Type
                 </label>
                 <select
@@ -161,7 +167,7 @@ export default function AddServicePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
                   Duration (minutes)
                 </label>
                 <input
@@ -176,7 +182,7 @@ export default function AddServicePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
                   Price ($)
                 </label>
                 <input
@@ -193,7 +199,7 @@ export default function AddServicePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-mdfont-medium text-gray-300 mb-2">
                 Description
               </label>
               <textarea
@@ -207,7 +213,7 @@ export default function AddServicePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-mdfont-medium text-gray-300 mb-2">
                 Status
               </label>
               <select
@@ -223,7 +229,7 @@ export default function AddServicePage() {
 
             <div className="flex gap-3 pt-4">
               <button type="submit" disabled={loading} className="btn-primary">
-                {loading ? 'Creating...' : 'Create Service'}
+                {loading ? "Creating..." : "Create Service"}
               </button>
               <button
                 type="button"

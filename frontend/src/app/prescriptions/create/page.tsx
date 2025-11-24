@@ -1,11 +1,27 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ArrowLeft, Plus, Trash2, FileText, User, Calendar, Pill, Save, ToggleLeft, ToggleRight } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { prescriptionAPI, patientAPI, doctorAPI, prescriptionTemplateAPI } from '@/lib/api';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  FileText,
+  User,
+  Calendar,
+  Pill,
+  Save,
+  ToggleLeft,
+  ToggleRight,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  prescriptionAPI,
+  patientAPI,
+  doctorAPI,
+  prescriptionTemplateAPI,
+} from "@/lib/api";
 
 interface Medication {
   id: string;
@@ -31,32 +47,32 @@ interface Patient {
 export default function CreatePrescriptionPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [searchPatient, setSearchPatient] = useState('');
+  const [error, setError] = useState("");
+  const [searchPatient, setSearchPatient] = useState("");
   const [useTemplate, setUseTemplate] = useState(false);
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
-  const [templateName, setTemplateName] = useState('');
+  const [templateName, setTemplateName] = useState("");
 
   const [formData, setFormData] = useState({
-    patientId: '',
-    prescriptionDate: new Date().toISOString().split('T')[0],
-    prescriptionType: 'Standard',
-    diagnosis: '',
-    notesForPharmacist: '',
+    patientId: "",
+    prescriptionDate: new Date().toISOString().split("T")[0],
+    prescriptionType: "Standard",
+    diagnosis: "",
+    notesForPharmacist: "",
   });
 
   const [medications, setMedications] = useState<Medication[]>([
     {
-      id: '1',
-      name: '',
-      dosage: '',
-      route: 'Oral',
-      frequency: '',
-      duration: '30',
-      instructions: '',
+      id: "1",
+      name: "",
+      dosage: "",
+      route: "Oral",
+      frequency: "",
+      duration: "30",
+      instructions: "",
       allowRefills: false,
       refillCount: 0,
-    }
+    },
   ]);
 
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -64,7 +80,7 @@ export default function CreatePrescriptionPage() {
   const [selectedDoctor, setSelectedDoctor] = useState<any | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [templates, setTemplates] = useState<any[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,7 +92,7 @@ export default function CreatePrescriptionPage() {
         setPatients(patRes.data.patients || []);
         setDoctors(docRes.data.doctors || []);
       } catch (err) {
-        console.error('Failed to fetch data', err);
+        console.error("Failed to fetch data", err);
       }
     };
     fetchData();
@@ -86,10 +102,15 @@ export default function CreatePrescriptionPage() {
     if (useTemplate) {
       const fetchTemplates = async () => {
         try {
-          const response = await prescriptionTemplateAPI.list(1, 100, '', 'all');
+          const response = await prescriptionTemplateAPI.list(
+            1,
+            100,
+            "",
+            "all"
+          );
           setTemplates(response.data.data || []);
         } catch (err) {
-          console.error('Failed to fetch templates', err);
+          console.error("Failed to fetch templates", err);
         }
       };
       fetchTemplates();
@@ -98,31 +119,35 @@ export default function CreatePrescriptionPage() {
 
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
-    const template = templates.find(t => t.id === templateId);
+    const template = templates.find((t) => t.id === templateId);
     if (template && template.medications) {
-      const templateMeds = Array.isArray(template.medications) 
-        ? template.medications 
-        : typeof template.medications === 'string' 
-          ? JSON.parse(template.medications) 
-          : [];
-      
+      const templateMeds = Array.isArray(template.medications)
+        ? template.medications
+        : typeof template.medications === "string"
+        ? JSON.parse(template.medications)
+        : [];
+
       const newMeds = templateMeds.map((med: any, idx: number) => ({
         id: Date.now().toString() + idx,
-        name: med.name || '',
-        dosage: med.dosage || '',
-        route: med.route || 'Oral',
-        frequency: med.frequency || '',
-        duration: med.duration || '30',
-        instructions: med.instructions || '',
+        name: med.name || "",
+        dosage: med.dosage || "",
+        route: med.route || "Oral",
+        frequency: med.frequency || "",
+        duration: med.duration || "30",
+        instructions: med.instructions || "",
         allowRefills: false,
         refillCount: 0,
       }));
-      
+
       setMedications(newMeds.length > 0 ? newMeds : medications);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -131,8 +156,8 @@ export default function CreatePrescriptionPage() {
   };
 
   const handlePatientSelect = (patientId: string) => {
-    setFormData(prev => ({ ...prev, patientId }));
-    const patient = patients.find(p => p.id === patientId);
+    setFormData((prev) => ({ ...prev, patientId }));
+    const patient = patients.find((p) => p.id === patientId);
     setSelectedPatient(patient || null);
   };
 
@@ -141,43 +166,49 @@ export default function CreatePrescriptionPage() {
       ...medications,
       {
         id: Date.now().toString(),
-        name: '',
-        dosage: '',
-        route: 'Oral',
-        frequency: '',
-        duration: '30',
-        instructions: '',
+        name: "",
+        dosage: "",
+        route: "Oral",
+        frequency: "",
+        duration: "30",
+        instructions: "",
         allowRefills: false,
         refillCount: 0,
-      }
+      },
     ]);
   };
 
   const removeMedication = (id: string) => {
     if (medications.length > 1) {
-      setMedications(medications.filter(med => med.id !== id));
+      setMedications(medications.filter((med) => med.id !== id));
     }
   };
 
   const updateMedication = (id: string, field: string, value: any) => {
-    setMedications(medications.map(med => 
-      med.id === id ? { ...med, [field]: value } : med
-    ));
+    setMedications(
+      medications.map((med) =>
+        med.id === id ? { ...med, [field]: value } : med
+      )
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     if (!formData.patientId || !selectedDoctor) {
-      setError('Please select a patient and doctor');
+      setError("Please select a patient and doctor");
       setLoading(false);
       return;
     }
 
-    if (!medications[0].name || !medications[0].dosage || !medications[0].frequency) {
-      setError('Please add at least one medication');
+    if (
+      !medications[0].name ||
+      !medications[0].dosage ||
+      !medications[0].frequency
+    ) {
+      setError("Please add at least one medication");
       setLoading(false);
       return;
     }
@@ -191,7 +222,7 @@ export default function CreatePrescriptionPage() {
         diagnosis: formData.diagnosis || null,
         notesForPharmacist: formData.notesForPharmacist || null,
         medications: medications.map(({ id, ...med }) => med),
-        status: 'Active',
+        status: "Active",
       });
 
       if (saveAsTemplate && templateName.trim()) {
@@ -199,19 +230,19 @@ export default function CreatePrescriptionPage() {
           name: templateName,
           category: formData.prescriptionType,
           medications: medications.map(({ id, ...med }) => med),
-          createdBy: selectedDoctor.name || 'Unknown',
+          createdBy: selectedDoctor.name || "Unknown",
         });
       }
 
-      router.push('/prescriptions/all');
+      router.push("/prescriptions/all");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create prescription');
+      setError(err.response?.data?.error || "Failed to create prescription");
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredPatients = patients.filter(p => 
+  const filteredPatients = patients.filter((p) =>
     p.name.toLowerCase().includes(searchPatient.toLowerCase())
   );
 
@@ -226,11 +257,16 @@ export default function CreatePrescriptionPage() {
           </Link>
           <div>
             <h1 className="text-3xl font-bold mb-2">Create Prescription</h1>
-            <p className="text-gray-400">Create a new prescription for a patient.</p>
+            <p className="text-gray-400">
+              Create a new prescription for a patient.
+            </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        >
           <div className="lg:col-span-2 space-y-6">
             <div className="card">
               <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
@@ -241,7 +277,7 @@ export default function CreatePrescriptionPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Prescription Date
                     </label>
                     <input
@@ -255,7 +291,7 @@ export default function CreatePrescriptionPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Prescription Type
                     </label>
                     <select
@@ -272,7 +308,7 @@ export default function CreatePrescriptionPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Diagnosis
                   </label>
                   <textarea
@@ -293,11 +329,14 @@ export default function CreatePrescriptionPage() {
                     onChange={(e) => setUseTemplate(e.target.checked)}
                     className="w-4 h-4 text-emerald-500"
                   />
-                  <label htmlFor="useTemplate" className="text-sm text-gray-700 cursor-pointer">
+                  <label
+                    htmlFor="useTemplate"
+                    className="text-mdtext-gray-700 cursor-pointer"
+                  >
                     Use Medication Template
                   </label>
                   {useTemplate && (
-                    <select 
+                    <select
                       value={selectedTemplate}
                       onChange={(e) => handleTemplateSelect(e.target.value)}
                       className="input-field ml-auto"
@@ -332,7 +371,10 @@ export default function CreatePrescriptionPage() {
 
               <div className="space-y-6">
                 {medications.map((medication, index) => (
-                  <div key={medication.id} className="p-6 bg-white rounded-lg border border-gray-200">
+                  <div
+                    key={medication.id}
+                    className="p-6 bg-white rounded-lg border border-gray-200"
+                  >
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="font-semibold">Medication #{index + 1}</h3>
                       {medications.length > 1 && (
@@ -348,13 +390,19 @@ export default function CreatePrescriptionPage() {
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-mdfont-medium text-gray-700 mb-2">
                           Medication Name
                         </label>
                         <input
                           type="text"
                           value={medication.name}
-                          onChange={(e) => updateMedication(medication.id, 'name', e.target.value)}
+                          onChange={(e) =>
+                            updateMedication(
+                              medication.id,
+                              "name",
+                              e.target.value
+                            )
+                          }
                           className="input-field w-full"
                           placeholder="Select medication..."
                           required
@@ -363,12 +411,18 @@ export default function CreatePrescriptionPage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-mdfont-medium text-gray-700 mb-2">
                             Dosage
                           </label>
                           <select
                             value={medication.dosage}
-                            onChange={(e) => updateMedication(medication.id, 'dosage', e.target.value)}
+                            onChange={(e) =>
+                              updateMedication(
+                                medication.id,
+                                "dosage",
+                                e.target.value
+                              )
+                            }
                             className="input-field w-full"
                             required
                           >
@@ -384,12 +438,18 @@ export default function CreatePrescriptionPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-mdfont-medium text-gray-700 mb-2">
                             Route
                           </label>
                           <select
                             value={medication.route}
-                            onChange={(e) => updateMedication(medication.id, 'route', e.target.value)}
+                            onChange={(e) =>
+                              updateMedication(
+                                medication.id,
+                                "route",
+                                e.target.value
+                              )
+                            }
                             className="input-field w-full"
                           >
                             <option value="Oral">Oral</option>
@@ -402,33 +462,49 @@ export default function CreatePrescriptionPage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-mdfont-medium text-gray-700 mb-2">
                             Frequency
                           </label>
                           <select
                             value={medication.frequency}
-                            onChange={(e) => updateMedication(medication.id, 'frequency', e.target.value)}
+                            onChange={(e) =>
+                              updateMedication(
+                                medication.id,
+                                "frequency",
+                                e.target.value
+                              )
+                            }
                             className="input-field w-full"
                             required
                           >
                             <option value="">Select frequency</option>
                             <option value="Once daily">Once daily</option>
                             <option value="Twice daily">Twice daily</option>
-                            <option value="Three times daily">Three times daily</option>
-                            <option value="Four times daily">Four times daily</option>
+                            <option value="Three times daily">
+                              Three times daily
+                            </option>
+                            <option value="Four times daily">
+                              Four times daily
+                            </option>
                             <option value="As needed">As needed</option>
                           </select>
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-mdfont-medium text-gray-700 mb-2">
                             Duration
                           </label>
                           <div className="flex gap-2">
                             <input
                               type="number"
                               value={medication.duration}
-                              onChange={(e) => updateMedication(medication.id, 'duration', e.target.value)}
+                              onChange={(e) =>
+                                updateMedication(
+                                  medication.id,
+                                  "duration",
+                                  e.target.value
+                                )
+                              }
                               className="input-field flex-1"
                               min="1"
                               required
@@ -443,12 +519,18 @@ export default function CreatePrescriptionPage() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-mdfont-medium text-gray-700 mb-2">
                           Special Instructions
                         </label>
                         <textarea
                           value={medication.instructions}
-                          onChange={(e) => updateMedication(medication.id, 'instructions', e.target.value)}
+                          onChange={(e) =>
+                            updateMedication(
+                              medication.id,
+                              "instructions",
+                              e.target.value
+                            )
+                          }
                           className="input-field w-full"
                           placeholder="Enter any special instructions for this medication"
                           rows={2}
@@ -459,22 +541,40 @@ export default function CreatePrescriptionPage() {
                         <div className="flex items-center gap-3">
                           <button
                             type="button"
-                            onClick={() => updateMedication(medication.id, 'allowRefills', !medication.allowRefills)}
+                            onClick={() =>
+                              updateMedication(
+                                medication.id,
+                                "allowRefills",
+                                !medication.allowRefills
+                              )
+                            }
                             className="text-emerald-500"
                           >
-                            {medication.allowRefills ? <ToggleRight size={24} /> : <ToggleLeft size={24} className="text-gray-500" />}
+                            {medication.allowRefills ? (
+                              <ToggleRight size={24} />
+                            ) : (
+                              <ToggleLeft size={24} className="text-gray-500" />
+                            )}
                           </button>
-                          <label className="text-sm text-gray-700">
+                          <label className="text-mdtext-gray-700">
                             Allow Refills
                           </label>
                         </div>
                         {medication.allowRefills && (
                           <div className="flex items-center gap-2">
-                            <label className="text-sm text-gray-700">Number of Refills:</label>
+                            <label className="text-mdtext-gray-700">
+                              Number of Refills:
+                            </label>
                             <input
                               type="number"
                               value={medication.refillCount}
-                              onChange={(e) => updateMedication(medication.id, 'refillCount', parseInt(e.target.value))}
+                              onChange={(e) =>
+                                updateMedication(
+                                  medication.id,
+                                  "refillCount",
+                                  parseInt(e.target.value)
+                                )
+                              }
                               className="input-field w-20"
                               min="0"
                               max="12"
@@ -489,11 +589,13 @@ export default function CreatePrescriptionPage() {
             </div>
 
             <div className="card">
-              <h2 className="text-xl font-semibold mb-6">Additional Information</h2>
+              <h2 className="text-xl font-semibold mb-6">
+                Additional Information
+              </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Notes for Pharmacist
                   </label>
                   <textarea
@@ -514,14 +616,17 @@ export default function CreatePrescriptionPage() {
                     onChange={(e) => setSaveAsTemplate(e.target.checked)}
                     className="w-4 h-4 text-emerald-500"
                   />
-                  <label htmlFor="saveAsTemplate" className="text-sm text-gray-700 cursor-pointer flex-1">
+                  <label
+                    htmlFor="saveAsTemplate"
+                    className="text-mdtext-gray-700 cursor-pointer flex-1"
+                  >
                     Save as Template
                   </label>
                 </div>
 
                 {saveAsTemplate && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Template Name
                     </label>
                     <input
@@ -546,13 +651,15 @@ export default function CreatePrescriptionPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Select Doctor
                   </label>
                   <select
-                    value={selectedDoctor?.id || ''}
+                    value={selectedDoctor?.id || ""}
                     onChange={(e) => {
-                      const doctor = doctors.find(d => d.id === e.target.value);
+                      const doctor = doctors.find(
+                        (d) => d.id === e.target.value
+                      );
                       setSelectedDoctor(doctor || null);
                     }}
                     className="input-field w-full"
@@ -568,7 +675,7 @@ export default function CreatePrescriptionPage() {
                 </div>
 
                 <div className="border-t border-dark-tertiary pt-4 mt-4">
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Search and select a patient for this prescription.
                   </label>
                   <input
@@ -586,8 +693,8 @@ export default function CreatePrescriptionPage() {
                       key={patient.id}
                       className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                         formData.patientId === patient.id
-                          ? 'border-emerald-500 bg-emerald-500/10'
-                          : 'border-dark-tertiary hover:border-gray-600'
+                          ? "border-emerald-500 bg-emerald-500/10"
+                          : "border-dark-tertiary hover:border-gray-600"
                       }`}
                     >
                       <input
@@ -601,7 +708,7 @@ export default function CreatePrescriptionPage() {
                       <div className="flex-1">
                         <div className="font-medium">{patient.name}</div>
                         {patient.age && (
-                          <div className="text-sm text-gray-400">
+                          <div className="text-mdtext-gray-400">
                             {patient.age}y • {patient.gender}
                           </div>
                         )}
@@ -613,36 +720,52 @@ export default function CreatePrescriptionPage() {
                 {selectedPatient && (
                   <div className="mt-4 p-4 bg-white rounded-lg space-y-3">
                     <div>
-                      <div className="text-xs text-gray-700 mb-1">Allergies:</div>
-                      {selectedPatient.allergies && selectedPatient.allergies.length > 0 ? (
+                      <div className="text-xs text-gray-700 mb-1">
+                        Allergies:
+                      </div>
+                      {selectedPatient.allergies &&
+                      selectedPatient.allergies.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                           {selectedPatient.allergies.map((allergy, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded border border-red-500/20">
+                            <span
+                              key={idx}
+                              className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded border border-red-500/20"
+                            >
                               {allergy}
                             </span>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-sm text-gray-700">No known allergies</span>
+                        <span className="text-mdtext-gray-700">
+                          No known allergies
+                        </span>
                       )}
                     </div>
                     <div>
-                      <div className="text-xs text-gray-700 mb-1">Conditions:</div>
-                      {selectedPatient.conditions && selectedPatient.conditions.length > 0 ? (
+                      <div className="text-xs text-gray-700 mb-1">
+                        Conditions:
+                      </div>
+                      {selectedPatient.conditions &&
+                      selectedPatient.conditions.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                           {selectedPatient.conditions.map((condition, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-blue-500/10 text-blue-400 text-xs rounded border border-blue-500/20">
+                            <span
+                              key={idx}
+                              className="px-2 py-1 bg-blue-500/10 text-blue-400 text-xs rounded border border-blue-500/20"
+                            >
                               {condition}
                             </span>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-sm text-gray-700">No conditions listed</span>
+                        <span className="text-mdtext-gray-700">
+                          No conditions listed
+                        </span>
                       )}
                     </div>
                     <button
                       type="button"
-                      className="text-sm text-emerald-500 hover:text-emerald-400 transition-colors"
+                      className="text-mdtext-emerald-500 hover:text-emerald-400 transition-colors"
                     >
                       View patient details →
                     </button>
@@ -652,7 +775,9 @@ export default function CreatePrescriptionPage() {
             </div>
 
             <div className="card">
-              <h2 className="text-xl font-semibold mb-6">Prescription Options</h2>
+              <h2 className="text-xl font-semibold mb-6">
+                Prescription Options
+              </h2>
 
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -663,7 +788,10 @@ export default function CreatePrescriptionPage() {
                     defaultChecked
                     className="w-4 h-4 text-emerald-500"
                   />
-                  <label htmlFor="electronic" className="text-sm text-gray-300 cursor-pointer">
+                  <label
+                    htmlFor="electronic"
+                    className="text-mdtext-gray-300 cursor-pointer"
+                  >
                     Electronic Prescription
                   </label>
                 </div>
@@ -674,7 +802,10 @@ export default function CreatePrescriptionPage() {
                     name="prescriptionFormat"
                     className="w-4 h-4 text-emerald-500"
                   />
-                  <label htmlFor="print" className="text-sm text-gray-300 cursor-pointer">
+                  <label
+                    htmlFor="print"
+                    className="text-mdtext-gray-300 cursor-pointer"
+                  >
                     Print Prescription
                   </label>
                 </div>
@@ -685,7 +816,10 @@ export default function CreatePrescriptionPage() {
                     name="prescriptionFormat"
                     className="w-4 h-4 text-emerald-500"
                   />
-                  <label htmlFor="both" className="text-sm text-gray-300 cursor-pointer">
+                  <label
+                    htmlFor="both"
+                    className="text-mdtext-gray-300 cursor-pointer"
+                  >
                     Both Electronic and Print
                   </label>
                 </div>
@@ -698,7 +832,10 @@ export default function CreatePrescriptionPage() {
                       defaultChecked
                       className="w-4 h-4 text-emerald-500"
                     />
-                    <label htmlFor="notifyPatient" className="text-sm text-gray-300 cursor-pointer">
+                    <label
+                      htmlFor="notifyPatient"
+                      className="text-mdtext-gray-300 cursor-pointer"
+                    >
                       Notify Patient
                     </label>
                   </div>
@@ -710,7 +847,10 @@ export default function CreatePrescriptionPage() {
                     id="markAsUrgent"
                     className="w-4 h-4 text-emerald-500"
                   />
-                  <label htmlFor="markAsUrgent" className="text-sm text-gray-300 cursor-pointer">
+                  <label
+                    htmlFor="markAsUrgent"
+                    className="text-mdtext-gray-300 cursor-pointer"
+                  >
                     Mark as Urgent
                   </label>
                 </div>
@@ -725,11 +865,16 @@ export default function CreatePrescriptionPage() {
 
             <button
               type="submit"
-              disabled={loading || !formData.patientId || !selectedDoctor || medications.some(m => !m.name || !m.dosage || !m.frequency)}
+              disabled={
+                loading ||
+                !formData.patientId ||
+                !selectedDoctor ||
+                medications.some((m) => !m.name || !m.dosage || !m.frequency)
+              }
               className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={20} />
-              {loading ? 'Creating...' : 'Create Prescription'}
+              {loading ? "Creating..." : "Create Prescription"}
             </button>
 
             <Link href="/prescriptions/all">

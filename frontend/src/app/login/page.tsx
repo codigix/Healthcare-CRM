@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { authAPI } from '@/lib/api';
-import { useAuthStore } from '@/lib/store';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authAPI } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { setAuth } = useAuthStore();
@@ -16,24 +16,24 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const response = await authAPI.login(email, password);
       const { token, user } = response.data;
 
-      localStorage.setItem('token', token);
+      localStorage.setItem("token", token);
       setAuth(user, token);
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed');
+      setError(err.response?.data?.error || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-dark-primary flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -48,7 +48,7 @@ export default function LoginPage() {
         <div className="card">
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-mdfont-medium text-gray-300 mb-2">
                 Email Address
               </label>
               <input
@@ -62,7 +62,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-mdfont-medium text-gray-300 mb-2">
                 Password
               </label>
               <input
@@ -86,7 +86,7 @@ export default function LoginPage() {
               disabled={loading}
               className="btn-primary w-full"
             >
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 

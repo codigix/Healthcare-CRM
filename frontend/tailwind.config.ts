@@ -1,21 +1,61 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Public Sans", "sans-serif"],
+      },
       colors: {
-        dark: '#1a1a1a',
-        'dark-secondary': '#2d2d2d',
-        'dark-tertiary': '#3f3f3f',
+        dark: "#171B1E",
+        "dark-primary": "#17181E",
+        "dark-secondary": "#1E1F27",
+        "dark-tertiary": "#2A2E33",
+        light: "#ffffff",
+        "light-secondary": "#f8f8f8",
+        "light-tertiary": "#eeeeee",
+        accent: "#1ABC9C",
+        "accent-dark": "#0D9B7F",
+        "status-pending": "#F15C6C",
+        "status-pending-bg": "rgba(241, 92, 108, 0.2)",
+        "status-confirmed": "#1ABC9C",
+        "status-confirmed-bg": "rgba(26, 188, 156, 0.2)",
+        "status-completed": "#8495AB",
+        "status-completed-bg": "rgba(132, 149, 171, 0.2)",
+        "teal-accent": "#1ABC9C",
+        "error-red": "#F15C6C",
+        "warning-amber": "#F15C6C",
+        "pink-accent": "#F15C6C",
+        "purple-accent": "#8495AB",
+        "gray-accent": "#8495AB",
+        "text-light": "#B0CEE4",
+        "text-dark": "#ffffff",
+        "text-muted-dark": "#8495AB",
+        "text-muted-light": "#999999",
+        "border-dark": "#2A2E33",
+        "border-light": "#dddddd",
+        "bg-light-hover": "#e0e0e0",
+        "bg-light-alt": "#f5f5f5",
+        "bg-light-alt-2": "#e8e8e8",
+        "bg-light-alt-3": "#d0d0d0",
+        "input-light": "#e5e5e5",
+        "tour-bg": "#1ABC9C",
+        "tour-skin": "#8495AB",
+        "tour-hair": "#171B1E",
+        "tour-mouth": "#B0CEE4",
+        "tour-dark": "#1E1F27",
+        "tour-mouth-smile": "#8495AB",
+        "light-border": "#2A2E33",
+        "light-bg-alt": "#1E1F27",
       },
     },
   },
   plugins: [],
-  darkMode: 'class',
-}
-export default config
+  darkMode: "class",
+};
+export default config;

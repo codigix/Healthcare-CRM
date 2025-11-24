@@ -1,32 +1,36 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Calendar } from 'lucide-react';
-import Link from 'next/link';
-import { bloodBankAPI } from '@/lib/api';
+import { useState } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { Calendar } from "lucide-react";
+import Link from "next/link";
+import { bloodBankAPI } from "@/lib/api";
 
 export default function IssueBloodPage() {
   const [formData, setFormData] = useState({
-    requestType: 'patient',
-    patient: '',
-    bloodType: '',
-    numberOfUnits: '1',
-    department: '',
-    requestingDoctor: '',
-    issueDate: '',
+    requestType: "patient",
+    patient: "",
+    bloodType: "",
+    numberOfUnits: "1",
+    department: "",
+    requestingDoctor: "",
+    issueDate: "",
     emergencyRequest: false,
-    purpose: '',
-    additionalNotes: ''
+    purpose: "",
+    additionalNotes: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value, type } = e.target;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -36,36 +40,36 @@ export default function IssueBloodPage() {
       const submitData = {
         bloodType: formData.bloodType,
         units: parseInt(formData.numberOfUnits),
-        recipient: formData.patient || 'Unknown',
+        recipient: formData.patient || "Unknown",
         recipientId: formData.patient || null,
-        requestingDoctor: formData.requestingDoctor || 'Unknown',
-        purpose: formData.purpose || 'Medical',
-        department: formData.department || 'General'
+        requestingDoctor: formData.requestingDoctor || "Unknown",
+        purpose: formData.purpose || "Medical",
+        department: formData.department || "General",
       };
 
       const response = await bloodBankAPI.createIssue(submitData);
 
       if (response.data.success) {
-        alert('Blood issued successfully!');
+        alert("Blood issued successfully!");
         setFormData({
-          requestType: 'patient',
-          patient: '',
-          bloodType: '',
-          numberOfUnits: '1',
-          department: '',
-          requestingDoctor: '',
-          issueDate: '',
+          requestType: "patient",
+          patient: "",
+          bloodType: "",
+          numberOfUnits: "1",
+          department: "",
+          requestingDoctor: "",
+          issueDate: "",
           emergencyRequest: false,
-          purpose: '',
-          additionalNotes: ''
+          purpose: "",
+          additionalNotes: "",
         });
-        window.location.href = '/blood-bank/issued';
+        window.location.href = "/blood-bank/issued";
       } else {
-        alert('Error: ' + (response.data.error || 'Failed to issue blood'));
+        alert("Error: " + (response.data.error || "Failed to issue blood"));
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Error issuing blood');
+      console.error("Error submitting form:", error);
+      alert("Error issuing blood");
     }
   };
 
@@ -75,7 +79,10 @@ export default function IssueBloodPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold mb-2">Issue Blood</h1>
-            <p className="text-gray-400">Complete this form below to issue blood to a patient or external recipient.</p>
+            <p className="text-gray-400">
+              Complete this form below to issue blood to a patient or external
+              recipient.
+            </p>
           </div>
           <Link href="/blood-bank/issued">
             <button className="btn-secondary">Cancel</button>
@@ -84,19 +91,23 @@ export default function IssueBloodPage() {
 
         <div className="card">
           <h2 className="text-xl font-semibold mb-6">Blood Issue Form</h2>
-          <p className="text-gray-400 text-sm mb-6">Fill out required information to issue blood units.</p>
+          <p className="text-gray-400 text-mdmb-6">
+            Fill out required information to issue blood units.
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-3">Request Type</label>
+                <label className="block text-mdfont-medium mb-3">
+                  Request Type
+                </label>
                 <div className="flex gap-6">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="requestType"
                       value="patient"
-                      checked={formData.requestType === 'patient'}
+                      checked={formData.requestType === "patient"}
                       onChange={handleInputChange}
                       className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 focus:ring-emerald-500"
                     />
@@ -107,7 +118,7 @@ export default function IssueBloodPage() {
                       type="radio"
                       name="requestType"
                       value="external"
-                      checked={formData.requestType === 'external'}
+                      checked={formData.requestType === "external"}
                       onChange={handleInputChange}
                       className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 focus:ring-emerald-500"
                     />
@@ -117,7 +128,7 @@ export default function IssueBloodPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-mdfont-medium mb-2">
                   Patient <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -136,7 +147,7 @@ export default function IssueBloodPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Blood Type <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -156,11 +167,13 @@ export default function IssueBloodPage() {
                     <option value="O+">O+</option>
                     <option value="O-">O-</option>
                   </select>
-                  <p className="text-xs text-gray-400 mt-1">Each unit is approximately 450ml of whole blood.</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Each unit is approximately 450ml of whole blood.
+                  </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Number of Units <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -176,7 +189,7 @@ export default function IssueBloodPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Department
                   </label>
                   <select
@@ -197,7 +210,7 @@ export default function IssueBloodPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Requesting Doctor
                   </label>
                   <select
@@ -214,7 +227,7 @@ export default function IssueBloodPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Issue Date <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -226,7 +239,10 @@ export default function IssueBloodPage() {
                       className="input-field w-full"
                       required
                     />
-                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                    <Calendar
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                      size={18}
+                    />
                   </div>
                 </div>
 
@@ -239,23 +255,27 @@ export default function IssueBloodPage() {
                       onChange={handleInputChange}
                       className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 rounded focus:ring-emerald-500"
                     />
-                    <span className="text-sm font-medium">Emergency Request</span>
+                    <span className="text-mdfont-medium">
+                      Emergency Request
+                    </span>
                   </label>
-                  <p className="text-xs text-gray-400 ml-6">Mark this if the blood is needed for an emergency situation.</p>
+                  <p className="text-xs text-gray-400 ml-6">
+                    Mark this if the blood is needed for an emergency situation.
+                  </p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Purpose
-                </label>
+                <label className="block text-mdfont-medium mb-2">Purpose</label>
                 <select
                   name="purpose"
                   value={formData.purpose}
                   onChange={handleInputChange}
                   className="input-field w-full"
                 >
-                  <option value="">Select the purpose of this issued blood</option>
+                  <option value="">
+                    Select the purpose of this issued blood
+                  </option>
                   <option value="Surgery">Surgery</option>
                   <option value="Trauma">Trauma</option>
                   <option value="Anemia">Anemia Treatment</option>
@@ -266,7 +286,7 @@ export default function IssueBloodPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-mdfont-medium mb-2">
                   Additional Notes
                 </label>
                 <textarea
@@ -293,8 +313,9 @@ export default function IssueBloodPage() {
           </form>
 
           <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <p className="text-sm text-blue-400">
-              Fields marked with <span className="text-red-500">*</span> are required. Make sure to fill all required fields before submitting.
+            <p className="text-mdtext-blue-400">
+              Fields marked with <span className="text-red-500">*</span> are
+              required. Make sure to fill all required fields before submitting.
             </p>
           </div>
         </div>

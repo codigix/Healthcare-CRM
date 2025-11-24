@@ -199,7 +199,7 @@ export default function ServicesOfferedPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">{totalServices}</div>
-                <div className="text-sm text-gray-400">Total Services</div>
+                <div className="text-mdtext-gray-400">Total Services</div>
                 <div className="text-xs text-blue-500">
                   Across 12 departments
                 </div>
@@ -216,7 +216,7 @@ export default function ServicesOfferedPage() {
                 <div className="text-2xl font-bold">
                   {mostPopularService?.name || "N/A"}
                 </div>
-                <div className="text-sm text-gray-400">Latest Service</div>
+                <div className="text-mdtext-gray-400">Latest Service</div>
                 <div className="text-xs text-emerald-500">
                   $
                   {mostPopularService
@@ -234,7 +234,7 @@ export default function ServicesOfferedPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">{avgDuration} min</div>
-                <div className="text-sm text-gray-400">Average Duration</div>
+                <div className="text-mdtext-gray-400">Average Duration</div>
                 <div className="text-xs text-orange-500">
                   Across all services
                 </div>
@@ -251,7 +251,7 @@ export default function ServicesOfferedPage() {
                 <div className="text-2xl font-bold">
                   ${parseFloat(String(totalRevenue)).toFixed(2)}
                 </div>
-                <div className="text-sm text-gray-400">Total Revenue</div>
+                <div className="text-mdtext-gray-400">Total Revenue</div>
                 <div className="text-xs text-purple-500">
                   {services.length} active services
                 </div>
@@ -262,7 +262,7 @@ export default function ServicesOfferedPage() {
 
         <div className="card">
           <h2 className="text-xl font-semibold mb-6">All Services</h2>
-          <p className="text-gray-400 text-sm mb-6">
+          <p className="text-gray-400 text-mdmb-6">
             Showing {services.length} of {total} services
           </p>
 
@@ -396,9 +396,7 @@ export default function ServicesOfferedPage() {
                         <div className="font-medium text-white">
                           {service.name}
                         </div>
-                        <div className="text-sm text-gray-400">
-                          {service.id}
-                        </div>
+                        <div className="text-mdtext-gray-400">{service.id}</div>
                       </td>
                       <td className="py-4 px-4 text-gray-300">
                         {service.department?.name || "N/A"}
@@ -468,7 +466,7 @@ export default function ServicesOfferedPage() {
 
           {!loading && services.length > 0 && (
             <div className="flex justify-between items-center mt-6 pt-4 border-t border-dark-tertiary">
-              <p className="text-sm text-gray-400">
+              <p className="text-mdtext-gray-400">
                 Showing {services.length} of {total} services
               </p>
               <div className="flex gap-2">
@@ -479,7 +477,7 @@ export default function ServicesOfferedPage() {
                 >
                   Previous
                 </button>
-                <span className="px-4 py-2 text-sm text-gray-300">
+                <span className="px-4 py-2 text-mdtext-gray-300">
                   Page {page}
                 </span>
                 <button

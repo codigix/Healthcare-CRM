@@ -104,7 +104,10 @@ export default function BloodStockPage() {
     if (!selectedUnit) return;
 
     try {
-      const response = await bloodBankAPI.updateStock(selectedUnit.id, editFormData);
+      const response = await bloodBankAPI.updateStock(
+        selectedUnit.id,
+        editFormData
+      );
       if (response.data.success) {
         alert("Blood unit updated successfully!");
         setEditModalOpen(false);
@@ -180,7 +183,7 @@ export default function BloodStockPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">{totalUnits}</div>
-                <div className="text-sm text-gray-400">Total Blood Units</div>
+                <div className="text-mdtext-gray-400">Total Blood Units</div>
                 <div className="text-xs text-emerald-500">
                   Units available across all blood types
                 </div>
@@ -195,7 +198,7 @@ export default function BloodStockPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">8</div>
-                <div className="text-sm text-gray-400">
+                <div className="text-mdtext-gray-400">
                   Blood Type Distribution
                 </div>
               </div>
@@ -209,7 +212,7 @@ export default function BloodStockPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">{expiringUnits}</div>
-                <div className="text-sm text-gray-400">Expiring Soon</div>
+                <div className="text-mdtext-gray-400">Expiring Soon</div>
                 <div className="text-xs text-red-500">
                   Units expiring within next 7 days
                 </div>
@@ -224,7 +227,7 @@ export default function BloodStockPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">{criticalLevels}</div>
-                <div className="text-sm text-gray-400">Critical Levels</div>
+                <div className="text-mdtext-gray-400">Critical Levels</div>
                 <div className="text-xs text-red-500">
                   Blood types with critically low inventory
                 </div>
@@ -237,7 +240,7 @@ export default function BloodStockPage() {
           <h2 className="text-xl font-semibold mb-6">
             Blood Type Distribution
           </h2>
-          <p className="text-gray-400 text-sm mb-6">
+          <p className="text-gray-400 text-mdmb-6">
             Current inventory levels for each blood type
           </p>
 
@@ -515,19 +518,19 @@ export default function BloodStockPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400">
+                <label className="block text-mdfont-medium text-gray-400">
                   Unit ID
                 </label>
                 <p className="text-white">{selectedUnit.unitId}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400">
+                <label className="block text-mdfont-medium text-gray-400">
                   Blood Type
                 </label>
                 <p className="text-white">{selectedUnit.bloodType}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400">
+                <label className="block text-mdfont-medium text-gray-400">
                   Quantity
                 </label>
                 <p className="text-white">
@@ -536,13 +539,13 @@ export default function BloodStockPage() {
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400">
+                <label className="block text-mdfont-medium text-gray-400">
                   Status
                 </label>
                 <p className="text-white">{selectedUnit.status}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400">
+                <label className="block text-mdfont-medium text-gray-400">
                   Collection Date
                 </label>
                 <p className="text-white">
@@ -550,7 +553,7 @@ export default function BloodStockPage() {
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400">
+                <label className="block text-mdfont-medium text-gray-400">
                   Expiry Date
                 </label>
                 <p className="text-white">
@@ -560,7 +563,7 @@ export default function BloodStockPage() {
             </div>
             {selectedUnit.donor && (
               <div>
-                <label className="block text-sm font-medium text-gray-400">
+                <label className="block text-mdfont-medium text-gray-400">
                   Donor
                 </label>
                 <p className="text-white">{selectedUnit.donor.name}</p>
@@ -568,7 +571,7 @@ export default function BloodStockPage() {
             )}
             {selectedUnit.notes && (
               <div>
-                <label className="block text-sm font-medium text-gray-400">
+                <label className="block text-mdfont-medium text-gray-400">
                   Notes
                 </label>
                 <p className="text-white">{selectedUnit.notes}</p>
@@ -601,7 +604,7 @@ export default function BloodStockPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Status</label>
+                <label className="block text-mdfont-medium mb-2">Status</label>
                 <select
                   value={editFormData.status}
                   onChange={(e) =>
@@ -619,7 +622,7 @@ export default function BloodStockPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-mdfont-medium mb-2">
                   Quantity
                 </label>
                 <input
@@ -636,7 +639,7 @@ export default function BloodStockPage() {
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-mdfont-medium mb-2">
                   Expiry Date
                 </label>
                 <input
@@ -652,7 +655,7 @@ export default function BloodStockPage() {
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-medium mb-2">Notes</label>
+                <label className="block text-mdfont-medium mb-2">Notes</label>
                 <textarea
                   value={editFormData.notes}
                   onChange={(e) =>
@@ -706,7 +709,7 @@ export default function BloodStockPage() {
                 undone.
               </p>
               <div className="bg-dark-tertiary p-3 rounded-lg">
-                <p className="text-sm text-gray-300">
+                <p className="text-mdtext-gray-300">
                   <strong>Blood Type:</strong> {selectedUnit.bloodType}
                   <br />
                   <strong>Quantity:</strong> {selectedUnit.quantity} unit

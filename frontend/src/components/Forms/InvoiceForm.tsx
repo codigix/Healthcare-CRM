@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { invoiceAPI } from '@/lib/api';
+import { useState, useEffect } from "react";
+import { invoiceAPI } from "@/lib/api";
 
 interface Invoice {
   id?: string;
@@ -24,39 +24,47 @@ interface InvoiceFormProps {
   onSuccess: () => void;
 }
 
-export default function InvoiceForm({ invoice, patients, onSuccess }: InvoiceFormProps) {
+export default function InvoiceForm({
+  invoice,
+  patients,
+  onSuccess,
+}: InvoiceFormProps) {
   const [formData, setFormData] = useState<Invoice>({
-    patientId: '',
+    patientId: "",
     amount: 0,
-    status: 'pending',
-    dueDate: '',
-    notes: '',
+    status: "pending",
+    dueDate: "",
+    notes: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (invoice) {
       setFormData({
         ...invoice,
-        patientId: invoice.patient?.id || '',
-        dueDate: invoice.dueDate?.split('T')[0] || '',
+        patientId: invoice.patient?.id || "",
+        dueDate: invoice.dueDate?.split("T")[0] || "",
       });
     }
   }, [invoice]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'amount' ? parseFloat(value) : value,
+      [name]: name === "amount" ? parseFloat(value) : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       if (invoice?.id) {
@@ -66,7 +74,7 @@ export default function InvoiceForm({ invoice, patients, onSuccess }: InvoiceFor
       }
       onSuccess();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to save invoice');
+      setError(err.response?.data?.error || "Failed to save invoice");
     } finally {
       setLoading(false);
     }
@@ -75,7 +83,7 @@ export default function InvoiceForm({ invoice, patients, onSuccess }: InvoiceFor
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Patient
         </label>
         <select
@@ -95,7 +103,7 @@ export default function InvoiceForm({ invoice, patients, onSuccess }: InvoiceFor
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Amount
         </label>
         <input
@@ -111,7 +119,7 @@ export default function InvoiceForm({ invoice, patients, onSuccess }: InvoiceFor
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Due Date
         </label>
         <input
@@ -124,7 +132,7 @@ export default function InvoiceForm({ invoice, patients, onSuccess }: InvoiceFor
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Status
         </label>
         <select
@@ -140,7 +148,7 @@ export default function InvoiceForm({ invoice, patients, onSuccess }: InvoiceFor
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Notes
         </label>
         <textarea
@@ -159,12 +167,8 @@ export default function InvoiceForm({ invoice, patients, onSuccess }: InvoiceFor
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-primary w-full"
-      >
-        {loading ? 'Saving...' : 'Save Invoice'}
+      <button type="submit" disabled={loading} className="btn-primary w-full">
+        {loading ? "Saving..." : "Save Invoice"}
       </button>
     </form>
   );

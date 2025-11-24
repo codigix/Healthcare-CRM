@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { doctorAPI } from '@/lib/api';
+import { useState, useEffect } from "react";
+import { doctorAPI } from "@/lib/api";
 
 interface Doctor {
   id?: string;
@@ -21,16 +21,16 @@ interface DoctorFormProps {
 
 export default function DoctorForm({ doctor, onSuccess }: DoctorFormProps) {
   const [formData, setFormData] = useState<Doctor>({
-    name: '',
-    email: '',
-    phone: '',
-    specialization: '',
+    name: "",
+    email: "",
+    phone: "",
+    specialization: "",
     experience: 0,
-    schedule: '',
-    avatar: '',
+    schedule: "",
+    avatar: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (doctor) {
@@ -38,18 +38,20 @@ export default function DoctorForm({ doctor, onSuccess }: DoctorFormProps) {
     }
   }, [doctor]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'experience' ? parseInt(value) : value,
+      [name]: name === "experience" ? parseInt(value) : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       if (doctor?.id) {
@@ -59,7 +61,7 @@ export default function DoctorForm({ doctor, onSuccess }: DoctorFormProps) {
       }
       onSuccess();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to save doctor');
+      setError(err.response?.data?.error || "Failed to save doctor");
     } finally {
       setLoading(false);
     }
@@ -68,7 +70,7 @@ export default function DoctorForm({ doctor, onSuccess }: DoctorFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Name
         </label>
         <input
@@ -83,7 +85,7 @@ export default function DoctorForm({ doctor, onSuccess }: DoctorFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Email
         </label>
         <input
@@ -98,7 +100,7 @@ export default function DoctorForm({ doctor, onSuccess }: DoctorFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Phone
         </label>
         <input
@@ -113,7 +115,7 @@ export default function DoctorForm({ doctor, onSuccess }: DoctorFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Specialization
         </label>
         <input
@@ -128,7 +130,7 @@ export default function DoctorForm({ doctor, onSuccess }: DoctorFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Experience (years)
         </label>
         <input
@@ -143,7 +145,7 @@ export default function DoctorForm({ doctor, onSuccess }: DoctorFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Schedule
         </label>
         <input
@@ -162,12 +164,8 @@ export default function DoctorForm({ doctor, onSuccess }: DoctorFormProps) {
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-primary w-full"
-      >
-        {loading ? 'Saving...' : 'Save Doctor'}
+      <button type="submit" disabled={loading} className="btn-primary w-full">
+        {loading ? "Saving..." : "Save Doctor"}
       </button>
     </form>
   );

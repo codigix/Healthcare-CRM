@@ -1,10 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Search, Package, AlertTriangle, DollarSign, TrendingUp, MoreVertical, Filter, Loader } from 'lucide-react';
-import Link from 'next/link';
-import { medicineAPI } from '@/lib/api';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import {
+  Search,
+  Package,
+  AlertTriangle,
+  DollarSign,
+  TrendingUp,
+  MoreVertical,
+  Filter,
+  Loader,
+} from "lucide-react";
+import Link from "next/link";
+import { medicineAPI } from "@/lib/api";
 
 interface InventoryItem {
   id: string;
@@ -20,13 +29,13 @@ interface InventoryItem {
 }
 
 export default function InventoryPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("all");
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [totalValue, setTotalValue] = useState(0);
@@ -38,24 +47,26 @@ export default function InventoryPage() {
   const fetchInventory = async () => {
     try {
       setLoading(true);
-      setError('');
+      setError("");
       const filters: any = {};
       if (searchQuery) filters.search = searchQuery;
-      if (categoryFilter !== 'all') filters.category = categoryFilter;
-      if (statusFilter !== 'all') filters.status = statusFilter;
+      if (categoryFilter !== "all") filters.category = categoryFilter;
+      if (statusFilter !== "all") filters.status = statusFilter;
 
       const response = await medicineAPI.list(page, 10, filters);
       const medicines = response.data.medicines;
-      
-      const value = medicines.reduce((sum: number, m: any) => 
-        sum + (parseFloat(m.purchasePrice) * m.initialQuantity), 0
+
+      const value = medicines.reduce(
+        (sum: number, m: any) =>
+          sum + parseFloat(m.purchasePrice) * m.initialQuantity,
+        0
       );
-      
+
       setItems(medicines);
       setTotal(response.data.total);
       setTotalValue(value);
     } catch (err: any) {
-      setError('Failed to fetch inventory');
+      setError("Failed to fetch inventory");
       console.error(err);
     } finally {
       setLoading(false);
@@ -63,27 +74,35 @@ export default function InventoryPage() {
   };
 
   const getStatusColor = (quantity: number, reorderLevel: number) => {
-    if (quantity === 0) return 'bg-red-500/10 text-red-500 border border-red-500/20';
-    if (quantity <= reorderLevel) return 'bg-orange-500/10 text-orange-500 border border-orange-500/20';
-    return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20';
+    if (quantity === 0)
+      return "bg-red-500/10 text-red-500 border border-red-500/20";
+    if (quantity <= reorderLevel)
+      return "bg-orange-500/10 text-orange-500 border border-orange-500/20";
+    return "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
   };
 
   const getStatusLabel = (quantity: number, reorderLevel: number) => {
-    if (quantity === 0) return 'Out of Stock';
-    if (quantity <= reorderLevel) return 'Low Stock';
-    return 'In Stock';
+    if (quantity === 0) return "Out of Stock";
+    if (quantity <= reorderLevel) return "Low Stock";
+    return "In Stock";
   };
 
-  const filteredItems = items.filter(item => {
-    const matchesTab = activeTab === 'all' || 
-                      (activeTab === 'medications' && ['Antibiotics', 'Analgesics', 'Antidiabetics'].includes(item.category)) ||
-                      (activeTab === 'supplies' && item.category === 'Medical Supplies') ||
-                      (activeTab === 'equipment' && item.category === 'Equipment');
+  const filteredItems = items.filter((item) => {
+    const matchesTab =
+      activeTab === "all" ||
+      (activeTab === "medications" &&
+        ["Antibiotics", "Analgesics", "Antidiabetics"].includes(
+          item.category
+        )) ||
+      (activeTab === "supplies" && item.category === "Medical Supplies") ||
+      (activeTab === "equipment" && item.category === "Equipment");
     return matchesTab;
   });
 
-  const lowStockItems = items.filter(m => getStatusLabel(m.initialQuantity, m.reorderLevel) === 'Low Stock').length;
-  const uniqueCategories = Array.from(new Set(items.map(i => i.category)));
+  const lowStockItems = items.filter(
+    (m) => getStatusLabel(m.initialQuantity, m.reorderLevel) === "Low Stock"
+  ).length;
+  const uniqueCategories = Array.from(new Set(items.map((i) => i.category)));
 
   return (
     <DashboardLayout>
@@ -91,7 +110,9 @@ export default function InventoryPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold mb-2">Inventory Management</h1>
-            <p className="text-gray-400">Manage your clinic&apos;s inventory, supplies, and equipment</p>
+            <p className="text-gray-400">
+              Manage your clinic&apos;s inventory, supplies, and equipment
+            </p>
           </div>
           <div className="flex gap-3">
             <Link href="/pharmacy/add-medicine" className="btn-primary">
@@ -108,9 +129,13 @@ export default function InventoryPage() {
                 <Package className="text-blue-500" size={24} />
               </div>
               <div>
-                <div className="text-2xl font-bold">{total.toLocaleString()}</div>
-                <div className="text-sm text-gray-400">Total Items</div>
-                <div className="text-xs text-blue-500">Medicines in inventory</div>
+                <div className="text-2xl font-bold">
+                  {total.toLocaleString()}
+                </div>
+                <div className="text-mdtext-gray-400">Total Items</div>
+                <div className="text-xs text-blue-500">
+                  Medicines in inventory
+                </div>
               </div>
             </div>
           </div>
@@ -122,7 +147,7 @@ export default function InventoryPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">{lowStockItems}</div>
-                <div className="text-sm text-gray-400">Low Stock Items</div>
+                <div className="text-mdtext-gray-400">Low Stock Items</div>
                 <div className="text-xs text-orange-500">Need restocking</div>
               </div>
             </div>
@@ -134,8 +159,15 @@ export default function InventoryPage() {
                 <DollarSign className="text-emerald-500" size={24} />
               </div>
               <div>
-                <div className="text-2xl font-bold">${typeof totalValue === 'number' ? totalValue.toLocaleString('en-US', {maximumFractionDigits: 0}) : totalValue}</div>
-                <div className="text-sm text-gray-400">Value of Inventory</div>
+                <div className="text-2xl font-bold">
+                  $
+                  {typeof totalValue === "number"
+                    ? totalValue.toLocaleString("en-US", {
+                        maximumFractionDigits: 0,
+                      })
+                    : totalValue}
+                </div>
+                <div className="text-mdtext-gray-400">Value of Inventory</div>
                 <div className="text-xs text-emerald-500">Purchase value</div>
               </div>
             </div>
@@ -147,8 +179,10 @@ export default function InventoryPage() {
                 <TrendingUp className="text-purple-500" size={24} />
               </div>
               <div>
-                <div className="text-2xl font-bold">{uniqueCategories.length}</div>
-                <div className="text-sm text-gray-400">Categories</div>
+                <div className="text-2xl font-bold">
+                  {uniqueCategories.length}
+                </div>
+                <div className="text-mdtext-gray-400">Categories</div>
                 <div className="text-xs text-purple-500">Active categories</div>
               </div>
             </div>
@@ -169,41 +203,41 @@ export default function InventoryPage() {
 
           <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
             <button
-              onClick={() => setActiveTab('all')}
+              onClick={() => setActiveTab("all")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'all'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "all"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               All Items
             </button>
             <button
-              onClick={() => setActiveTab('medications')}
+              onClick={() => setActiveTab("medications")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'medications'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "medications"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Medications
             </button>
             <button
-              onClick={() => setActiveTab('supplies')}
+              onClick={() => setActiveTab("supplies")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'supplies'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "supplies"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Medical Supplies
             </button>
             <button
-              onClick={() => setActiveTab('equipment')}
+              onClick={() => setActiveTab("equipment")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'equipment'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "equipment"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Equipment
@@ -217,8 +251,10 @@ export default function InventoryPage() {
               className="input-field"
             >
               <option value="all">All Categories</option>
-              {uniqueCategories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+              {uniqueCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
             </select>
             <select
@@ -248,37 +284,77 @@ export default function InventoryPage() {
           ) : (
             <>
               <h2 className="text-xl font-semibold mb-6">Inventory Items</h2>
-              <p className="text-gray-400 text-sm mb-6">Showing {filteredItems.length} items out of {total} total...</p>
+              <p className="text-gray-400 text-mdmb-6">
+                Showing {filteredItems.length} items out of {total} total...
+              </p>
 
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-dark-tertiary">
-                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Medicine ID</th>
-                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Name</th>
-                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Category</th>
-                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Stock Level</th>
-                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Status</th>
-                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Unit Price</th>
-                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>
+                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                        Medicine ID
+                      </th>
+                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                        Name
+                      </th>
+                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                        Category
+                      </th>
+                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                        Stock Level
+                      </th>
+                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                        Status
+                      </th>
+                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                        Unit Price
+                      </th>
+                      <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredItems.map((item) => (
-                      <tr key={item.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
-                        <td className="py-4 px-4 text-gray-300 font-medium">{item.id.slice(0, 8)}</td>
+                      <tr
+                        key={item.id}
+                        className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
+                      >
+                        <td className="py-4 px-4 text-gray-300 font-medium">
+                          {item.id.slice(0, 8)}
+                        </td>
                         <td className="py-4 px-4 text-white">
                           <div className="font-medium">{item.name}</div>
-                          <div className="text-xs text-gray-400">{item.genericName || 'N/A'}</div>
+                          <div className="text-xs text-gray-400">
+                            {item.genericName || "N/A"}
+                          </div>
                         </td>
-                        <td className="py-4 px-4 text-gray-300">{item.category}</td>
-                        <td className="py-4 px-4 text-gray-300">{item.initialQuantity} / {item.maximumLevel}</td>
+                        <td className="py-4 px-4 text-gray-300">
+                          {item.category}
+                        </td>
+                        <td className="py-4 px-4 text-gray-300">
+                          {item.initialQuantity} / {item.maximumLevel}
+                        </td>
                         <td className="py-4 px-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(item.initialQuantity, item.reorderLevel)}`}>
-                            {getStatusLabel(item.initialQuantity, item.reorderLevel)}
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              item.initialQuantity,
+                              item.reorderLevel
+                            )}`}
+                          >
+                            {getStatusLabel(
+                              item.initialQuantity,
+                              item.reorderLevel
+                            )}
                           </span>
                         </td>
-                        <td className="py-4 px-4 text-gray-300">${typeof item.purchasePrice === 'string' ? parseFloat(item.purchasePrice).toFixed(2) : item.purchasePrice.toFixed(2)}</td>
+                        <td className="py-4 px-4 text-gray-300">
+                          $
+                          {typeof item.purchasePrice === "string"
+                            ? parseFloat(item.purchasePrice).toFixed(2)
+                            : item.purchasePrice.toFixed(2)}
+                        </td>
                         <td className="py-4 px-4">
                           <button className="p-2 hover:bg-gray-500/20 rounded transition-colors">
                             <MoreVertical size={18} className="text-gray-400" />
@@ -292,7 +368,8 @@ export default function InventoryPage() {
 
               <div className="flex justify-between items-center mt-6 pt-4 border-t border-dark-tertiary">
                 <p className="text-gray-400 text-sm">
-                  Showing {(page - 1) * 10 + 1} to {Math.min(page * 10, total)} of {total} items
+                  Showing {(page - 1) * 10 + 1} to {Math.min(page * 10, total)}{" "}
+                  of {total} items
                 </p>
                 <div className="flex gap-2">
                   <button

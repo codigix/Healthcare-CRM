@@ -1,67 +1,78 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Upload, Loader } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { medicineAPI } from '@/lib/api';
+import { useState } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { Upload, Loader } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { medicineAPI } from "@/lib/api";
 
 export default function AddMedicinePage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('basic');
+  const [activeTab, setActiveTab] = useState("basic");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    medicineName: '',
-    genericName: '',
-    category: '',
-    medicineType: '',
-    description: '',
-    medicineForm: 'tablet',
-    manufacturer: '',
-    supplier: '',
-    manufacturingDate: '',
-    expiryDate: '',
-    batchNumber: '',
-    dosage: '',
-    sideEffects: '',
-    precautions: '',
-    initialQuantity: '',
-    reorderLevel: '',
-    maximumLevel: '',
-    purchasePrice: '',
-    sellingPrice: '',
-    taxRate: '',
+    medicineName: "",
+    genericName: "",
+    category: "",
+    medicineType: "",
+    description: "",
+    medicineForm: "tablet",
+    manufacturer: "",
+    supplier: "",
+    manufacturingDate: "",
+    expiryDate: "",
+    batchNumber: "",
+    dosage: "",
+    sideEffects: "",
+    precautions: "",
+    initialQuantity: "",
+    reorderLevel: "",
+    maximumLevel: "",
+    purchasePrice: "",
+    sellingPrice: "",
+    taxRate: "",
     roomTemperature: false,
     frozen: false,
     refrigerated: false,
     protectFromLight: false,
-    activeForSale: true
+    activeForSale: true,
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value, type } = e.target;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.medicineName || !formData.genericName || !formData.category || !formData.medicineType || !formData.purchasePrice || !formData.sellingPrice) {
-      setError('Please fill all required fields');
+
+    if (
+      !formData.medicineName ||
+      !formData.genericName ||
+      !formData.category ||
+      !formData.medicineType ||
+      !formData.purchasePrice ||
+      !formData.sellingPrice
+    ) {
+      setError("Please fill all required fields");
       return;
     }
 
     try {
       setLoading(true);
-      setError('');
-      
+      setError("");
+
       const medicineData = {
         name: formData.medicineName,
         genericName: formData.genericName,
@@ -87,13 +98,13 @@ export default function AddMedicinePage() {
         frozen: formData.frozen,
         refrigerated: formData.refrigerated,
         protectFromLight: formData.protectFromLight,
-        status: formData.activeForSale ? 'Active' : 'Inactive',
+        status: formData.activeForSale ? "Active" : "Inactive",
       };
 
       await medicineAPI.create(medicineData);
-      router.push('/pharmacy/medicines');
+      router.push("/pharmacy/medicines");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create medicine');
+      setError(err.response?.data?.error || "Failed to create medicine");
     } finally {
       setLoading(false);
     }
@@ -107,9 +118,7 @@ export default function AddMedicinePage() {
             <h1 className="text-3xl font-bold mb-2">Add New Medicine</h1>
           </div>
           <Link href="/pharmacy/medicines">
-            <button className="btn-secondary">
-              Cancel
-            </button>
+            <button className="btn-secondary">Cancel</button>
           </Link>
         </div>
 
@@ -122,31 +131,31 @@ export default function AddMedicinePage() {
 
           <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
             <button
-              onClick={() => setActiveTab('basic')}
+              onClick={() => setActiveTab("basic")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'basic'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "basic"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Basic Information
             </button>
             <button
-              onClick={() => setActiveTab('detailed')}
+              onClick={() => setActiveTab("detailed")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'detailed'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "detailed"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Detailed Information
             </button>
             <button
-              onClick={() => setActiveTab('inventory')}
+              onClick={() => setActiveTab("inventory")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'inventory'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "inventory"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Inventory & Pricing
@@ -154,14 +163,18 @@ export default function AddMedicinePage() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            {activeTab === 'basic' && (
+            {activeTab === "basic" && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
-                <p className="text-gray-400 text-sm mb-6">Enter the basic details of the medicine</p>
+                <h2 className="text-xl font-semibold mb-4">
+                  Basic Information
+                </h2>
+                <p className="text-gray-400 text-mdmb-6">
+                  Enter the basic details of the medicine
+                </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Medicine Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -176,7 +189,7 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Generic Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -191,7 +204,7 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Category <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -205,7 +218,9 @@ export default function AddMedicinePage() {
                       <option value="Antibiotics">Antibiotics</option>
                       <option value="Analgesics">Analgesics</option>
                       <option value="Antidiabetics">Antidiabetics</option>
-                      <option value="Antihypertensives">Antihypertensives</option>
+                      <option value="Antihypertensives">
+                        Antihypertensives
+                      </option>
                       <option value="Antihistamines">Antihistamines</option>
                       <option value="Statins">Statins</option>
                       <option value="Anxiolytics">Anxiolytics</option>
@@ -214,7 +229,7 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Medicine Type
                     </label>
                     <select
@@ -232,7 +247,9 @@ export default function AddMedicinePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Description</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Description
+                  </label>
                   <textarea
                     name="description"
                     value={formData.description}
@@ -244,10 +261,23 @@ export default function AddMedicinePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-3">Medicine Form</label>
+                  <label className="block text-mdfont-medium mb-3">
+                    Medicine Form
+                  </label>
                   <div className="flex flex-wrap gap-4">
-                    {['tablet', 'capsule', 'syrup', 'injection', 'cream/ointment', 'drops', 'other'].map((form) => (
-                      <label key={form} className="flex items-center gap-2 cursor-pointer">
+                    {[
+                      "tablet",
+                      "capsule",
+                      "syrup",
+                      "injection",
+                      "cream/ointment",
+                      "drops",
+                      "other",
+                    ].map((form) => (
+                      <label
+                        key={form}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
                         <input
                           type="radio"
                           name="medicineForm"
@@ -256,7 +286,7 @@ export default function AddMedicinePage() {
                           onChange={handleInputChange}
                           className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 focus:ring-emerald-500"
                         />
-                        <span className="text-sm capitalize">{form}</span>
+                        <span className="text-mdcapitalize">{form}</span>
                       </label>
                     ))}
                   </div>
@@ -270,7 +300,7 @@ export default function AddMedicinePage() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => setActiveTab('detailed')}
+                    onClick={() => setActiveTab("detailed")}
                     className="btn-primary"
                   >
                     Next
@@ -279,14 +309,20 @@ export default function AddMedicinePage() {
               </div>
             )}
 
-            {activeTab === 'detailed' && (
+            {activeTab === "detailed" && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold mb-4">Detailed Information</h2>
-                <p className="text-gray-400 text-sm mb-6">Enter detailed specifications of the medicine</p>
+                <h2 className="text-xl font-semibold mb-4">
+                  Detailed Information
+                </h2>
+                <p className="text-gray-400 text-mdmb-6">
+                  Enter detailed specifications of the medicine
+                </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Manufacturer</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Manufacturer
+                    </label>
                     <input
                       type="text"
                       name="manufacturer"
@@ -298,7 +334,9 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Supplier</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Supplier
+                    </label>
                     <input
                       type="text"
                       name="supplier"
@@ -310,7 +348,9 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Manufacturing Date</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Manufacturing Date
+                    </label>
                     <input
                       type="date"
                       name="manufacturingDate"
@@ -321,7 +361,9 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Expiry Date</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Expiry Date
+                    </label>
                     <input
                       type="date"
                       name="expiryDate"
@@ -332,7 +374,9 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Batch Number</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Batch Number
+                    </label>
                     <input
                       type="text"
                       name="batchNumber"
@@ -344,7 +388,9 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Dosage</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Dosage
+                    </label>
                     <input
                       type="text"
                       name="dosage"
@@ -357,7 +403,9 @@ export default function AddMedicinePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Side Effects</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Side Effects
+                  </label>
                   <textarea
                     name="sideEffects"
                     value={formData.sideEffects}
@@ -369,7 +417,9 @@ export default function AddMedicinePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Precautions & Warnings</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Precautions & Warnings
+                  </label>
                   <textarea
                     name="precautions"
                     value={formData.precautions}
@@ -383,14 +433,14 @@ export default function AddMedicinePage() {
                 <div className="flex justify-end gap-3 pt-4">
                   <button
                     type="button"
-                    onClick={() => setActiveTab('basic')}
+                    onClick={() => setActiveTab("basic")}
                     className="btn-secondary"
                   >
                     Previous
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveTab('inventory')}
+                    onClick={() => setActiveTab("inventory")}
                     className="btn-primary"
                   >
                     Next
@@ -399,14 +449,18 @@ export default function AddMedicinePage() {
               </div>
             )}
 
-            {activeTab === 'inventory' && (
+            {activeTab === "inventory" && (
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold mb-4">Inventory & Pricing</h2>
-                <p className="text-gray-400 text-sm mb-6">Enter inventory and pricing details</p>
+                <h2 className="text-xl font-semibold mb-4">
+                  Inventory & Pricing
+                </h2>
+                <p className="text-gray-400 text-mdmb-6">
+                  Enter inventory and pricing details
+                </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Initial Quantity <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -421,7 +475,9 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Reorder Level</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Reorder Level
+                    </label>
                     <input
                       type="number"
                       name="reorderLevel"
@@ -433,7 +489,9 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Maximum Level</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Maximum Level
+                    </label>
                     <input
                       type="number"
                       name="maximumLevel"
@@ -445,7 +503,7 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Purchase Price <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -460,7 +518,7 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label className="block text-mdfont-medium mb-2">
                       Selling Price <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -475,7 +533,9 @@ export default function AddMedicinePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Tax Rate (%)</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Tax Rate (%)
+                    </label>
                     <input
                       type="number"
                       name="taxRate"
@@ -488,7 +548,9 @@ export default function AddMedicinePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-3">Storage Conditions</label>
+                  <label className="block text-mdfont-medium mb-3">
+                    Storage Conditions
+                  </label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -534,15 +596,27 @@ export default function AddMedicinePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-3">Upload Images</label>
+                  <label className="block text-mdfont-medium mb-3">
+                    Upload Images
+                  </label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="border-2 border-dashed border-dark-tertiary rounded-lg p-8 text-center hover:border-gray-600 transition-colors cursor-pointer">
-                      <Upload className="mx-auto mb-3 text-gray-400" size={32} />
-                      <p className="text-sm text-gray-400 mb-1">Click to upload medicine image</p>
+                      <Upload
+                        className="mx-auto mb-3 text-gray-400"
+                        size={32}
+                      />
+                      <p className="text-mdtext-gray-400 mb-1">
+                        Click to upload medicine image
+                      </p>
                     </div>
                     <div className="border-2 border-dashed border-dark-tertiary rounded-lg p-8 text-center hover:border-gray-600 transition-colors cursor-pointer">
-                      <Upload className="mx-auto mb-3 text-gray-400" size={32} />
-                      <p className="text-sm text-gray-400 mb-1">Click to upload package image</p>
+                      <Upload
+                        className="mx-auto mb-3 text-gray-400"
+                        size={32}
+                      />
+                      <p className="text-mdtext-gray-400 mb-1">
+                        Click to upload package image
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -556,14 +630,16 @@ export default function AddMedicinePage() {
                       onChange={handleInputChange}
                       className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 rounded focus:ring-emerald-500"
                     />
-                    <span className="text-sm font-medium">Active (Available for sale)</span>
+                    <span className="text-mdfont-medium">
+                      Active (Available for sale)
+                    </span>
                   </label>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
                   <button
                     type="button"
-                    onClick={() => setActiveTab('detailed')}
+                    onClick={() => setActiveTab("detailed")}
                     className="btn-secondary"
                     disabled={loading}
                   >
@@ -580,7 +656,7 @@ export default function AddMedicinePage() {
                         Saving...
                       </>
                     ) : (
-                      'Save Medicine'
+                      "Save Medicine"
                     )}
                   </button>
                 </div>
@@ -589,8 +665,9 @@ export default function AddMedicinePage() {
           </form>
 
           <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <p className="text-sm text-blue-400">
-              Fields marked with <span className="text-red-500">*</span> are required. Make sure to fill all required fields before submitting.
+            <p className="text-mdtext-blue-400">
+              Fields marked with <span className="text-red-500">*</span> are
+              required. Make sure to fill all required fields before submitting.
             </p>
           </div>
         </div>

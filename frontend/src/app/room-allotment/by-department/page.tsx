@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Search, Filter, MoreVertical, Eye, Edit2, Trash2 } from 'lucide-react';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { Search, Filter, MoreVertical, Eye, Edit2, Trash2 } from "lucide-react";
+import Link from "next/link";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 interface Room {
   id: string;
   roomNumber: string;
   roomType: string;
-  status: 'Occupied' | 'Available' | 'Maintenance';
+  status: "Occupied" | "Available" | "Maintenance";
   roomAllotments?: any[];
 }
 
@@ -24,18 +24,20 @@ interface DepartmentData {
 }
 
 export default function RoomsByDepartmentPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('Cardiology');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("Cardiology");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [departmentsData, setDepartmentsData] = useState<DepartmentData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [availableDepartments, setAvailableDepartments] = useState<string[]>([]);
+  const [error, setError] = useState("");
+  const [availableDepartments, setAvailableDepartments] = useState<string[]>(
+    []
+  );
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [statusUpdateModal, setStatusUpdateModal] = useState(false);
   const [viewDetailsModal, setViewDetailsModal] = useState(false);
-  const [newStatus, setNewStatus] = useState('Available');
+  const [newStatus, setNewStatus] = useState("Available");
 
   useEffect(() => {
     fetchDepartmentsData();
@@ -46,34 +48,41 @@ export default function RoomsByDepartmentPage() {
       setLoading(true);
       const response = await fetch(`${API_URL}/room-allotment/rooms`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
-      if (!response.ok) throw new Error('Failed to fetch rooms');
+      if (!response.ok) throw new Error("Failed to fetch rooms");
 
       const data = await response.json();
-      const departments = [...new Set(data.rooms.map((r: any) => r.department))] as string[];
+      const departments = [
+        ...new Set(data.rooms.map((r: any) => r.department)),
+      ] as string[];
       setAvailableDepartments(departments);
-      
+
       if (departments.length > 0) {
         setSelectedDepartment(departments[0]);
         await fetchDepartmentRooms(departments[0]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch departments');
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch departments"
+      );
     }
   };
 
   const fetchDepartmentRooms = async (dept: string) => {
     try {
-      const response = await fetch(`${API_URL}/room-allotment/by-department/${dept}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      const response = await fetch(
+        `${API_URL}/room-allotment/by-department/${dept}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
-      if (!response.ok) throw new Error('Failed to fetch department data');
+      if (!response.ok) throw new Error("Failed to fetch department data");
 
       const data = await response.json();
       setDepartmentsData((prev) => {
@@ -84,7 +93,9 @@ export default function RoomsByDepartmentPage() {
         return [...prev, data];
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch department');
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch department"
+      );
     } finally {
       setLoading(false);
     }
@@ -92,8 +103,8 @@ export default function RoomsByDepartmentPage() {
 
   const handleDepartmentChange = (dept: string) => {
     setSelectedDepartment(dept);
-    setStatusFilter('all');
-    setSearchQuery('');
+    setStatusFilter("all");
+    setSearchQuery("");
 
     const existing = departmentsData.find((d) => d.department === dept);
     if (!existing) {
@@ -101,7 +112,9 @@ export default function RoomsByDepartmentPage() {
     }
   };
 
-  const currentDepartment = departmentsData.find((d) => d.department === selectedDepartment);
+  const currentDepartment = departmentsData.find(
+    (d) => d.department === selectedDepartment
+  );
 
   const filteredRooms = currentDepartment
     ? currentDepartment.rooms.filter((room) => {
@@ -109,7 +122,8 @@ export default function RoomsByDepartmentPage() {
           room.roomNumber.includes(searchQuery) ||
           room.roomType.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesStatus = statusFilter === 'all' || room.status === statusFilter;
+        const matchesStatus =
+          statusFilter === "all" || room.status === statusFilter;
 
         return matchesSearch && matchesStatus;
       })
@@ -117,43 +131,46 @@ export default function RoomsByDepartmentPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Occupied':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
-      case 'Available':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
-      case 'Maintenance':
-        return 'bg-red-500/10 text-red-400 border-red-500/30';
+      case "Occupied":
+        return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+      case "Available":
+        return "bg-blue-500/10 text-blue-400 border-blue-500/30";
+      case "Maintenance":
+        return "bg-red-500/10 text-red-400 border-red-500/30";
       default:
-        return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
+        return "bg-gray-500/10 text-gray-400 border-gray-500/30";
     }
   };
 
   const getRoomTypeColor = (roomType: string) => {
     switch (roomType) {
-      case 'ICU':
-        return 'bg-red-500/10 text-red-400';
-      case 'Private':
-        return 'bg-emerald-500/10 text-emerald-400';
-      case 'Semi-Private':
-        return 'bg-blue-500/10 text-blue-400';
-      case 'General':
-        return 'bg-amber-500/10 text-amber-400';
+      case "ICU":
+        return "bg-red-500/10 text-red-400";
+      case "Private":
+        return "bg-emerald-500/10 text-emerald-400";
+      case "Semi-Private":
+        return "bg-blue-500/10 text-blue-400";
+      case "General":
+        return "bg-amber-500/10 text-amber-400";
       default:
-        return 'bg-gray-500/10 text-gray-400';
+        return "bg-gray-500/10 text-gray-400";
     }
   };
 
   const handleUpdateStatus = async () => {
     if (!selectedRoom) return;
     try {
-      const response = await fetch(`${API_URL}/room-allotment/rooms/${selectedRoom.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
+      const response = await fetch(
+        `${API_URL}/room-allotment/rooms/${selectedRoom.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
 
       if (response.ok) {
         setStatusUpdateModal(false);
@@ -161,32 +178,35 @@ export default function RoomsByDepartmentPage() {
         setOpenDropdown(null);
       } else {
         const error = await response.json();
-        alert(error.error || 'Failed to update room status');
+        alert(error.error || "Failed to update room status");
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error updating room status');
+      alert(err instanceof Error ? err.message : "Error updating room status");
     }
   };
 
   const handleDeleteRoom = async (roomId: string) => {
-    if (confirm('Are you sure you want to delete this room?')) {
+    if (confirm("Are you sure you want to delete this room?")) {
       try {
-        const response = await fetch(`${API_URL}/room-allotment/rooms/${roomId}`, {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
+        const response = await fetch(
+          `${API_URL}/room-allotment/rooms/${roomId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         if (response.ok) {
           await fetchDepartmentRooms(selectedDepartment);
           setOpenDropdown(null);
         } else {
           const error = await response.json();
-          alert(error.error || 'Failed to delete room');
+          alert(error.error || "Failed to delete room");
         }
       } catch (err) {
-        alert(err instanceof Error ? err.message : 'Error deleting room');
+        alert(err instanceof Error ? err.message : "Error deleting room");
       }
     }
   };
@@ -196,7 +216,9 @@ export default function RoomsByDepartmentPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Rooms by Department</h1>
-          <p className="text-gray-400 mt-2">View and manage rooms organized by department</p>
+          <p className="text-gray-400 mt-2">
+            View and manage rooms organized by department
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -205,7 +227,7 @@ export default function RoomsByDepartmentPage() {
               <div>
                 <p className="text-gray-400 text-sm">Total Rooms</p>
                 <p className="text-2xl font-bold text-white mt-1">
-                  {loading ? '-' : currentDepartment?.totalRooms || 0}
+                  {loading ? "-" : currentDepartment?.totalRooms || 0}
                 </p>
               </div>
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
@@ -219,7 +241,7 @@ export default function RoomsByDepartmentPage() {
               <div>
                 <p className="text-gray-400 text-sm">Occupied</p>
                 <p className="text-2xl font-bold text-emerald-400 mt-1">
-                  {loading ? '-' : currentDepartment?.occupied || 0}
+                  {loading ? "-" : currentDepartment?.occupied || 0}
                 </p>
               </div>
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
@@ -233,7 +255,7 @@ export default function RoomsByDepartmentPage() {
               <div>
                 <p className="text-gray-400 text-sm">Available</p>
                 <p className="text-2xl font-bold text-blue-400 mt-1">
-                  {loading ? '-' : currentDepartment?.available || 0}
+                  {loading ? "-" : currentDepartment?.available || 0}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
@@ -248,8 +270,12 @@ export default function RoomsByDepartmentPage() {
                 <p className="text-gray-400 text-sm">Occupancy Rate</p>
                 <p className="text-2xl font-bold text-amber-400 mt-1">
                   {loading || !currentDepartment
-                    ? '-'
-                    : Math.round((currentDepartment.occupied / currentDepartment.totalRooms) * 100) + '%'}
+                    ? "-"
+                    : Math.round(
+                        (currentDepartment.occupied /
+                          currentDepartment.totalRooms) *
+                          100
+                      ) + "%"}
                 </p>
               </div>
               <div className="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center">
@@ -261,21 +287,25 @@ export default function RoomsByDepartmentPage() {
 
         <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6">
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-white mb-4">Department Tabs</h2>
+            <h2 className="text-xl font-bold text-white mb-4">
+              Department Tabs
+            </h2>
             <div className="flex gap-2 flex-wrap">
               {loading ? (
                 <p className="text-gray-400 text-sm">Loading departments...</p>
               ) : availableDepartments.length === 0 ? (
-                <p className="text-gray-400 text-sm">No departments available</p>
+                <p className="text-gray-400 text-sm">
+                  No departments available
+                </p>
               ) : (
                 availableDepartments.map((dept) => (
                   <button
                     key={dept}
                     onClick={() => handleDepartmentChange(dept)}
-                    className={`px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
+                    className={`px-4 py-2 rounded-lg transition-colors font-medium text-md${
                       selectedDepartment === dept
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-dark-tertiary text-gray-300 hover:bg-dark-tertiary/70'
+                        ? "bg-emerald-500 text-white"
+                        : "bg-dark-tertiary text-gray-300 hover:bg-dark-tertiary/70"
                     }`}
                   >
                     {dept}
@@ -287,7 +317,10 @@ export default function RoomsByDepartmentPage() {
 
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div className="relative flex-1 md:flex-none">
-              <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+              <Search
+                className="absolute left-3 top-3 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Search by room number, type, or patient..."
@@ -309,7 +342,7 @@ export default function RoomsByDepartmentPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500"
+                className="px-3 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white text-mdfocus:outline-none focus:border-emerald-500"
               >
                 <option value="all">All Statuses</option>
                 <option value="Occupied">Occupied</option>
@@ -346,19 +379,28 @@ export default function RoomsByDepartmentPage() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-3 text-center text-gray-400">
+                    <td
+                      colSpan={6}
+                      className="px-4 py-3 text-center text-gray-400"
+                    >
                       Loading rooms...
                     </td>
                   </tr>
                 ) : error ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-3 text-center text-red-400">
+                    <td
+                      colSpan={6}
+                      className="px-4 py-3 text-center text-red-400"
+                    >
                       {error}
                     </td>
                   </tr>
                 ) : filteredRooms.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-3 text-center text-gray-400">
+                    <td
+                      colSpan={6}
+                      className="px-4 py-3 text-center text-gray-400"
+                    >
                       No rooms found
                     </td>
                   </tr>
@@ -372,7 +414,11 @@ export default function RoomsByDepartmentPage() {
                         {room.roomNumber}
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getRoomTypeColor(room.roomType)}`}>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${getRoomTypeColor(
+                            room.roomType
+                          )}`}
+                        >
                           {room.roomType}
                         </span>
                       </td>
@@ -386,9 +432,12 @@ export default function RoomsByDepartmentPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-gray-300 text-sm">
-                        {room.roomAllotments && room.roomAllotments.length > 0 ? (
+                        {room.roomAllotments &&
+                        room.roomAllotments.length > 0 ? (
                           <>
-                            <p className="text-white">{room.roomAllotments[0].patientName}</p>
+                            <p className="text-white">
+                              {room.roomAllotments[0].patientName}
+                            </p>
                           </>
                         ) : (
                           <span className="text-gray-500 italic">—</span>
@@ -397,12 +446,14 @@ export default function RoomsByDepartmentPage() {
                       <td className="px-4 py-3 text-gray-300 text-sm">
                         {room.roomAllotments && room.roomAllotments.length > 0
                           ? room.roomAllotments[0].attendingDoctor
-                          : '—'}
+                          : "—"}
                       </td>
-                      <td className="px-4 py-3 text-sm relative">
+                      <td className="px-4 py-3 text-mdrelative">
                         <button
                           onClick={() =>
-                            setOpenDropdown(openDropdown === room.id ? null : room.id)
+                            setOpenDropdown(
+                              openDropdown === room.id ? null : room.id
+                            )
                           }
                           className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-emerald-400 transition-colors"
                         >
@@ -451,8 +502,9 @@ export default function RoomsByDepartmentPage() {
             </table>
           </div>
 
-          <div className="mt-4 text-sm text-gray-400">
-            Showing {filteredRooms.length} rooms in {currentDepartment?.department}
+          <div className="mt-4 text-mdtext-gray-400">
+            Showing {filteredRooms.length} rooms in{" "}
+            {currentDepartment?.department}
           </div>
         </div>
       </div>
@@ -460,11 +512,17 @@ export default function RoomsByDepartmentPage() {
       {statusUpdateModal && selectedRoom && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 w-96">
-            <h3 className="text-xl font-bold text-white mb-4">Update Room Status</h3>
-            <p className="text-gray-400 mb-4">Room: {selectedRoom.roomNumber}</p>
-            
+            <h3 className="text-xl font-bold text-white mb-4">
+              Update Room Status
+            </h3>
+            <p className="text-gray-400 mb-4">
+              Room: {selectedRoom.roomNumber}
+            </p>
+
             <div className="mb-6">
-              <label className="block text-gray-400 text-sm mb-2">New Status</label>
+              <label className="block text-gray-400 text-mdmb-2">
+                New Status
+              </label>
               <select
                 value={newStatus}
                 onChange={(e) => setNewStatus(e.target.value)}
@@ -498,34 +556,51 @@ export default function RoomsByDepartmentPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 w-full max-w-md max-h-96 overflow-y-auto">
             <h3 className="text-xl font-bold text-white mb-4">Room Details</h3>
-            
+
             <div className="space-y-3 text-gray-300 text-sm">
               <div>
                 <p className="text-gray-400">Room Number</p>
-                <p className="text-white font-medium">{selectedRoom.roomNumber}</p>
+                <p className="text-white font-medium">
+                  {selectedRoom.roomNumber}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400">Room Type</p>
-                <p className="text-white font-medium">{selectedRoom.roomType}</p>
+                <p className="text-white font-medium">
+                  {selectedRoom.roomType}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400">Status</p>
-                <p className={`font-medium ${selectedRoom.status === 'Occupied' ? 'text-emerald-400' : selectedRoom.status === 'Available' ? 'text-blue-400' : 'text-red-400'}`}>
+                <p
+                  className={`font-medium ${
+                    selectedRoom.status === "Occupied"
+                      ? "text-emerald-400"
+                      : selectedRoom.status === "Available"
+                      ? "text-blue-400"
+                      : "text-red-400"
+                  }`}
+                >
                   {selectedRoom.status}
                 </p>
               </div>
-              {selectedRoom.roomAllotments && selectedRoom.roomAllotments.length > 0 && (
-                <>
-                  <div>
-                    <p className="text-gray-400">Patient</p>
-                    <p className="text-white font-medium">{selectedRoom.roomAllotments[0].patientName || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400">Doctor</p>
-                    <p className="text-white font-medium">{selectedRoom.roomAllotments[0].attendingDoctor || '—'}</p>
-                  </div>
-                </>
-              )}
+              {selectedRoom.roomAllotments &&
+                selectedRoom.roomAllotments.length > 0 && (
+                  <>
+                    <div>
+                      <p className="text-gray-400">Patient</p>
+                      <p className="text-white font-medium">
+                        {selectedRoom.roomAllotments[0].patientName || "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400">Doctor</p>
+                      <p className="text-white font-medium">
+                        {selectedRoom.roomAllotments[0].attendingDoctor || "—"}
+                      </p>
+                    </div>
+                  </>
+                )}
             </div>
 
             <div className="flex gap-2 justify-end mt-6">

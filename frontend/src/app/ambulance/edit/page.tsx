@@ -1,33 +1,33 @@
-'use client';
+"use client";
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { ambulanceAPI } from '@/lib/api';
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { ambulanceAPI } from "@/lib/api";
 
 function EditAmbulanceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const ambulanceId = searchParams.get('id');
+  const ambulanceId = searchParams.get("id");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [fetchLoading, setFetchLoading] = useState(true);
 
   const [formData, setFormData] = useState({
-    registration: '',
-    model: '',
+    registration: "",
+    model: "",
     year: new Date().getFullYear(),
-    type: '',
-    status: 'Available',
-    driver: '',
-    location: '',
-    fuelType: 'Diesel',
-    mileage: '',
-    capacity: '',
-    lastMaintenance: '',
-    nextMaintenance: '',
+    type: "",
+    status: "Available",
+    driver: "",
+    location: "",
+    fuelType: "Diesel",
+    mileage: "",
+    capacity: "",
+    lastMaintenance: "",
+    nextMaintenance: "",
   });
 
   useEffect(() => {
@@ -42,45 +42,51 @@ function EditAmbulanceContent() {
       const response = await ambulanceAPI.get(ambulanceId!);
       const data = response.data;
       setFormData({
-        registration: data.registration || '',
-        model: data.model || '',
+        registration: data.registration || "",
+        model: data.model || "",
         year: data.year || new Date().getFullYear(),
-        type: data.type || '',
-        status: data.status || 'Available',
-        driver: data.driver || '',
-        location: data.location || '',
-        fuelType: data.fuelType || 'Diesel',
-        mileage: data.mileage || '',
-        capacity: data.capacity || '',
-        lastMaintenance: data.lastMaintenance || '',
-        nextMaintenance: data.nextMaintenance || '',
+        type: data.type || "",
+        status: data.status || "Available",
+        driver: data.driver || "",
+        location: data.location || "",
+        fuelType: data.fuelType || "Diesel",
+        mileage: data.mileage || "",
+        capacity: data.capacity || "",
+        lastMaintenance: data.lastMaintenance || "",
+        nextMaintenance: data.nextMaintenance || "",
       });
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to fetch ambulance details');
+      setError(
+        err.response?.data?.error || "Failed to fetch ambulance details"
+      );
     } finally {
       setFetchLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value, type } = e.target;
-    if (type === 'number') {
-      setFormData(prev => ({ ...prev, [name]: parseInt(value) || 0 }));
+    if (type === "number") {
+      setFormData((prev) => ({ ...prev, [name]: parseInt(value) || 0 }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       await ambulanceAPI.update(ambulanceId!, formData);
       router.push(`/ambulance/details?id=${ambulanceId}`);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update ambulance');
+      setError(err.response?.data?.error || "Failed to update ambulance");
     } finally {
       setLoading(false);
     }
@@ -97,12 +103,17 @@ function EditAmbulanceContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href={`/ambulance/details?id=${ambulanceId}`} className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors">
+        <Link
+          href={`/ambulance/details?id=${ambulanceId}`}
+          className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
+        >
           <ArrowLeft size={20} />
         </Link>
         <div>
           <h1 className="text-3xl font-bold mb-2">Edit Ambulance</h1>
-          <p className="text-gray-400">Update ambulance information and details.</p>
+          <p className="text-gray-400">
+            Update ambulance information and details.
+          </p>
         </div>
       </div>
 
@@ -116,10 +127,12 @@ function EditAmbulanceContent() {
 
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold mb-4">General Information</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                General Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Registration Number
                   </label>
                   <input
@@ -133,7 +146,7 @@ function EditAmbulanceContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Model
                   </label>
                   <input
@@ -147,7 +160,7 @@ function EditAmbulanceContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Year
                   </label>
                   <input
@@ -161,7 +174,7 @@ function EditAmbulanceContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Type
                   </label>
                   <select
@@ -172,14 +185,18 @@ function EditAmbulanceContent() {
                     required
                   >
                     <option value="">Select Type</option>
-                    <option value="Basic Life Support">Basic Life Support</option>
-                    <option value="Advanced Life Support">Advanced Life Support</option>
+                    <option value="Basic Life Support">
+                      Basic Life Support
+                    </option>
+                    <option value="Advanced Life Support">
+                      Advanced Life Support
+                    </option>
                     <option value="Patient Transport">Patient Transport</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Status
                   </label>
                   <select
@@ -196,7 +213,7 @@ function EditAmbulanceContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Fuel Type
                   </label>
                   <select
@@ -216,10 +233,12 @@ function EditAmbulanceContent() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-4">Operational Details</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Operational Details
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Driver
                   </label>
                   <input
@@ -232,7 +251,7 @@ function EditAmbulanceContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Current Location
                   </label>
                   <input
@@ -245,7 +264,7 @@ function EditAmbulanceContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Mileage
                   </label>
                   <input
@@ -259,7 +278,7 @@ function EditAmbulanceContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Capacity
                   </label>
                   <input
@@ -273,7 +292,7 @@ function EditAmbulanceContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Last Maintenance
                   </label>
                   <input
@@ -286,7 +305,7 @@ function EditAmbulanceContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Next Maintenance
                   </label>
                   <input
@@ -302,12 +321,8 @@ function EditAmbulanceContent() {
           </div>
 
           <div className="flex gap-3 mt-8">
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary"
-            >
-              {loading ? 'Saving...' : 'Save Changes'}
+            <button type="submit" disabled={loading} className="btn-primary">
+              {loading ? "Saving..." : "Save Changes"}
             </button>
             <Link href={`/ambulance/details?id=${ambulanceId}`}>
               <button type="button" className="btn-secondary">
@@ -324,7 +339,13 @@ function EditAmbulanceContent() {
 export default function EditAmbulancePage() {
   return (
     <DashboardLayout>
-      <Suspense fallback={<div className="flex justify-center items-center py-8"><div className="text-gray-400">Loading...</div></div>}>
+      <Suspense
+        fallback={
+          <div className="flex justify-center items-center py-8">
+            <div className="text-gray-400">Loading...</div>
+          </div>
+        }
+      >
         <EditAmbulanceContent />
       </Suspense>
     </DashboardLayout>

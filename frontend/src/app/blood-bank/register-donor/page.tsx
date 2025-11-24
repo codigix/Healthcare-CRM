@@ -1,29 +1,33 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Calendar } from 'lucide-react';
-import Link from 'next/link';
-import { bloodBankAPI } from '@/lib/api';
+import { useState } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { Calendar } from "lucide-react";
+import Link from "next/link";
+import { bloodBankAPI } from "@/lib/api";
 
 export default function RegisterDonorPage() {
   const [formData, setFormData] = useState({
-    name: '',
-    bloodType: '',
-    contact: '',
-    email: '',
-    dateOfBirth: '',
-    gender: '',
-    address: '',
-    city: '',
-    phoneNumber: ''
+    name: "",
+    bloodType: "",
+    contact: "",
+    email: "",
+    dateOfBirth: "",
+    gender: "",
+    address: "",
+    city: "",
+    phoneNumber: "",
   });
 
   const [loading, setLoading] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,31 +43,31 @@ export default function RegisterDonorPage() {
         gender: formData.gender || null,
         address: formData.address || null,
         city: formData.city || null,
-        phoneNumber: formData.phoneNumber || null
+        phoneNumber: formData.phoneNumber || null,
       };
-      
+
       const response = await bloodBankAPI.createDonor(submitData);
 
       if (response.data.success) {
-        alert('Donor registered successfully!');
+        alert("Donor registered successfully!");
         setFormData({
-          name: '',
-          bloodType: '',
-          contact: '',
-          email: '',
-          dateOfBirth: '',
-          gender: '',
-          address: '',
-          city: '',
-          phoneNumber: ''
+          name: "",
+          bloodType: "",
+          contact: "",
+          email: "",
+          dateOfBirth: "",
+          gender: "",
+          address: "",
+          city: "",
+          phoneNumber: "",
         });
-        window.location.href = '/blood-bank/donors';
+        window.location.href = "/blood-bank/donors";
       } else {
-        alert('Error: ' + (response.data.error || 'Failed to register donor'));
+        alert("Error: " + (response.data.error || "Failed to register donor"));
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Error registering donor');
+      console.error("Error submitting form:", error);
+      alert("Error registering donor");
     } finally {
       setLoading(false);
     }
@@ -75,7 +79,9 @@ export default function RegisterDonorPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold mb-2">Register Blood Donor</h1>
-            <p className="text-gray-400">Add a new blood donor to the blood bank system</p>
+            <p className="text-gray-400">
+              Add a new blood donor to the blood bank system
+            </p>
           </div>
           <Link href="/blood-bank/donors">
             <button className="btn-secondary">Cancel</button>
@@ -84,12 +90,15 @@ export default function RegisterDonorPage() {
 
         <div className="card">
           <h2 className="text-xl font-semibold mb-6">Donor Information</h2>
-          <p className="text-gray-400 text-sm mb-6">Enter the details of the new blood donor to register them in the system.</p>
+          <p className="text-gray-400 text-mdmb-6">
+            Enter the details of the new blood donor to register them in the
+            system.
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-mdfont-medium mb-2">
                   Full Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -104,7 +113,7 @@ export default function RegisterDonorPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-mdfont-medium mb-2">
                   Blood Type <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -127,7 +136,7 @@ export default function RegisterDonorPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-mdfont-medium mb-2">
                   Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -142,7 +151,7 @@ export default function RegisterDonorPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-mdfont-medium mb-2">
                   Contact Number <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -157,7 +166,7 @@ export default function RegisterDonorPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-mdfont-medium mb-2">
                   Phone Number
                 </label>
                 <input
@@ -171,7 +180,7 @@ export default function RegisterDonorPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-mdfont-medium mb-2">
                   Date of Birth
                 </label>
                 <div className="relative">
@@ -182,14 +191,15 @@ export default function RegisterDonorPage() {
                     onChange={handleInputChange}
                     className="input-field w-full"
                   />
-                  <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                  <Calendar
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                    size={18}
+                  />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Gender
-                </label>
+                <label className="block text-mdfont-medium mb-2">Gender</label>
                 <select
                   name="gender"
                   value={formData.gender}
@@ -204,9 +214,7 @@ export default function RegisterDonorPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  City
-                </label>
+                <label className="block text-mdfont-medium mb-2">City</label>
                 <input
                   type="text"
                   name="city"
@@ -219,9 +227,7 @@ export default function RegisterDonorPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Address
-              </label>
+              <label className="block text-mdfont-medium mb-2">Address</label>
               <textarea
                 name="address"
                 value={formData.address}
@@ -239,14 +245,15 @@ export default function RegisterDonorPage() {
                 </button>
               </Link>
               <button type="submit" disabled={loading} className="btn-primary">
-                {loading ? 'Registering...' : 'Register Donor'}
+                {loading ? "Registering..." : "Register Donor"}
               </button>
             </div>
           </form>
 
           <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <p className="text-sm text-blue-400">
-              Fields marked with <span className="text-red-500">*</span> are required. Make sure to fill all required fields before submitting.
+            <p className="text-mdtext-blue-400">
+              Fields marked with <span className="text-red-500">*</span> are
+              required. Make sure to fill all required fields before submitting.
             </p>
           </div>
         </div>

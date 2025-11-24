@@ -1,32 +1,32 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
-import { patientAPI } from '@/lib/api';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useParams } from "next/navigation";
+import { patientAPI } from "@/lib/api";
 
-type TabType = 'personal' | 'medical';
+type TabType = "personal" | "medical";
 
 export default function EditPatientPage() {
   const router = useRouter();
   const params = useParams();
   const patientId = params.id as string;
 
-  const [activeTab, setActiveTab] = useState<TabType>('personal');
+  const [activeTab, setActiveTab] = useState<TabType>("personal");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    dob: '',
-    gender: '',
-    address: '',
-    history: '',
+    name: "",
+    email: "",
+    phone: "",
+    dob: "",
+    gender: "",
+    address: "",
+    history: "",
   });
 
   useEffect(() => {
@@ -34,21 +34,21 @@ export default function EditPatientPage() {
       try {
         const response = await patientAPI.get(patientId);
         const patient = response.data;
-        
+
         const dobDate = new Date(patient.dob);
-        const formattedDob = dobDate.toISOString().split('T')[0];
+        const formattedDob = dobDate.toISOString().split("T")[0];
 
         setFormData({
-          name: patient.name || '',
-          email: patient.email || '',
-          phone: patient.phone || '',
+          name: patient.name || "",
+          email: patient.email || "",
+          phone: patient.phone || "",
           dob: formattedDob,
-          gender: patient.gender || '',
-          address: patient.address || '',
-          history: patient.history || '',
+          gender: patient.gender || "",
+          address: patient.address || "",
+          history: patient.history || "",
         });
       } catch (err) {
-        setError('Failed to load patient details');
+        setError("Failed to load patient details");
         console.error(err);
       } finally {
         setLoading(false);
@@ -60,15 +60,19 @@ export default function EditPatientPage() {
     }
   }, [patientId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError('');
+    setError("");
 
     try {
       await patientAPI.update(patientId, {
@@ -80,17 +84,17 @@ export default function EditPatientPage() {
         address: formData.address,
         history: formData.history,
       });
-      router.push('/patients');
+      router.push("/patients");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update patient');
+      setError(err.response?.data?.error || "Failed to update patient");
     } finally {
       setSubmitting(false);
     }
   };
 
   const tabs = [
-    { id: 'personal' as TabType, label: 'Personal Information' },
-    { id: 'medical' as TabType, label: 'Medical Information' },
+    { id: "personal" as TabType, label: "Personal Information" },
+    { id: "medical" as TabType, label: "Medical Information" },
   ];
 
   if (loading) {
@@ -107,7 +111,10 @@ export default function EditPatientPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Link href="/patients" className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors">
+          <Link
+            href="/patients"
+            className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
+          >
             <ArrowLeft size={20} />
           </Link>
           <div>
@@ -125,8 +132,8 @@ export default function EditPatientPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-6 py-3 font-medium transition-colors relative ${
                     activeTab === tab.id
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-gray-300'
+                      ? "text-white"
+                      : "text-gray-400 hover:text-gray-300"
                   }`}
                 >
                   {tab.label}
@@ -145,16 +152,20 @@ export default function EditPatientPage() {
           )}
 
           <form onSubmit={handleSubmit}>
-            {activeTab === 'personal' && (
+            {activeTab === "personal" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
-                  <p className="text-sm text-gray-400 mb-6">Edit the patient's personal details.</p>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Personal Information
+                  </h3>
+                  <p className="text-mdtext-gray-400 mb-6">
+                    Edit the patient's personal details.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Full Name
                     </label>
                     <input
@@ -169,7 +180,7 @@ export default function EditPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Date of Birth
                     </label>
                     <input
@@ -183,7 +194,7 @@ export default function EditPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Gender
                     </label>
                     <select
@@ -201,7 +212,7 @@ export default function EditPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Email
                     </label>
                     <input
@@ -216,7 +227,7 @@ export default function EditPatientPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Phone Number
                     </label>
                     <input
@@ -232,7 +243,7 @@ export default function EditPatientPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Address
                   </label>
                   <textarea
@@ -247,15 +258,19 @@ export default function EditPatientPage() {
               </div>
             )}
 
-            {activeTab === 'medical' && (
+            {activeTab === "medical" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Medical Information</h3>
-                  <p className="text-sm text-gray-400 mb-6">Edit the patient's medical history.</p>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Medical Information
+                  </h3>
+                  <p className="text-mdtext-gray-400 mb-6">
+                    Edit the patient's medical history.
+                  </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Medical History / Conditions
                   </label>
                   <textarea
@@ -276,7 +291,7 @@ export default function EditPatientPage() {
                 disabled={submitting}
                 className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Saving...' : 'Save Changes'}
+                {submitting ? "Saving..." : "Save Changes"}
               </button>
               <Link href="/patients" className="btn-secondary">
                 Cancel

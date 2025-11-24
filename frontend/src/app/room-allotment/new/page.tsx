@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ChevronLeft, Check } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ChevronLeft, Check } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function NewAllotmentPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    patientId: '',
-    patientName: '',
-    patientPhone: '',
-    attendingDoctor: '',
-    emergencyContact: '',
-    roomId: '',
-    specialRequirements: '',
-    allotmentDate: '',
-    expectedDischargeDate: '',
-    paymentMethod: '',
-    insuranceDetails: '',
-    additionalNotes: '',
+    patientId: "",
+    patientName: "",
+    patientPhone: "",
+    attendingDoctor: "",
+    emergencyContact: "",
+    roomId: "",
+    specialRequirements: "",
+    allotmentDate: "",
+    expectedDischargeDate: "",
+    paymentMethod: "",
+    insuranceDetails: "",
+    additionalNotes: "",
   });
 
   const [rooms, setRooms] = useState<any[]>([]);
@@ -39,29 +39,33 @@ export default function NewAllotmentPage() {
       setLoading(true);
       const response = await fetch(`${API_URL}/room-allotment/rooms`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
-      if (!response.ok) throw new Error('Failed to fetch rooms');
+      if (!response.ok) throw new Error("Failed to fetch rooms");
 
       const data = await response.json();
       setRooms(data.rooms);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to fetch rooms');
+      alert(err instanceof Error ? err.message : "Failed to fetch rooms");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
 
-    if (name === 'roomId') {
+    if (name === "roomId") {
       const room = rooms.find((r) => r.id === value);
       setSelectedRoom(room);
     }
@@ -69,57 +73,63 @@ export default function NewAllotmentPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.patientId || !formData.patientName || !formData.roomId || !formData.attendingDoctor || !formData.allotmentDate) {
-      alert('Please fill in all required fields');
+
+    if (
+      !formData.patientId ||
+      !formData.patientName ||
+      !formData.roomId ||
+      !formData.attendingDoctor ||
+      !formData.allotmentDate
+    ) {
+      alert("Please fill in all required fields");
       return;
     }
 
     try {
       setSubmitting(true);
       const response = await fetch(`${API_URL}/room-allotment/allotments`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
           ...formData,
-          status: 'Occupied'
+          status: "Occupied",
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to create allotment');
+        throw new Error(error.error || "Failed to create allotment");
       }
 
-      alert('Room allotment created successfully!');
-      router.push('/room-allotment/alloted');
+      alert("Room allotment created successfully!");
+      router.push("/room-allotment/alloted");
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to create allotment');
+      alert(err instanceof Error ? err.message : "Failed to create allotment");
     } finally {
       setSubmitting(false);
     }
   };
 
   const departments = [
-    'Cardiology',
-    'Orthopedics',
-    'Neurology',
-    'Pulmonology',
-    'Gastroenterology',
-    'Pediatrics',
+    "Cardiology",
+    "Orthopedics",
+    "Neurology",
+    "Pulmonology",
+    "Gastroenterology",
+    "Pediatrics",
   ];
 
-  const roomTypes = ['Private', 'Semi-Private', 'General', 'ICU'];
+  const roomTypes = ["Private", "Semi-Private", "General", "ICU"];
 
   const doctors = [
-    'Dr. Emily Chun',
-    'Dr. Michael Brown',
-    'Dr. Lisa Wong',
-    'Dr. James Wilson',
-    'Dr. Sarah Miller',
+    "Dr. Emily Chun",
+    "Dr. Michael Brown",
+    "Dr. Lisa Wong",
+    "Dr. James Wilson",
+    "Dr. Sarah Miller",
   ];
 
   return (
@@ -132,8 +142,13 @@ export default function NewAllotmentPage() {
             </button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-white">Room Allotment Details</h1>
-            <p className="text-gray-400 mt-1">Assign a room to a patient. Fill in all the required information below.</p>
+            <h1 className="text-3xl font-bold text-white">
+              Room Allotment Details
+            </h1>
+            <p className="text-gray-400 mt-1">
+              Assign a room to a patient. Fill in all the required information
+              below.
+            </p>
           </div>
         </div>
 
@@ -141,11 +156,13 @@ export default function NewAllotmentPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-white mb-4">Patient Information</h2>
+                <h2 className="text-xl font-bold text-white mb-4">
+                  Patient Information
+                </h2>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Patient ID
                     </label>
                     <input
@@ -162,7 +179,7 @@ export default function NewAllotmentPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Patient Name
                     </label>
                     <input
@@ -176,7 +193,7 @@ export default function NewAllotmentPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Attending Doctor
                     </label>
                     <select
@@ -195,7 +212,7 @@ export default function NewAllotmentPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Patient Phone
                     </label>
                     <input
@@ -209,7 +226,7 @@ export default function NewAllotmentPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Emergency Contact
                     </label>
                     <input
@@ -227,11 +244,13 @@ export default function NewAllotmentPage() {
 
             <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-white mb-4">Room Information</h2>
+                <h2 className="text-xl font-bold text-white mb-4">
+                  Room Information
+                </h2>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Room Number
                     </label>
                     <select
@@ -242,21 +261,23 @@ export default function NewAllotmentPage() {
                       className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white focus:outline-none focus:border-emerald-500"
                     >
                       <option value="">Select room</option>
-                      {rooms.filter((r) => r.status === 'Available').map((room) => (
-                        <option key={room.id} value={room.id}>
-                          Room {room.roomNumber} - {room.roomType}
-                        </option>
-                      ))}
+                      {rooms
+                        .filter((r) => r.status === "Available")
+                        .map((room) => (
+                          <option key={room.id} value={room.id}>
+                            Room {room.roomNumber} - {room.roomType}
+                          </option>
+                        ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Room Type
                     </label>
                     <input
                       type="text"
-                      value={selectedRoom?.roomType || ''}
+                      value={selectedRoom?.roomType || ""}
                       readOnly
                       className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-gray-400 cursor-not-allowed"
                       placeholder="Select a room to see type"
@@ -264,12 +285,12 @@ export default function NewAllotmentPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Department
                     </label>
                     <input
                       type="text"
-                      value={selectedRoom?.department || ''}
+                      value={selectedRoom?.department || ""}
                       readOnly
                       className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-gray-400 cursor-not-allowed"
                       placeholder="Select a room to see department"
@@ -277,7 +298,7 @@ export default function NewAllotmentPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Special Requirements
                     </label>
                     <input
@@ -296,11 +317,13 @@ export default function NewAllotmentPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Allotment Details</h2>
+              <h2 className="text-xl font-bold text-white mb-4">
+                Allotment Details
+              </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Allotment Date
                   </label>
                   <input
@@ -313,7 +336,7 @@ export default function NewAllotmentPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Expected Discharge Date
                   </label>
                   <input
@@ -328,11 +351,13 @@ export default function NewAllotmentPage() {
             </div>
 
             <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Billing Information</h2>
+              <h2 className="text-xl font-bold text-white mb-4">
+                Billing Information
+              </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Payment Method
                   </label>
                   <select
@@ -350,7 +375,7 @@ export default function NewAllotmentPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Insurance Details (if applicable)
                   </label>
                   <input
@@ -367,7 +392,9 @@ export default function NewAllotmentPage() {
           </div>
 
           <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Additional Notes</h2>
+            <h2 className="text-xl font-bold text-white mb-4">
+              Additional Notes
+            </h2>
             <textarea
               name="additionalNotes"
               value={formData.additionalNotes}
@@ -393,7 +420,7 @@ export default function NewAllotmentPage() {
               className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-600 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
             >
               <Check size={20} />
-              {submitting ? 'Creating...' : 'Create Allotment'}
+              {submitting ? "Creating..." : "Create Allotment"}
             </button>
           </div>
         </form>

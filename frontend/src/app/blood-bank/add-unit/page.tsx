@@ -94,7 +94,7 @@ export default function AddBloodUnitPage() {
 
         <div className="card">
           <h2 className="text-xl font-semibold mb-6">Blood Unit Information</h2>
-          <p className="text-gray-400 text-sm mb-6">
+          <p className="text-gray-400 text-mdmb-6">
             Enter the details of the new blood unit to be added to the
             inventory.
           </p>
@@ -112,7 +112,7 @@ export default function AddBloodUnitPage() {
                 />
                 <label
                   htmlFor="anonymousDonor"
-                  className="text-sm font-medium cursor-pointer"
+                  className="text-mdfont-medium cursor-pointer"
                 >
                   Anonymous Donor
                 </label>
@@ -120,7 +120,7 @@ export default function AddBloodUnitPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Donor ID
                   </label>
                   <input
@@ -138,7 +138,7 @@ export default function AddBloodUnitPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Donor Name
                   </label>
                   <input
@@ -153,7 +153,7 @@ export default function AddBloodUnitPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Blood Group <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -176,7 +176,7 @@ export default function AddBloodUnitPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Quantity (units) <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -207,7 +207,7 @@ export default function AddBloodUnitPage() {
                   />
                   <label
                     htmlFor="screeningComplete"
-                    className="text-sm font-medium cursor-pointer"
+                    className="text-mdfont-medium cursor-pointer"
                   >
                     Screening Complete
                   </label>
@@ -227,7 +227,7 @@ export default function AddBloodUnitPage() {
                   />
                   <label
                     htmlFor="processingComplete"
-                    className="text-sm font-medium cursor-pointer"
+                    className="text-mdfont-medium cursor-pointer"
                   >
                     Processing Complete
                   </label>
@@ -239,7 +239,7 @@ export default function AddBloodUnitPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Collection Date <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -259,7 +259,7 @@ export default function AddBloodUnitPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Expiry Date
                   </label>
                   <div className="relative">
@@ -281,7 +281,7 @@ export default function AddBloodUnitPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Source Type
                   </label>
                   <select
@@ -299,7 +299,7 @@ export default function AddBloodUnitPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
+                  <label className="block text-mdfont-medium mb-2">
                     Collection Location
                   </label>
                   <input
@@ -314,7 +314,7 @@ export default function AddBloodUnitPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-mdfont-medium mb-2">
                   Additional Notes
                 </label>
                 <textarea
@@ -341,7 +341,7 @@ export default function AddBloodUnitPage() {
           </form>
 
           <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <p className="text-sm text-blue-400">
+            <p className="text-mdtext-blue-400">
               Fields marked with <span className="text-red-500">*</span> are
               required. Make sure to fill all required fields before submitting.
             </p>

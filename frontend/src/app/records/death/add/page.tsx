@@ -1,40 +1,44 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { recordsAPI } from '@/lib/api';
+import { useState } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { recordsAPI } from "@/lib/api";
 
 export default function AddDeathRecordPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    dateOfDeath: '',
-    causeOfDeath: '',
-    status: 'Pending',
-    department: '',
-    attendingDoctor: '',
+    name: "",
+    age: "",
+    dateOfDeath: "",
+    causeOfDeath: "",
+    status: "Pending",
+    department: "",
+    attendingDoctor: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const recordData = {
-        type: 'death',
+        type: "death",
         patientName: formData.name,
         date: formData.dateOfDeath,
         details: JSON.stringify({
@@ -49,9 +53,9 @@ export default function AddDeathRecordPage() {
       };
 
       await recordsAPI.create(recordData);
-      router.push('/records/death');
+      router.push("/records/death");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to add death record');
+      setError(err.response?.data?.error || "Failed to add death record");
     } finally {
       setLoading(false);
     }
@@ -61,12 +65,17 @@ export default function AddDeathRecordPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Link href="/records/death" className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors">
+          <Link
+            href="/records/death"
+            className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
+          >
             <ArrowLeft size={20} />
           </Link>
           <div>
             <h1 className="text-3xl font-bold mb-2">Add Death Record</h1>
-            <p className="text-gray-400">Register a new death record in the system.</p>
+            <p className="text-gray-400">
+              Register a new death record in the system.
+            </p>
           </div>
         </div>
 
@@ -79,10 +88,12 @@ export default function AddDeathRecordPage() {
             )}
 
             <div>
-              <h3 className="text-lg font-semibold mb-4">Deceased Information</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Deceased Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Name *
                   </label>
                   <input
@@ -97,7 +108,7 @@ export default function AddDeathRecordPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Age *
                   </label>
                   <input
@@ -112,7 +123,7 @@ export default function AddDeathRecordPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Date of Death *
                   </label>
                   <input
@@ -126,7 +137,7 @@ export default function AddDeathRecordPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Department *
                   </label>
                   <input
@@ -143,10 +154,12 @@ export default function AddDeathRecordPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-4">Medical Information</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Medical Information
+              </h3>
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Cause of Death *
                   </label>
                   <textarea
@@ -162,7 +175,7 @@ export default function AddDeathRecordPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Attending Doctor *
                     </label>
                     <input
@@ -177,7 +190,7 @@ export default function AddDeathRecordPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Status *
                     </label>
                     <select
@@ -210,7 +223,7 @@ export default function AddDeathRecordPage() {
                 disabled={loading}
                 className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50 text-white rounded-lg transition-colors font-medium"
               >
-                {loading ? 'Adding...' : 'Add Record'}
+                {loading ? "Adding..." : "Add Record"}
               </button>
             </div>
           </form>

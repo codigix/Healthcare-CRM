@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { X } from 'lucide-react';
+import { X } from "lucide-react";
 
 interface Service {
   id: string;
@@ -21,7 +21,11 @@ interface ServiceViewModalProps {
   onClose: () => void;
 }
 
-export default function ServiceViewModal({ service, isOpen, onClose }: ServiceViewModalProps) {
+export default function ServiceViewModal({
+  service,
+  isOpen,
+  onClose,
+}: ServiceViewModalProps) {
   if (!isOpen || !service) return null;
 
   return (
@@ -40,40 +44,44 @@ export default function ServiceViewModal({ service, isOpen, onClose }: ServiceVi
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-400 mb-1">Service ID</p>
+              <p className="text-mdtext-gray-400 mb-1">Service ID</p>
               <p className="font-medium">{service.id}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-400 mb-1">Department</p>
-              <p className="font-medium">{service.department?.name || 'N/A'}</p>
+              <p className="text-mdtext-gray-400 mb-1">Department</p>
+              <p className="font-medium">{service.department?.name || "N/A"}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-400 mb-1">Service Type</p>
+              <p className="text-mdtext-gray-400 mb-1">Service Type</p>
               <p className="font-medium">{service.type}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-400 mb-1">Status</p>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                service.status === 'Active'
-                  ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                  : 'bg-red-500/10 text-red-500 border border-red-500/20'
-              }`}>
+              <p className="text-mdtext-gray-400 mb-1">Status</p>
+              <span
+                className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                  service.status === "Active"
+                    ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                    : "bg-red-500/10 text-red-500 border border-red-500/20"
+                }`}
+              >
                 {service.status}
               </span>
             </div>
             <div>
-              <p className="text-sm text-gray-400 mb-1">Duration</p>
+              <p className="text-mdtext-gray-400 mb-1">Duration</p>
               <p className="font-medium">{service.duration} minutes</p>
             </div>
             <div>
-              <p className="text-sm text-gray-400 mb-1">Price</p>
-              <p className="font-medium">${parseFloat(String(service.price)).toFixed(2)}</p>
+              <p className="text-mdtext-gray-400 mb-1">Price</p>
+              <p className="font-medium">
+                ${parseFloat(String(service.price)).toFixed(2)}
+              </p>
             </div>
           </div>
 
           {service.description && (
             <div>
-              <p className="text-sm text-gray-400 mb-2">Description</p>
+              <p className="text-mdtext-gray-400 mb-2">Description</p>
               <p className="text-gray-300">{service.description}</p>
             </div>
           )}
@@ -82,20 +90,21 @@ export default function ServiceViewModal({ service, isOpen, onClose }: ServiceVi
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-gray-400">Created</p>
-                <p className="text-gray-300">{new Date(service.createdAt).toLocaleDateString()}</p>
+                <p className="text-gray-300">
+                  {new Date(service.createdAt).toLocaleDateString()}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400">Last Updated</p>
-                <p className="text-gray-300">{new Date(service.updatedAt).toLocaleDateString()}</p>
+                <p className="text-gray-300">
+                  {new Date(service.updatedAt).toLocaleDateString()}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="flex gap-3 pt-4">
-            <button
-              onClick={onClose}
-              className="btn-secondary flex-1"
-            >
+            <button onClick={onClose} className="btn-secondary flex-1">
               Close
             </button>
           </div>

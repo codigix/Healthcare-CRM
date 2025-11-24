@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { patientAPI } from '@/lib/api';
+import { useState, useEffect } from "react";
+import { patientAPI } from "@/lib/api";
 
 interface Patient {
   id?: string;
@@ -21,27 +21,31 @@ interface PatientFormProps {
 
 export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
   const [formData, setFormData] = useState<Patient>({
-    name: '',
-    email: '',
-    phone: '',
-    dob: '',
-    gender: '',
-    address: '',
-    history: '',
+    name: "",
+    email: "",
+    phone: "",
+    dob: "",
+    gender: "",
+    address: "",
+    history: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (patient) {
       setFormData({
         ...patient,
-        dob: patient.dob.split('T')[0],
+        dob: patient.dob.split("T")[0],
       });
     }
   }, [patient]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -52,7 +56,7 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       if (patient?.id) {
@@ -62,7 +66,7 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
       }
       onSuccess();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to save patient');
+      setError(err.response?.data?.error || "Failed to save patient");
     } finally {
       setLoading(false);
     }
@@ -71,7 +75,7 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Name
         </label>
         <input
@@ -86,7 +90,7 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Email
         </label>
         <input
@@ -101,7 +105,7 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Phone
         </label>
         <input
@@ -116,7 +120,7 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Date of Birth
         </label>
         <input
@@ -130,7 +134,7 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Gender
         </label>
         <select
@@ -148,7 +152,7 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Address
         </label>
         <input
@@ -162,7 +166,7 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
           Medical History
         </label>
         <textarea
@@ -181,12 +185,8 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-primary w-full"
-      >
-        {loading ? 'Saving...' : 'Save Patient'}
+      <button type="submit" disabled={loading} className="btn-primary w-full">
+        {loading ? "Saving..." : "Save Patient"}
       </button>
     </form>
   );

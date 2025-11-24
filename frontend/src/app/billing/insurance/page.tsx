@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
-import { Search, FileText, MoreVertical, Plus, Edit, Trash2 } from "lucide-react";
+import {
+  Search,
+  FileText,
+  MoreVertical,
+  Plus,
+  Edit,
+  Trash2,
+} from "lucide-react";
 import { insuranceClaimsAPI, patientAPI, doctorAPI } from "@/lib/api";
 
 interface Patient {
@@ -67,12 +74,13 @@ export default function InsuranceClaimsPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [claimsRes, statsRes, patientsRes, doctorsRes] = await Promise.all([
-          insuranceClaimsAPI.list(1, 100),
-          insuranceClaimsAPI.getStatistics(),
-          patientAPI.list(1, 100),
-          doctorAPI.list(1, 100),
-        ]);
+        const [claimsRes, statsRes, patientsRes, doctorsRes] =
+          await Promise.all([
+            insuranceClaimsAPI.list(1, 100),
+            insuranceClaimsAPI.getStatistics(),
+            patientAPI.list(1, 100),
+            doctorAPI.list(1, 100),
+          ]);
 
         setClaims(claimsRes.data.claims || []);
         setStatistics(statsRes.data);
@@ -131,7 +139,13 @@ export default function InsuranceClaimsPage() {
   };
 
   const handleAddNew = async () => {
-    if (newForm.patientId && newForm.provider && newForm.policyNumber && newForm.amount && newForm.type) {
+    if (
+      newForm.patientId &&
+      newForm.provider &&
+      newForm.policyNumber &&
+      newForm.amount &&
+      newForm.type
+    ) {
       try {
         const payload = {
           patientId: newForm.patientId,
@@ -144,7 +158,13 @@ export default function InsuranceClaimsPage() {
         await insuranceClaimsAPI.create(payload);
         const claimsRes = await insuranceClaimsAPI.list(1, 100);
         setClaims(claimsRes.data.claims || []);
-        setNewForm({ patientId: "", provider: "", policyNumber: "", amount: "", type: "" });
+        setNewForm({
+          patientId: "",
+          provider: "",
+          policyNumber: "",
+          amount: "",
+          type: "",
+        });
         setIsAddingNew(false);
       } catch (err) {
         console.error("Failed to add claim", err);
@@ -165,7 +185,14 @@ export default function InsuranceClaimsPage() {
   };
 
   const handleSaveEdit = async () => {
-    if (editingId && editForm.patientId && editForm.provider && editForm.policyNumber && editForm.amount && editForm.type) {
+    if (
+      editingId &&
+      editForm.patientId &&
+      editForm.provider &&
+      editForm.policyNumber &&
+      editForm.amount &&
+      editForm.type
+    ) {
       try {
         const payload = {
           patientId: editForm.patientId,
@@ -188,7 +215,7 @@ export default function InsuranceClaimsPage() {
     if (confirm("Are you sure you want to delete this insurance claim?")) {
       try {
         await insuranceClaimsAPI.delete(id);
-        setClaims(prev => prev.filter(claim => claim.id !== id));
+        setClaims((prev) => prev.filter((claim) => claim.id !== id));
         setOpenMenuId(null);
       } catch (err) {
         console.error("Failed to delete claim", err);
@@ -232,7 +259,7 @@ export default function InsuranceClaimsPage() {
                   <div className="text-2xl font-bold">
                     {statistics.totalClaims}
                   </div>
-                  <div className="text-sm text-gray-400">Total Claims</div>
+                  <div className="text-mdtext-gray-400">Total Claims</div>
                   <div className="text-xs text-blue-500">All submissions</div>
                 </div>
               </div>
@@ -247,7 +274,7 @@ export default function InsuranceClaimsPage() {
                   <div className="text-2xl font-bold">
                     ${convertAmount(statistics.approvedAmount).toFixed(2)}
                   </div>
-                  <div className="text-sm text-gray-400">Approved Claims</div>
+                  <div className="text-mdtext-gray-400">Approved Claims</div>
                   <div className="text-xs text-blue-600">
                     Successfully processed
                   </div>
@@ -264,7 +291,7 @@ export default function InsuranceClaimsPage() {
                   <div className="text-2xl font-bold">
                     {statistics.pendingClaims}
                   </div>
-                  <div className="text-sm text-gray-400">Pending Claims</div>
+                  <div className="text-mdtext-gray-400">Pending Claims</div>
                   <div className="text-xs text-orange-500">Under review</div>
                 </div>
               </div>
@@ -279,7 +306,7 @@ export default function InsuranceClaimsPage() {
                   <div className="text-2xl font-bold">
                     {statistics.successRate}%
                   </div>
-                  <div className="text-sm text-gray-400">Claim Success Rate</div>
+                  <div className="text-mdtext-gray-400">Claim Success Rate</div>
                   <div className="text-xs text-purple-500">
                     Approval percentage
                   </div>
@@ -292,7 +319,7 @@ export default function InsuranceClaimsPage() {
         {!loading && !error && (
           <div className="card">
             <h2 className="text-xl font-semibold mb-6">All Insurance Claims</h2>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-gray-400 text-mdmb-6">
               View and manage insurance claims
             </p>
 
@@ -413,109 +440,113 @@ export default function InsuranceClaimsPage() {
             </div>
 
             <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-dark-tertiary">
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
-                    Claim ID
-                  </th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
-                    Patient
-                  </th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
-                    Provider
-                  </th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
-                    Submitted
-                  </th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
-                    Amount
-                  </th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
-                    Status
-                  </th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
-                    Type
-                  </th>
-                  <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredClaims.map((claim) => (
-                  <tr
-                    key={claim.id}
-                    className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
-                  >
-                    <td className="py-4 px-4 text-gray-300 font-medium">
-                      {claim.id}
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="font-medium text-white">
-                        {claim.patient?.name || "N/A"}
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        {claim.patientId}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="text-white">{claim.provider}</div>
-                      <div className="text-sm text-gray-400">
-                        {claim.policyNumber}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-gray-300">
-                      {claim.submittedDate
-                        ? new Date(claim.submittedDate).toLocaleDateString()
-                        : "Not submitted"}
-                    </td>
-                    <td className="py-4 px-4 text-white font-medium">
-                      ${convertAmount(claim.amount).toFixed(2)}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          claim.status
-                        )}`}
-                      >
-                        {claim.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-gray-300">{claim.type}</td>
-                    <td className="py-4 px-4 relative">
-                      <div className="flex items-center justify-center">
-                        <button
-                          onClick={() => setOpenMenuId(openMenuId === claim.id ? null : claim.id)}
-                          className="p-2 hover:bg-dark-tertiary rounded transition-colors"
-                        >
-                          <MoreVertical size={18} className="text-gray-400" />
-                        </button>
-
-                        {openMenuId === claim.id && (
-                          <div className="absolute right-0 mt-2 w-48 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-lg z-10 top-full">
-                            <button
-                              onClick={() => handleEdit(claim)}
-                              className="w-full text-left px-4 py-2 hover:bg-dark-tertiary transition-colors flex items-center gap-2 text-gray-300 hover:text-white first:rounded-t-lg"
-                            >
-                              <Edit size={16} />
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDelete(claim.id)}
-                              className="w-full text-left px-4 py-2 hover:bg-red-500/20 transition-colors flex items-center gap-2 text-red-400 hover:text-red-300 last:rounded-b-lg"
-                            >
-                              <Trash2 size={16} />
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-dark-tertiary">
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Claim ID
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Patient
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Provider
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Submitted
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Amount
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Status
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Type
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredClaims.map((claim) => (
+                    <tr
+                      key={claim.id}
+                      className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
+                    >
+                      <td className="py-4 px-4 text-gray-300 font-medium">
+                        {claim.id}
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="font-medium text-white">
+                          {claim.patient?.name || "N/A"}
+                        </div>
+                        <div className="text-mdtext-gray-400">
+                          {claim.patientId}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="text-white">{claim.provider}</div>
+                        <div className="text-mdtext-gray-400">
+                          {claim.policyNumber}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-gray-300">
+                        {claim.submittedDate
+                          ? new Date(claim.submittedDate).toLocaleDateString()
+                          : "Not submitted"}
+                      </td>
+                      <td className="py-4 px-4 text-white font-medium">
+                        ${convertAmount(claim.amount).toFixed(2)}
+                      </td>
+                      <td className="py-4 px-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            claim.status
+                          )}`}
+                        >
+                          {claim.status}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-gray-300">{claim.type}</td>
+                      <td className="py-4 px-4 relative">
+                        <div className="flex items-center justify-center">
+                          <button
+                            onClick={() =>
+                              setOpenMenuId(
+                                openMenuId === claim.id ? null : claim.id
+                              )
+                            }
+                            className="p-2 hover:bg-dark-tertiary rounded transition-colors"
+                          >
+                            <MoreVertical size={18} className="text-gray-400" />
+                          </button>
+
+                          {openMenuId === claim.id && (
+                            <div className="absolute right-0 mt-2 w-48 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-lg z-10 top-full">
+                              <button
+                                onClick={() => handleEdit(claim)}
+                                className="w-full text-left px-4 py-2 hover:bg-dark-tertiary transition-colors flex items-center gap-2 text-gray-300 hover:text-white first:rounded-t-lg"
+                              >
+                                <Edit size={16} />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDelete(claim.id)}
+                                className="w-full text-left px-4 py-2 hover:bg-red-500/20 transition-colors flex items-center gap-2 text-red-400 hover:text-red-300 last:rounded-b-lg"
+                              >
+                                <Trash2 size={16} />
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             {filteredClaims.length === 0 && !loading && (
@@ -529,78 +560,114 @@ export default function InsuranceClaimsPage() {
         {isAddingNew && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <h3 className="text-xl font-semibold mb-4">Add New Insurance Claim</h3>
+              <h3 className="text-xl font-semibold mb-4">
+                Add New Insurance Claim
+              </h3>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Patient</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Patient
+                  </label>
                   <select
                     value={newForm.patientId}
-                    onChange={(e) => setNewForm(prev => ({ ...prev, patientId: e.target.value }))}
+                    onChange={(e) =>
+                      setNewForm((prev) => ({
+                        ...prev,
+                        patientId: e.target.value,
+                      }))
+                    }
                     className="input-field w-full"
                   >
                     <option value="">Select a patient</option>
                     {patients.map((patient) => (
-                      <option key={patient.id} value={patient.id}>{patient.name}</option>
+                      <option key={patient.id} value={patient.id}>
+                        {patient.name}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Insurance Provider</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Insurance Provider
+                  </label>
                   <input
                     type="text"
                     value={newForm.provider}
-                    onChange={(e) => setNewForm(prev => ({ ...prev, provider: e.target.value }))}
+                    onChange={(e) =>
+                      setNewForm((prev) => ({
+                        ...prev,
+                        provider: e.target.value,
+                      }))
+                    }
                     className="input-field w-full"
                     placeholder="e.g., Blue Cross Blue Shield"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Policy Number</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Policy Number
+                  </label>
                   <input
                     type="text"
                     value={newForm.policyNumber}
-                    onChange={(e) => setNewForm(prev => ({ ...prev, policyNumber: e.target.value }))}
+                    onChange={(e) =>
+                      setNewForm((prev) => ({
+                        ...prev,
+                        policyNumber: e.target.value,
+                      }))
+                    }
                     className="input-field w-full"
                     placeholder="Policy number"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Amount</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Amount
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     value={newForm.amount}
-                    onChange={(e) => setNewForm(prev => ({ ...prev, amount: e.target.value }))}
+                    onChange={(e) =>
+                      setNewForm((prev) => ({
+                        ...prev,
+                        amount: e.target.value,
+                      }))
+                    }
                     className="input-field w-full"
                     placeholder="0.00"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Claim Type</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Claim Type
+                  </label>
                   <input
                     type="text"
                     value={newForm.type}
-                    onChange={(e) => setNewForm(prev => ({ ...prev, type: e.target.value }))}
+                    onChange={(e) =>
+                      setNewForm((prev) => ({ ...prev, type: e.target.value }))
+                    }
                     className="input-field w-full"
                     placeholder="e.g., Medical, Dental, Vision"
                   />
                 </div>
 
-                <div className="text-sm text-gray-400 p-3 bg-dark-tertiary rounded">
-                  Available Doctors: <span className="font-semibold text-white">{doctors.length}</span>
+                <div className="text-mdtext-gray-400 p-3 bg-dark-tertiary rounded">
+                  Available Doctors:{" "}
+                  <span className="font-semibold text-white">
+                    {doctors.length}
+                  </span>
                 </div>
               </div>
 
               <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleAddNew}
-                  className="flex-1 btn-primary"
-                >
+                <button onClick={handleAddNew} className="flex-1 btn-primary">
                   Add
                 </button>
                 <button
@@ -617,78 +684,114 @@ export default function InsuranceClaimsPage() {
         {editingId && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <h3 className="text-xl font-semibold mb-4">Edit Insurance Claim</h3>
+              <h3 className="text-xl font-semibold mb-4">
+                Edit Insurance Claim
+              </h3>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Patient</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Patient
+                  </label>
                   <select
                     value={editForm.patientId}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, patientId: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        patientId: e.target.value,
+                      }))
+                    }
                     className="input-field w-full"
                   >
                     <option value="">Select a patient</option>
                     {patients.map((patient) => (
-                      <option key={patient.id} value={patient.id}>{patient.name}</option>
+                      <option key={patient.id} value={patient.id}>
+                        {patient.name}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Insurance Provider</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Insurance Provider
+                  </label>
                   <input
                     type="text"
                     value={editForm.provider}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, provider: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        provider: e.target.value,
+                      }))
+                    }
                     className="input-field w-full"
                     placeholder="e.g., Blue Cross Blue Shield"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Policy Number</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Policy Number
+                  </label>
                   <input
                     type="text"
                     value={editForm.policyNumber}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, policyNumber: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        policyNumber: e.target.value,
+                      }))
+                    }
                     className="input-field w-full"
                     placeholder="Policy number"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Amount</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Amount
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     value={editForm.amount}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, amount: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        amount: e.target.value,
+                      }))
+                    }
                     className="input-field w-full"
                     placeholder="0.00"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Claim Type</label>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Claim Type
+                  </label>
                   <input
                     type="text"
                     value={editForm.type}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, type: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({ ...prev, type: e.target.value }))
+                    }
                     className="input-field w-full"
                     placeholder="e.g., Medical, Dental, Vision"
                   />
                 </div>
 
-                <div className="text-sm text-gray-400 p-3 bg-dark-tertiary rounded">
-                  Available Doctors: <span className="font-semibold text-white">{doctors.length}</span>
+                <div className="text-mdtext-gray-400 p-3 bg-dark-tertiary rounded">
+                  Available Doctors:{" "}
+                  <span className="font-semibold text-white">
+                    {doctors.length}
+                  </span>
                 </div>
               </div>
 
               <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleSaveEdit}
-                  className="flex-1 btn-primary"
-                >
+                <button onClick={handleSaveEdit} className="flex-1 btn-primary">
                   Save
                 </button>
                 <button

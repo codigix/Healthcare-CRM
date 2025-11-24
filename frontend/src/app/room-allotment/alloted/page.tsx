@@ -57,7 +57,9 @@ export default function AllotedRoomsPage() {
       const uniqueDepts = [
         "all",
         ...new Set(
-          (data.allotments || []).map((room: AllotedRoom) => room.room?.department).filter(Boolean)
+          (data.allotments || [])
+            .map((room: AllotedRoom) => room.room?.department)
+            .filter(Boolean)
         ),
       ];
       setDepartments(uniqueDepts as string[]);
@@ -241,7 +243,7 @@ export default function AllotedRoomsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500"
+                className="px-3 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white text-mdfocus:outline-none focus:border-emerald-500"
               >
                 <option value="all">All Status</option>
                 <option value="Occupied">Occupied</option>
@@ -252,7 +254,7 @@ export default function AllotedRoomsPage() {
             <select
               value={departmentFilter}
               onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="px-3 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white text-sm focus:outline-none focus:border-emerald-500"
+              className="px-3 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white text-mdfocus:outline-none focus:border-emerald-500"
             >
               <option value="all">All Departments</option>
               {departments.slice(1).map((dept) => (
@@ -327,7 +329,7 @@ export default function AllotedRoomsPage() {
                       key={room.id}
                       className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
                     >
-                      <td className="px-4 py-3 text-white text-sm font-medium">
+                      <td className="px-4 py-3 text-white text-mdfont-medium">
                         {room.id}
                       </td>
                       <td className="px-4 py-3 text-sm">
@@ -392,7 +394,7 @@ export default function AllotedRoomsPage() {
             </table>
           </div>
 
-          <div className="mt-4 flex justify-between items-center text-sm text-gray-400">
+          <div className="mt-4 flex justify-between items-center text-mdtext-gray-400">
             <span>Showing {filteredRooms.length} allotments</span>
             <div className="flex gap-2">
               <button className="px-3 py-1 bg-dark-tertiary hover:bg-dark-tertiary/70 rounded transition-colors">

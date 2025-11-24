@@ -1,31 +1,31 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
-import { doctorAPI } from '@/lib/api';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useParams } from "next/navigation";
+import { doctorAPI } from "@/lib/api";
 
-type TabType = 'personal' | 'professional';
+type TabType = "personal" | "professional";
 
 export default function EditDoctorPage() {
   const router = useRouter();
   const params = useParams();
   const doctorId = params.id as string;
 
-  const [activeTab, setActiveTab] = useState<TabType>('personal');
+  const [activeTab, setActiveTab] = useState<TabType>("personal");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    specialization: '',
-    experience: '',
-    schedule: '',
+    name: "",
+    email: "",
+    phone: "",
+    specialization: "",
+    experience: "",
+    schedule: "",
   });
 
   useEffect(() => {
@@ -35,15 +35,15 @@ export default function EditDoctorPage() {
         const doctor = response.data;
 
         setFormData({
-          name: doctor.name || '',
-          email: doctor.email || '',
-          phone: doctor.phone || '',
-          specialization: doctor.specialization || '',
-          experience: doctor.experience?.toString() || '',
-          schedule: doctor.schedule || '',
+          name: doctor.name || "",
+          email: doctor.email || "",
+          phone: doctor.phone || "",
+          specialization: doctor.specialization || "",
+          experience: doctor.experience?.toString() || "",
+          schedule: doctor.schedule || "",
         });
       } catch (err) {
-        setError('Failed to load doctor details');
+        setError("Failed to load doctor details");
         console.error(err);
       } finally {
         setLoading(false);
@@ -55,15 +55,19 @@ export default function EditDoctorPage() {
     }
   }, [doctorId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError('');
+    setError("");
 
     try {
       await doctorAPI.update(doctorId, {
@@ -74,17 +78,17 @@ export default function EditDoctorPage() {
         experience: parseInt(formData.experience) || 0,
         schedule: formData.schedule,
       });
-      router.push('/doctors');
+      router.push("/doctors");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update doctor');
+      setError(err.response?.data?.error || "Failed to update doctor");
     } finally {
       setSubmitting(false);
     }
   };
 
   const tabs = [
-    { id: 'personal' as TabType, label: 'Personal Information' },
-    { id: 'professional' as TabType, label: 'Professional Details' },
+    { id: "personal" as TabType, label: "Personal Information" },
+    { id: "professional" as TabType, label: "Professional Details" },
   ];
 
   if (loading) {
@@ -101,7 +105,10 @@ export default function EditDoctorPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Link href="/doctors" className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors">
+          <Link
+            href="/doctors"
+            className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
+          >
             <ArrowLeft size={20} />
           </Link>
           <div>
@@ -119,8 +126,8 @@ export default function EditDoctorPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-6 py-3 font-medium transition-colors relative ${
                     activeTab === tab.id
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-gray-300'
+                      ? "text-white"
+                      : "text-gray-400 hover:text-gray-300"
                   }`}
                 >
                   {tab.label}
@@ -139,16 +146,20 @@ export default function EditDoctorPage() {
           )}
 
           <form onSubmit={handleSubmit}>
-            {activeTab === 'personal' && (
+            {activeTab === "personal" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
-                  <p className="text-sm text-gray-400 mb-6">Edit the doctor's personal details.</p>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Personal Information
+                  </h3>
+                  <p className="text-mdtext-gray-400 mb-6">
+                    Edit the doctor's personal details.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Full Name
                     </label>
                     <input
@@ -163,7 +174,7 @@ export default function EditDoctorPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Email
                     </label>
                     <input
@@ -178,7 +189,7 @@ export default function EditDoctorPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Phone Number
                     </label>
                     <input
@@ -195,16 +206,20 @@ export default function EditDoctorPage() {
               </div>
             )}
 
-            {activeTab === 'professional' && (
+            {activeTab === "professional" && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Professional Details</h3>
-                  <p className="text-sm text-gray-400 mb-6">Edit the doctor's professional information.</p>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Professional Details
+                  </h3>
+                  <p className="text-mdtext-gray-400 mb-6">
+                    Edit the doctor's professional information.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Specialization
                     </label>
                     <input
@@ -219,7 +234,7 @@ export default function EditDoctorPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Years of Experience
                     </label>
                     <input
@@ -236,7 +251,7 @@ export default function EditDoctorPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Schedule
                   </label>
                   <textarea
@@ -257,7 +272,7 @@ export default function EditDoctorPage() {
                 disabled={submitting}
                 className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Saving...' : 'Save Changes'}
+                {submitting ? "Saving..." : "Save Changes"}
               </button>
               <Link href="/doctors" className="btn-secondary">
                 Cancel

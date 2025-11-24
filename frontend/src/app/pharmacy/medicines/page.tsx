@@ -1,10 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Search, Plus, Package, AlertCircle, MoreVertical, Loader } from 'lucide-react';
-import Link from 'next/link';
-import { medicineAPI } from '@/lib/api';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import {
+  Search,
+  Plus,
+  Package,
+  AlertCircle,
+  MoreVertical,
+  Loader,
+} from "lucide-react";
+import Link from "next/link";
+import { medicineAPI } from "@/lib/api";
 
 interface Medicine {
   id: string;
@@ -21,16 +28,19 @@ interface Medicine {
 }
 
 export default function MedicineListPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [deleteModal, setDeleteModal] = useState<{ show: boolean; id: string | null }>({ show: false, id: null });
+  const [deleteModal, setDeleteModal] = useState<{
+    show: boolean;
+    id: string | null;
+  }>({ show: false, id: null });
 
   const limit = 10;
 
@@ -41,17 +51,17 @@ export default function MedicineListPage() {
   const fetchMedicines = async () => {
     try {
       setLoading(true);
-      setError('');
+      setError("");
       const filters: any = {};
-      if (statusFilter !== 'all') filters.status = statusFilter;
-      if (categoryFilter !== 'all') filters.category = categoryFilter;
+      if (statusFilter !== "all") filters.status = statusFilter;
+      if (categoryFilter !== "all") filters.category = categoryFilter;
       if (searchQuery) filters.search = searchQuery;
 
       const response = await medicineAPI.list(page, limit, filters);
       setMedicines(response.data.medicines);
       setTotal(response.data.total);
     } catch (err: any) {
-      setError('Failed to fetch medicines');
+      setError("Failed to fetch medicines");
       console.error(err);
     } finally {
       setLoading(false);
@@ -61,63 +71,79 @@ export default function MedicineListPage() {
   const handleDelete = async (id: string) => {
     try {
       await medicineAPI.delete(id);
-      setMedicines(medicines.filter(m => m.id !== id));
+      setMedicines(medicines.filter((m) => m.id !== id));
       setDeleteModal({ show: false, id: null });
     } catch (err) {
-      setError('Failed to delete medicine');
+      setError("Failed to delete medicine");
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'In Stock':
-        return 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20';
-      case 'Low Stock':
-        return 'bg-orange-500/10 text-orange-500 border border-orange-500/20';
-      case 'Out of Stock':
-        return 'bg-red-500/10 text-red-500 border border-red-500/20';
+      case "In Stock":
+        return "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+      case "Low Stock":
+        return "bg-orange-500/10 text-orange-500 border border-orange-500/20";
+      case "Out of Stock":
+        return "bg-red-500/10 text-red-500 border border-red-500/20";
       default:
-        return 'bg-gray-500/10 text-gray-400 border border-gray-500/20';
+        return "bg-gray-500/10 text-gray-400 border border-gray-500/20";
     }
   };
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
-      'Antibiotics': 'bg-blue-500/10 text-blue-500 border border-blue-500/20',
-      'Analgesics': 'bg-purple-500/10 text-purple-500 border border-purple-500/20',
-      'Antidiabetics': 'bg-pink-500/10 text-pink-500 border border-pink-500/20',
-      'Antihypertensives': 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20',
-      'Antihistamines': 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20',
-      'Statins': 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20',
-      'Anxiolytics': 'bg-orange-500/10 text-orange-500 border border-orange-500/20',
-      'NSAIDs': 'bg-green-500/10 text-green-500 border border-green-500/20'
+      Antibiotics: "bg-blue-500/10 text-blue-500 border border-blue-500/20",
+      Analgesics:
+        "bg-purple-500/10 text-purple-500 border border-purple-500/20",
+      Antidiabetics: "bg-pink-500/10 text-pink-500 border border-pink-500/20",
+      Antihypertensives:
+        "bg-cyan-500/10 text-cyan-500 border border-cyan-500/20",
+      Antihistamines:
+        "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20",
+      Statins: "bg-indigo-500/10 text-indigo-500 border border-indigo-500/20",
+      Anxiolytics:
+        "bg-orange-500/10 text-orange-500 border border-orange-500/20",
+      NSAIDs: "bg-green-500/10 text-green-500 border border-green-500/20",
     };
-    return colors[category] || 'bg-gray-500/10 text-gray-400 border border-gray-500/20';
+    return (
+      colors[category] ||
+      "bg-gray-500/10 text-gray-400 border border-gray-500/20"
+    );
   };
 
   const getStatusLabel = (medicine: Medicine) => {
-    if (medicine.initialQuantity === 0) return 'Out of Stock';
-    if (medicine.initialQuantity <= (medicine.reorderLevel || 50)) return 'Low Stock';
-    return 'In Stock';
+    if (medicine.initialQuantity === 0) return "Out of Stock";
+    if (medicine.initialQuantity <= (medicine.reorderLevel || 50))
+      return "Low Stock";
+    return "In Stock";
   };
 
-  const filteredMedicines = medicines.filter(medicine => {
-    const medicineType = medicine.medicineType || '';
-    const matchesTab = activeTab === 'all' || 
-                      (activeTab === 'prescription' && medicineType === 'Prescription') ||
-                      (activeTab === 'otc' && medicineType === 'OTC') ||
-                      (activeTab === 'controlled' && medicineType === 'Controlled');
+  const filteredMedicines = medicines.filter((medicine) => {
+    const medicineType = medicine.medicineType || "";
+    const matchesTab =
+      activeTab === "all" ||
+      (activeTab === "prescription" && medicineType === "Prescription") ||
+      (activeTab === "otc" && medicineType === "OTC") ||
+      (activeTab === "controlled" && medicineType === "Controlled");
     return matchesTab;
   });
 
   const totalMedicines = total;
-  const lowStockItems = medicines.filter(m => getStatusLabel(m) === 'Low Stock').length;
-  const expiringSoon = medicines.filter(m => {
+  const lowStockItems = medicines.filter(
+    (m) => getStatusLabel(m) === "Low Stock"
+  ).length;
+  const expiringSoon = medicines.filter((m) => {
     if (!m.expiryDate) return false;
-    const daysUntilExpiry = Math.floor((new Date(m.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+    const daysUntilExpiry = Math.floor(
+      (new Date(m.expiryDate).getTime() - new Date().getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
     return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
   }).length;
-  const categories = Array.from(new Set(medicines.map(m => m.category))).length;
+  const categories = Array.from(
+    new Set(medicines.map((m) => m.category))
+  ).length;
 
   return (
     <DashboardLayout>
@@ -125,7 +151,9 @@ export default function MedicineListPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold mb-2">Medicine List</h1>
-            <p className="text-gray-400">Manage and view all medicines in the pharmacy inventory</p>
+            <p className="text-gray-400">
+              Manage and view all medicines in the pharmacy inventory
+            </p>
           </div>
           <Link href="/pharmacy/add-medicine">
             <button className="btn-primary flex items-center gap-2">
@@ -142,9 +170,13 @@ export default function MedicineListPage() {
                 <Package className="text-blue-500" size={24} />
               </div>
               <div>
-                <div className="text-2xl font-bold">{totalMedicines.toLocaleString()}</div>
-                <div className="text-sm text-gray-400">Total Medicines</div>
-                <div className="text-xs text-emerald-500">+24 added this month</div>
+                <div className="text-2xl font-bold">
+                  {totalMedicines.toLocaleString()}
+                </div>
+                <div className="text-mdtext-gray-400">Total Medicines</div>
+                <div className="text-xs text-emerald-500">
+                  +24 added this month
+                </div>
               </div>
             </div>
           </div>
@@ -156,8 +188,10 @@ export default function MedicineListPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">{lowStockItems}</div>
-                <div className="text-sm text-gray-400">Low Stock Items</div>
-                <div className="text-xs text-orange-500">Need restocking soon</div>
+                <div className="text-mdtext-gray-400">Low Stock Items</div>
+                <div className="text-xs text-orange-500">
+                  Need restocking soon
+                </div>
               </div>
             </div>
           </div>
@@ -169,7 +203,7 @@ export default function MedicineListPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">{expiringSoon}</div>
-                <div className="text-sm text-gray-400">Expiring Soon</div>
+                <div className="text-mdtext-gray-400">Expiring Soon</div>
                 <div className="text-xs text-red-500">Within next 30 days</div>
               </div>
             </div>
@@ -182,7 +216,7 @@ export default function MedicineListPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">{categories}</div>
-                <div className="text-sm text-gray-400">Categories</div>
+                <div className="text-mdtext-gray-400">Categories</div>
                 <div className="text-xs text-gray-500">Medicine categories</div>
               </div>
             </div>
@@ -203,41 +237,41 @@ export default function MedicineListPage() {
 
           <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
             <button
-              onClick={() => setActiveTab('all')}
+              onClick={() => setActiveTab("all")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'all'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "all"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               All
             </button>
             <button
-              onClick={() => setActiveTab('prescription')}
+              onClick={() => setActiveTab("prescription")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'prescription'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "prescription"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Prescription
             </button>
             <button
-              onClick={() => setActiveTab('otc')}
+              onClick={() => setActiveTab("otc")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'otc'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "otc"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               OTC
             </button>
             <button
-              onClick={() => setActiveTab('controlled')}
+              onClick={() => setActiveTab("controlled")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'controlled'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "controlled"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Controlled
@@ -289,38 +323,75 @@ export default function MedicineListPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-dark-tertiary">
-                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">ID</th>
-                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Medicine Name</th>
-                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Category</th>
-                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Stock</th>
-                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Expiry Date</th>
-                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Status</th>
-                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      ID
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Medicine Name
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Category
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Stock
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Expiry Date
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Status
+                    </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredMedicines.map((medicine) => (
-                    <tr key={medicine.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
+                    <tr
+                      key={medicine.id}
+                      className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
+                    >
                       <td className="py-4 px-4">
-                        <span className="text-gray-300 text-sm">{medicine.id.slice(0, 8)}</span>
+                        <span className="text-gray-300 text-sm">
+                          {medicine.id.slice(0, 8)}
+                        </span>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="font-medium text-white">{medicine.name}</div>
-                        <div className="text-sm text-gray-400">{medicine.genericName}</div>
+                        <div className="font-medium text-white">
+                          {medicine.name}
+                        </div>
+                        <div className="text-mdtext-gray-400">
+                          {medicine.genericName}
+                        </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(medicine.category)}`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(
+                            medicine.category
+                          )}`}
+                        >
                           {medicine.category}
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="text-white">{medicine.initialQuantity} units</span>
+                        <span className="text-white">
+                          {medicine.initialQuantity} units
+                        </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="text-gray-300">{medicine.expiryDate ? new Date(medicine.expiryDate).toLocaleDateString() : 'N/A'}</span>
+                        <span className="text-gray-300">
+                          {medicine.expiryDate
+                            ? new Date(medicine.expiryDate).toLocaleDateString()
+                            : "N/A"}
+                        </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(getStatusLabel(medicine))}`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            getStatusLabel(medicine)
+                          )}`}
+                        >
                           {getStatusLabel(medicine)}
                         </span>
                       </td>
@@ -337,7 +408,9 @@ export default function MedicineListPage() {
                             </button>
                           </Link>
                           <button
-                            onClick={() => setDeleteModal({ show: true, id: medicine.id })}
+                            onClick={() =>
+                              setDeleteModal({ show: true, id: medicine.id })
+                            }
                             className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-xs hover:bg-red-500/30 transition-colors"
                           >
                             Delete
@@ -353,7 +426,9 @@ export default function MedicineListPage() {
 
           <div className="flex justify-between items-center mt-6 pt-4 border-t border-dark-tertiary">
             <p className="text-gray-400 text-sm">
-              Showing {(page - 1) * limit + 1} to {Math.min(page * limit, totalMedicines)} of {totalMedicines} medicines
+              Showing {(page - 1) * limit + 1} to{" "}
+              {Math.min(page * limit, totalMedicines)} of {totalMedicines}{" "}
+              medicines
             </p>
             <div className="flex gap-2">
               <button
@@ -379,7 +454,10 @@ export default function MedicineListPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 max-w-sm">
             <h2 className="text-lg font-bold mb-2">Delete Medicine</h2>
-            <p className="text-gray-400 mb-6">Are you sure you want to delete this medicine? This action cannot be undone.</p>
+            <p className="text-gray-400 mb-6">
+              Are you sure you want to delete this medicine? This action cannot
+              be undone.
+            </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setDeleteModal({ show: false, id: null })}

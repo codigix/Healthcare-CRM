@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ChevronLeft, Check } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ChevronLeft, Check } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function AddNewRoomPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    roomNumber: '',
-    roomType: '',
-    department: '',
-    floor: '',
-    capacity: '',
-    pricePerDay: '',
-    status: 'Available',
-    description: '',
+    roomNumber: "",
+    roomType: "",
+    department: "",
+    floor: "",
+    capacity: "",
+    pricePerDay: "",
+    status: "Available",
+    description: "",
     television: false,
     attachedBathroom: false,
     airConditioning: false,
@@ -27,16 +27,18 @@ export default function AddNewRoomPage() {
     oxygenSupply: false,
     telephone: false,
     nursecallButton: false,
-    additionalNotes: '',
+    additionalNotes: "",
   });
 
   const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value, type } = e.target;
-    const isCheckbox = type === 'checkbox';
+    const isCheckbox = type === "checkbox";
     const checkedInput = e.target as HTMLInputElement;
 
     setFormData((prev) => ({
@@ -48,46 +50,53 @@ export default function AddNewRoomPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.roomNumber || !formData.roomType || !formData.department || !formData.floor || !formData.capacity || !formData.pricePerDay) {
-      alert('Please fill in all required fields');
+    if (
+      !formData.roomNumber ||
+      !formData.roomType ||
+      !formData.department ||
+      !formData.floor ||
+      !formData.capacity ||
+      !formData.pricePerDay
+    ) {
+      alert("Please fill in all required fields");
       return;
     }
 
     try {
       setSubmitting(true);
       const response = await fetch(`${API_URL}/room-allotment/rooms`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error('Failed to create room');
+      if (!response.ok) throw new Error("Failed to create room");
 
-      alert('Room added successfully!');
-      router.push('/room-allotment/by-department');
+      alert("Room added successfully!");
+      router.push("/room-allotment/by-department");
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to create room');
+      alert(err instanceof Error ? err.message : "Failed to create room");
     } finally {
       setSubmitting(false);
     }
   };
 
   const departments = [
-    'Cardiology',
-    'Orthopedics',
-    'Neurology',
-    'Pulmonology',
-    'Gastroenterology',
-    'Pediatrics',
-    'ICU',
-    'Emergency',
+    "Cardiology",
+    "Orthopedics",
+    "Neurology",
+    "Pulmonology",
+    "Gastroenterology",
+    "Pediatrics",
+    "ICU",
+    "Emergency",
   ];
 
-  const roomTypes = ['Private', 'Semi-Private', 'General', 'ICU'];
-  const floors = ['Ground', 'First', 'Second', 'Third', 'Fourth', 'Fifth'];
+  const roomTypes = ["Private", "Semi-Private", "General", "ICU"];
+  const floors = ["Ground", "First", "Second", "Third", "Fourth", "Fifth"];
 
   return (
     <DashboardLayout>
@@ -101,7 +110,8 @@ export default function AddNewRoomPage() {
           <div>
             <h1 className="text-3xl font-bold text-white">Add New Room</h1>
             <p className="text-gray-400 mt-1">
-              Add a new room to the hospital inventory. Fill in all the required information below.
+              Add a new room to the hospital inventory. Fill in all the required
+              information below.
             </p>
           </div>
         </div>
@@ -109,11 +119,13 @@ export default function AddNewRoomPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Basic Information</h2>
+              <h2 className="text-xl font-bold text-white mb-4">
+                Basic Information
+              </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Room Number
                   </label>
                   <input
@@ -130,7 +142,7 @@ export default function AddNewRoomPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Room Type
                   </label>
                   <select
@@ -149,7 +161,7 @@ export default function AddNewRoomPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Department
                   </label>
                   <select
@@ -168,7 +180,7 @@ export default function AddNewRoomPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Floor
                   </label>
                   <select
@@ -189,11 +201,13 @@ export default function AddNewRoomPage() {
             </div>
 
             <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Additional Details</h2>
+              <h2 className="text-xl font-bold text-white mb-4">
+                Additional Details
+              </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Capacity (Beds)
                   </label>
                   <select
@@ -211,7 +225,7 @@ export default function AddNewRoomPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Price Per Day
                   </label>
                   <input
@@ -225,7 +239,7 @@ export default function AddNewRoomPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Status
                   </label>
                   <select
@@ -241,7 +255,7 @@ export default function AddNewRoomPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Description
                   </label>
                   <input
@@ -302,7 +316,9 @@ export default function AddNewRoomPage() {
                   onChange={handleChange}
                   className="w-4 h-4 bg-dark-tertiary border border-dark-tertiary rounded accent-emerald-500 cursor-pointer"
                 />
-                <span className="text-gray-300 text-sm">Wheelchair Accessible</span>
+                <span className="text-gray-300 text-sm">
+                  Wheelchair Accessible
+                </span>
               </label>
 
               <label className="flex items-center gap-3 cursor-pointer">
@@ -352,7 +368,9 @@ export default function AddNewRoomPage() {
           </div>
 
           <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Additional Notes</h2>
+            <h2 className="text-xl font-bold text-white mb-4">
+              Additional Notes
+            </h2>
             <textarea
               name="additionalNotes"
               value={formData.additionalNotes}
@@ -378,7 +396,7 @@ export default function AddNewRoomPage() {
               className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-600 text-white rounded-lg transition-colors font-medium flex items-center gap-2"
             >
               <Check size={20} />
-              {submitting ? 'Adding...' : 'Add Room'}
+              {submitting ? "Adding..." : "Add Room"}
             </button>
           </div>
         </form>

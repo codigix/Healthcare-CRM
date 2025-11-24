@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { appointmentAPI, doctorAPI, patientAPI } from '@/lib/api';
-import { Search, CheckCircle, XCircle, Clock, MoreVertical } from 'lucide-react';
-import Modal from '@/components/UI/Modal';
-import AppointmentForm from '@/components/Forms/AppointmentForm';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { appointmentAPI, doctorAPI, patientAPI } from "@/lib/api";
+import {
+  Search,
+  CheckCircle,
+  XCircle,
+  Clock,
+  MoreVertical,
+} from "lucide-react";
+import Modal from "@/components/UI/Modal";
+import AppointmentForm from "@/components/Forms/AppointmentForm";
 
 interface AppointmentRequest {
   id: string;
@@ -37,10 +43,11 @@ export default function AppointmentRequestsPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('pending');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState("pending");
+  const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<AppointmentRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] =
+    useState<AppointmentRequest | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -54,12 +61,12 @@ export default function AppointmentRequestsPage() {
         doctorAPI.list(1, 100),
         patientAPI.list(1, 100),
       ]);
-      
+
       setRequests(appointmentsRes.data.appointments);
       setDoctors(doctorsRes.data.doctors);
       setPatients(patientsRes.data.patients);
     } catch (error) {
-      console.error('Failed to fetch data', error);
+      console.error("Failed to fetch data", error);
     } finally {
       setLoading(false);
     }
@@ -67,51 +74,57 @@ export default function AppointmentRequestsPage() {
 
   const handleApprove = async (id: string) => {
     try {
-      await appointmentAPI.update(id, { status: 'confirmed' });
+      await appointmentAPI.update(id, { status: "confirmed" });
       fetchData();
     } catch (error) {
-      console.error('Failed to approve request', error);
+      console.error("Failed to approve request", error);
     }
   };
 
   const handleReject = async (id: string) => {
-    if (confirm('Are you sure you want to reject this appointment request?')) {
+    if (confirm("Are you sure you want to reject this appointment request?")) {
       try {
-        await appointmentAPI.update(id, { status: 'cancelled' });
+        await appointmentAPI.update(id, { status: "cancelled" });
         fetchData();
       } catch (error) {
-        console.error('Failed to reject request', error);
+        console.error("Failed to reject request", error);
       }
     }
   };
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency?.toLowerCase()) {
-      case 'high':
-        return 'bg-red-500/10 text-red-500 border border-red-500/20';
-      case 'medium':
-        return 'bg-orange-500/10 text-orange-500 border border-orange-500/20';
-      case 'normal':
-      case 'low':
-        return 'bg-blue-500/10 text-blue-500 border border-blue-500/20';
+      case "high":
+        return "bg-red-500/10 text-red-500 border border-red-500/20";
+      case "medium":
+        return "bg-orange-500/10 text-orange-500 border border-orange-500/20";
+      case "normal":
+      case "low":
+        return "bg-blue-500/10 text-blue-500 border border-blue-500/20";
       default:
-        return 'bg-gray-500/10 text-gray-400 border border-gray-500/20';
+        return "bg-gray-500/10 text-gray-400 border border-gray-500/20";
     }
   };
 
   const tabs = [
-    { id: 'pending', label: 'Pending Requests' },
-    { id: 'approved', label: 'Approved' },
-    { id: 'rejected', label: 'Rejected' },
+    { id: "pending", label: "Pending Requests" },
+    { id: "approved", label: "Approved" },
+    { id: "rejected", label: "Rejected" },
   ];
 
-  const filteredRequests = requests.filter(req => {
-    const matchesSearch = (req.patient?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-                         (req.doctor?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
-    
-    if (activeTab === 'pending') return matchesSearch && req.status.toLowerCase() === 'pending';
-    if (activeTab === 'approved') return matchesSearch && req.status.toLowerCase() === 'confirmed';
-    if (activeTab === 'rejected') return matchesSearch && req.status.toLowerCase() === 'cancelled';
+  const filteredRequests = requests.filter((req) => {
+    const matchesSearch =
+      req.patient?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      false ||
+      req.doctor?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      false;
+
+    if (activeTab === "pending")
+      return matchesSearch && req.status.toLowerCase() === "pending";
+    if (activeTab === "approved")
+      return matchesSearch && req.status.toLowerCase() === "confirmed";
+    if (activeTab === "rejected")
+      return matchesSearch && req.status.toLowerCase() === "cancelled";
     return matchesSearch;
   });
 
@@ -121,7 +134,9 @@ export default function AppointmentRequestsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold mb-2">Appointment Requests</h1>
-            <p className="text-gray-400">Review and process incoming appointment requests.</p>
+            <p className="text-gray-400">
+              Review and process incoming appointment requests.
+            </p>
           </div>
         </div>
 
@@ -134,8 +149,8 @@ export default function AppointmentRequestsPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`pb-4 px-2 font-medium transition-colors relative ${
                     activeTab === tab.id
-                      ? 'text-emerald-500'
-                      : 'text-gray-400 hover:text-gray-300'
+                      ? "text-emerald-500"
+                      : "text-gray-400 hover:text-gray-300"
                   }`}
                 >
                   {tab.label}
@@ -161,14 +176,20 @@ export default function AppointmentRequestsPage() {
           </div>
 
           {loading ? (
-            <div className="text-center py-12 text-gray-400">Loading requests...</div>
+            <div className="text-center py-12 text-gray-400">
+              Loading requests...
+            </div>
           ) : filteredRequests.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-dark-tertiary rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock size={32} className="text-gray-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">No {activeTab} requests</h3>
-              <p className="text-gray-400">There are no appointment requests in this category.</p>
+              <h3 className="text-xl font-semibold mb-2">
+                No {activeTab} requests
+              </h3>
+              <p className="text-gray-400">
+                There are no appointment requests in this category.
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -182,21 +203,31 @@ export default function AppointmentRequestsPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 font-semibold text-lg">
-                            {request.patient?.name?.charAt(0) || 'N'}
+                            {request.patient?.name?.charAt(0) || "N"}
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold">{request.patient?.name || 'N/A'}</h3>
-                            <p className="text-sm text-gray-400">
-                              Requested: {new Date(request.date).toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'short', 
-                                day: 'numeric' 
-                              })}
+                            <h3 className="text-lg font-semibold">
+                              {request.patient?.name || "N/A"}
+                            </h3>
+                            <p className="text-mdtext-gray-400">
+                              Requested:{" "}
+                              {new Date(request.date).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                }
+                              )}
                             </p>
                           </div>
                         </div>
                         {request.urgency && (
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getUrgencyColor(request.urgency)}`}>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${getUrgencyColor(
+                              request.urgency
+                            )}`}
+                          >
                             {request.urgency} Priority
                           </span>
                         )}
@@ -204,30 +235,39 @@ export default function AppointmentRequestsPage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div>
-                          <span className="text-gray-400">Requested Doctor:</span>
+                          <span className="text-gray-400">
+                            Requested Doctor:
+                          </span>
                           <p className="font-medium text-white mt-1">
-                            {request.requestedDoctor || `Dr. ${request.doctor?.name || 'N/A'}`}
+                            {request.requestedDoctor ||
+                              `Dr. ${request.doctor?.name || "N/A"}`}
                           </p>
                         </div>
                         <div>
                           <span className="text-gray-400">Preferred Date:</span>
                           <p className="font-medium text-white mt-1">
-                            {request.preferredDate || new Date(request.date).toLocaleDateString('en-US', { 
-                              month: 'short', 
-                              day: 'numeric',
-                              year: 'numeric'
-                            })}
+                            {request.preferredDate ||
+                              new Date(request.date).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                }
+                              )}
                           </p>
                         </div>
                         <div>
                           <span className="text-gray-400">Type:</span>
-                          <p className="font-medium text-white mt-1">{request.type || 'Check-up'}</p>
+                          <p className="font-medium text-white mt-1">
+                            {request.type || "Check-up"}
+                          </p>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex md:flex-col gap-2">
-                      {activeTab === 'pending' && (
+                      {activeTab === "pending" && (
                         <>
                           <button
                             onClick={() => handleApprove(request.id)}
@@ -245,13 +285,13 @@ export default function AppointmentRequestsPage() {
                           </button>
                         </>
                       )}
-                      {activeTab === 'approved' && (
+                      {activeTab === "approved" && (
                         <span className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-lg">
                           <CheckCircle size={18} />
                           Approved
                         </span>
                       )}
-                      {activeTab === 'rejected' && (
+                      {activeTab === "rejected" && (
                         <span className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg">
                           <XCircle size={18} />
                           Rejected
@@ -273,9 +313,12 @@ export default function AppointmentRequestsPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  {requests.filter(r => r.status.toLowerCase() === 'pending').length}
+                  {
+                    requests.filter((r) => r.status.toLowerCase() === "pending")
+                      .length
+                  }
                 </div>
-                <div className="text-sm text-gray-400">Pending Requests</div>
+                <div className="text-mdtext-gray-400">Pending Requests</div>
               </div>
             </div>
           </div>
@@ -287,9 +330,13 @@ export default function AppointmentRequestsPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  {requests.filter(r => r.status.toLowerCase() === 'confirmed').length}
+                  {
+                    requests.filter(
+                      (r) => r.status.toLowerCase() === "confirmed"
+                    ).length
+                  }
                 </div>
-                <div className="text-sm text-gray-400">Approved</div>
+                <div className="text-mdtext-gray-400">Approved</div>
               </div>
             </div>
           </div>
@@ -301,18 +348,22 @@ export default function AppointmentRequestsPage() {
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  {requests.filter(r => r.status.toLowerCase() === 'cancelled').length}
+                  {
+                    requests.filter(
+                      (r) => r.status.toLowerCase() === "cancelled"
+                    ).length
+                  }
                 </div>
-                <div className="text-sm text-gray-400">Rejected</div>
+                <div className="text-mdtext-gray-400">Rejected</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <Modal 
-        isOpen={showModal} 
-        onClose={() => setShowModal(false)} 
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
         title="Process Request"
       >
         {selectedRequest && (

@@ -1,42 +1,44 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { recordsAPI } from '@/lib/api';
+import { useState } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { recordsAPI } from "@/lib/api";
 
 export default function AddBirthRecordPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    childName: '',
-    dateOfBirth: '',
-    parentFirstName: '',
-    parentLastName: '',
-    attendingDoctor: '',
-    status: 'Pending',
-    weight: '',
-    gender: '',
-    hospitalName: '',
+    childName: "",
+    dateOfBirth: "",
+    parentFirstName: "",
+    parentLastName: "",
+    attendingDoctor: "",
+    status: "Pending",
+    weight: "",
+    gender: "",
+    hospitalName: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const recordData = {
-        type: 'birth',
+        type: "birth",
         patientName: formData.childName,
         date: formData.dateOfBirth,
         details: JSON.stringify({
@@ -52,9 +54,9 @@ export default function AddBirthRecordPage() {
       };
 
       await recordsAPI.create(recordData);
-      router.push('/records/birth');
+      router.push("/records/birth");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to add birth record');
+      setError(err.response?.data?.error || "Failed to add birth record");
     } finally {
       setLoading(false);
     }
@@ -64,12 +66,17 @@ export default function AddBirthRecordPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Link href="/records/birth" className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors">
+          <Link
+            href="/records/birth"
+            className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
+          >
             <ArrowLeft size={20} />
           </Link>
           <div>
             <h1 className="text-3xl font-bold mb-2">Add Birth Record</h1>
-            <p className="text-gray-400">Register a new birth record in the system.</p>
+            <p className="text-gray-400">
+              Register a new birth record in the system.
+            </p>
           </div>
         </div>
 
@@ -85,7 +92,7 @@ export default function AddBirthRecordPage() {
               <h3 className="text-lg font-semibold mb-4">Child Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Child Name *
                   </label>
                   <input
@@ -100,7 +107,7 @@ export default function AddBirthRecordPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Date of Birth *
                   </label>
                   <input
@@ -114,7 +121,7 @@ export default function AddBirthRecordPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Gender *
                   </label>
                   <select
@@ -132,7 +139,7 @@ export default function AddBirthRecordPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Weight (kg) *
                   </label>
                   <input
@@ -150,10 +157,12 @@ export default function AddBirthRecordPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-4">Parents Information</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Parents Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Parent First Name *
                   </label>
                   <input
@@ -168,7 +177,7 @@ export default function AddBirthRecordPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Parent Last Name *
                   </label>
                   <input
@@ -185,10 +194,12 @@ export default function AddBirthRecordPage() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-4">Medical Information</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Medical Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Attending Doctor *
                   </label>
                   <input
@@ -203,7 +214,7 @@ export default function AddBirthRecordPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Hospital Name *
                   </label>
                   <input
@@ -218,7 +229,7 @@ export default function AddBirthRecordPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Status *
                   </label>
                   <select
@@ -250,7 +261,7 @@ export default function AddBirthRecordPage() {
                 disabled={loading}
                 className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50 text-white rounded-lg transition-colors font-medium"
               >
-                {loading ? 'Adding...' : 'Add Record'}
+                {loading ? "Adding..." : "Add Record"}
               </button>
             </div>
           </form>

@@ -1,54 +1,61 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ArrowLeft, Save } from 'lucide-react';
-import Link from 'next/link';
+import { useState } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ArrowLeft, Save } from "lucide-react";
+import Link from "next/link";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function AddInventoryItemPage() {
-  const [activeTab, setActiveTab] = useState('basic');
+  const [activeTab, setActiveTab] = useState("basic");
   const [formData, setFormData] = useState({
-    itemName: '',
-    itemId: '',
-    category: '',
-    subcategory: '',
-    description: '',
-    unitOfMeasure: '',
-    unitQuantity: '',
-    storageLocation: '',
-    manufacturer: '',
-    brand: '',
-    modelVersion: '',
-    expiryTracking: '',
+    itemName: "",
+    itemId: "",
+    category: "",
+    subcategory: "",
+    description: "",
+    unitOfMeasure: "",
+    unitQuantity: "",
+    storageLocation: "",
+    manufacturer: "",
+    brand: "",
+    modelVersion: "",
+    expiryTracking: "",
     requiresRefrigeration: false,
     hazardousMaterial: false,
     controlledSubstance: false,
     sterile: false,
-    notes: '',
+    notes: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value, type } = e.target;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
+      setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    console.log("Form submitted:", formData);
   };
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Link href="/inventory" className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors">
+          <Link
+            href="/inventory"
+            className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
+          >
             <ArrowLeft size={24} />
           </Link>
           <div>
@@ -60,31 +67,31 @@ export default function AddInventoryItemPage() {
         <div className="card">
           <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
             <button
-              onClick={() => setActiveTab('basic')}
+              onClick={() => setActiveTab("basic")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'basic'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "basic"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Item Details
             </button>
             <button
-              onClick={() => setActiveTab('stock')}
+              onClick={() => setActiveTab("stock")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'stock'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "stock"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Stock Management
             </button>
             <button
-              onClick={() => setActiveTab('suppliers')}
+              onClick={() => setActiveTab("suppliers")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === 'suppliers'
-                  ? 'text-emerald-500 border-b-2 border-emerald-500'
-                  : 'text-gray-400 hover:text-gray-300'
+                activeTab === "suppliers"
+                  ? "text-emerald-500 border-b-2 border-emerald-500"
+                  : "text-gray-400 hover:text-gray-300"
               }`}
             >
               Suppliers
@@ -92,15 +99,21 @@ export default function AddInventoryItemPage() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            {activeTab === 'basic' && (
+            {activeTab === "basic" && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
-                  <p className="text-gray-400 text-sm mb-6">Enter the basic details of the inventory item</p>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Basic Information
+                  </h2>
+                  <p className="text-gray-400 text-mdmb-6">
+                    Enter the basic details of the inventory item
+                  </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Item Name</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Item Name
+                      </label>
                       <input
                         type="text"
                         name="itemName"
@@ -113,7 +126,9 @@ export default function AddInventoryItemPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Item ID/SKU</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Item ID/SKU
+                      </label>
                       <input
                         type="text"
                         name="itemId"
@@ -126,7 +141,9 @@ export default function AddInventoryItemPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Category</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Category
+                      </label>
                       <select
                         name="category"
                         value={formData.category}
@@ -135,7 +152,9 @@ export default function AddInventoryItemPage() {
                         required
                       >
                         <option value="">Select category</option>
-                        <option value="Medical Supplies">Medical Supplies</option>
+                        <option value="Medical Supplies">
+                          Medical Supplies
+                        </option>
                         <option value="Medications">Medications</option>
                         <option value="Equipment">Equipment</option>
                         <option value="Office Supplies">Office Supplies</option>
@@ -143,7 +162,9 @@ export default function AddInventoryItemPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Subcategory</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Subcategory
+                      </label>
                       <select
                         name="subcategory"
                         value={formData.subcategory}
@@ -158,7 +179,9 @@ export default function AddInventoryItemPage() {
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium mb-2">Description</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Description
+                      </label>
                       <textarea
                         name="description"
                         value={formData.description}
@@ -170,7 +193,9 @@ export default function AddInventoryItemPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Unit of Measure</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Unit of Measure
+                      </label>
                       <select
                         name="unitOfMeasure"
                         value={formData.unitOfMeasure}
@@ -188,7 +213,9 @@ export default function AddInventoryItemPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Unit Quantity</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Unit Quantity
+                      </label>
                       <input
                         type="number"
                         name="unitQuantity"
@@ -201,7 +228,9 @@ export default function AddInventoryItemPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Storage Location</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Storage Location
+                      </label>
                       <input
                         type="text"
                         name="storageLocation"
@@ -215,12 +244,18 @@ export default function AddInventoryItemPage() {
                 </div>
 
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Additional Information</h2>
-                  <p className="text-gray-400 text-sm mb-6">Enter additional details about the item</p>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Additional Information
+                  </h2>
+                  <p className="text-gray-400 text-mdmb-6">
+                    Enter additional details about the item
+                  </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Manufacturer</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Manufacturer
+                      </label>
                       <input
                         type="text"
                         name="manufacturer"
@@ -232,7 +267,9 @@ export default function AddInventoryItemPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Brand</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Brand
+                      </label>
                       <input
                         type="text"
                         name="brand"
@@ -244,7 +281,9 @@ export default function AddInventoryItemPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Model/Version</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Model/Version
+                      </label>
                       <input
                         type="text"
                         name="modelVersion"
@@ -256,7 +295,9 @@ export default function AddInventoryItemPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Expiry Tracking</label>
+                      <label className="block text-mdfont-medium mb-2">
+                        Expiry Tracking
+                      </label>
                       <select
                         name="expiryTracking"
                         value={formData.expiryTracking}
@@ -271,7 +312,9 @@ export default function AddInventoryItemPage() {
                   </div>
 
                   <div className="mt-6">
-                    <h3 className="text-lg font-medium mb-4">Item Properties</h3>
+                    <h3 className="text-lg font-medium mb-4">
+                      Item Properties
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input
@@ -320,7 +363,9 @@ export default function AddInventoryItemPage() {
                   </div>
 
                   <div className="mt-6">
-                    <label className="block text-sm font-medium mb-2">Notes</label>
+                    <label className="block text-mdfont-medium mb-2">
+                      Notes
+                    </label>
                     <textarea
                       name="notes"
                       value={formData.notes}
@@ -334,11 +379,15 @@ export default function AddInventoryItemPage() {
               </div>
             )}
 
-            {activeTab === 'stock' && (
+            {activeTab === "stock" && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Stock Management</h2>
-                  <p className="text-gray-400 text-sm mb-6">Configure stock levels and reorder settings</p>
+                  <h2 className="text-xl font-semibold mb-4">
+                    Stock Management
+                  </h2>
+                  <p className="text-gray-400 text-mdmb-6">
+                    Configure stock levels and reorder settings
+                  </p>
                   <div className="text-center py-12 text-gray-400">
                     Stock management features coming soon...
                   </div>
@@ -346,11 +395,13 @@ export default function AddInventoryItemPage() {
               </div>
             )}
 
-            {activeTab === 'suppliers' && (
+            {activeTab === "suppliers" && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-4">Suppliers</h2>
-                  <p className="text-gray-400 text-sm mb-6">Manage suppliers for this item</p>
+                  <p className="text-gray-400 text-mdmb-6">
+                    Manage suppliers for this item
+                  </p>
                   <div className="text-center py-12 text-gray-400">
                     Supplier management features coming soon...
                   </div>
@@ -362,7 +413,10 @@ export default function AddInventoryItemPage() {
               <Link href="/inventory" className="btn-secondary">
                 Cancel
               </Link>
-              <button type="submit" className="btn-primary flex items-center gap-2">
+              <button
+                type="submit"
+                className="btn-primary flex items-center gap-2"
+              >
                 <Save size={18} />
                 Save Item
               </button>

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Plus, Trash2, Calendar } from 'lucide-react';
-import Link from 'next/link';
+import { useState } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { Plus, Trash2, Calendar } from "lucide-react";
+import Link from "next/link";
 
 interface ServiceItem {
   id: string;
@@ -16,22 +16,29 @@ interface ServiceItem {
 
 export default function CreateInvoicePage() {
   const [formData, setFormData] = useState({
-    invoiceNumber: 'INV-008',
-    invoiceType: 'standard',
-    invoiceDate: '',
-    dueDate: '',
-    reference: '',
-    patient: '',
-    insuranceProvider: '',
-    policyNumber: '',
-    groupNumber: '',
-    coveragePercentage: '',
-    paymentTerms: 'net30',
-    notes: ''
+    invoiceNumber: "INV-008",
+    invoiceType: "standard",
+    invoiceDate: "",
+    dueDate: "",
+    reference: "",
+    patient: "",
+    insuranceProvider: "",
+    policyNumber: "",
+    groupNumber: "",
+    coveragePercentage: "",
+    paymentTerms: "net30",
+    notes: "",
   });
 
   const [services, setServices] = useState<ServiceItem[]>([
-    { id: '1', service: '', description: '', quantity: 1, unitPrice: 0, total: 0 }
+    {
+      id: "1",
+      service: "",
+      description: "",
+      quantity: 1,
+      unitPrice: 0,
+      total: 0,
+    },
   ]);
 
   const [paymentMethods, setPaymentMethods] = useState({
@@ -42,37 +49,56 @@ export default function CreateInvoicePage() {
     cash: false,
     check: false,
     insurance: false,
-    other: false
+    other: false,
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePaymentMethodChange = (method: string) => {
-    setPaymentMethods(prev => ({ ...prev, [method]: !prev[method as keyof typeof prev] }));
+    setPaymentMethods((prev) => ({
+      ...prev,
+      [method]: !prev[method as keyof typeof prev],
+    }));
   };
 
   const addService = () => {
-    setServices([...services, { id: Date.now().toString(), service: '', description: '', quantity: 1, unitPrice: 0, total: 0 }]);
+    setServices([
+      ...services,
+      {
+        id: Date.now().toString(),
+        service: "",
+        description: "",
+        quantity: 1,
+        unitPrice: 0,
+        total: 0,
+      },
+    ]);
   };
 
   const removeService = (id: string) => {
-    setServices(services.filter(s => s.id !== id));
+    setServices(services.filter((s) => s.id !== id));
   };
 
   const updateService = (id: string, field: string, value: any) => {
-    setServices(services.map(s => {
-      if (s.id === id) {
-        const updated = { ...s, [field]: value };
-        if (field === 'quantity' || field === 'unitPrice') {
-          updated.total = updated.quantity * updated.unitPrice;
+    setServices(
+      services.map((s) => {
+        if (s.id === id) {
+          const updated = { ...s, [field]: value };
+          if (field === "quantity" || field === "unitPrice") {
+            updated.total = updated.quantity * updated.unitPrice;
+          }
+          return updated;
         }
-        return updated;
-      }
-      return s;
-    }));
+        return s;
+      })
+    );
   };
 
   const subtotal = services.reduce((sum, item) => sum + item.total, 0);
@@ -82,7 +108,7 @@ export default function CreateInvoicePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Invoice created:', { formData, services, paymentMethods });
+    console.log("Invoice created:", { formData, services, paymentMethods });
   };
 
   return (
@@ -98,15 +124,22 @@ export default function CreateInvoicePage() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        >
           <div className="lg:col-span-2 space-y-6">
             <div className="card">
               <h2 className="text-xl font-semibold mb-6">Invoice Details</h2>
-              <p className="text-gray-400 text-sm mb-6">Enter the details for this new invoice</p>
+              <p className="text-gray-400 text-mdmb-6">
+                Enter the details for this new invoice
+              </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Invoice Number</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Invoice Number
+                  </label>
                   <input
                     type="text"
                     name="invoiceNumber"
@@ -118,7 +151,9 @@ export default function CreateInvoicePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Invoice Type</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Invoice Type
+                  </label>
                   <select
                     name="invoiceType"
                     value={formData.invoiceType}
@@ -132,7 +167,9 @@ export default function CreateInvoicePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Invoice Date</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Invoice Date
+                  </label>
                   <div className="relative">
                     <input
                       type="date"
@@ -141,13 +178,20 @@ export default function CreateInvoicePage() {
                       onChange={handleInputChange}
                       className="input-field w-full"
                     />
-                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                    <Calendar
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                      size={18}
+                    />
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Due date is 15/03/23</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Due date is 15/03/23
+                  </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Due Date</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Due Date
+                  </label>
                   <div className="relative">
                     <input
                       type="date"
@@ -156,13 +200,20 @@ export default function CreateInvoicePage() {
                       onChange={handleInputChange}
                       className="input-field w-full"
                     />
-                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                    <Calendar
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                      size={18}
+                    />
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Due date is 15/03/23</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Due date is 15/03/23
+                  </p>
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Reference / PO Number (Optional)</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Reference / PO Number (Optional)
+                  </label>
                   <input
                     type="text"
                     name="reference"
@@ -180,7 +231,10 @@ export default function CreateInvoicePage() {
 
               <div className="space-y-4">
                 {services.map((service, index) => (
-                  <div key={service.id} className="p-4 bg-dark-tertiary/30 rounded-lg space-y-4">
+                  <div
+                    key={service.id}
+                    className="p-4 bg-dark-tertiary/30 rounded-lg space-y-4"
+                  >
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium">Item {index + 1}</h3>
                       {services.length > 1 && (
@@ -196,33 +250,53 @@ export default function CreateInvoicePage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium mb-2">Select service or item</label>
+                        <label className="block text-mdfont-medium mb-2">
+                          Select service or item
+                        </label>
                         <input
                           type="text"
                           value={service.service}
-                          onChange={(e) => updateService(service.id, 'service', e.target.value)}
+                          onChange={(e) =>
+                            updateService(service.id, "service", e.target.value)
+                          }
                           placeholder="Enter service name"
                           className="input-field w-full"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium mb-2">Quantity</label>
+                        <label className="block text-mdfont-medium mb-2">
+                          Quantity
+                        </label>
                         <input
                           type="number"
                           value={service.quantity}
-                          onChange={(e) => updateService(service.id, 'quantity', parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateService(
+                              service.id,
+                              "quantity",
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
                           min="1"
                           className="input-field w-full"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium mb-2">Unit Price</label>
+                        <label className="block text-mdfont-medium mb-2">
+                          Unit Price
+                        </label>
                         <input
                           type="number"
                           value={service.unitPrice}
-                          onChange={(e) => updateService(service.id, 'unitPrice', parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateService(
+                              service.id,
+                              "unitPrice",
+                              parseFloat(e.target.value) || 0
+                            )
+                          }
                           min="0"
                           step="0.01"
                           className="input-field w-full"
@@ -230,10 +304,18 @@ export default function CreateInvoicePage() {
                       </div>
 
                       <div className="md:col-span-4">
-                        <label className="block text-sm font-medium mb-2">Additional description</label>
+                        <label className="block text-mdfont-medium mb-2">
+                          Additional description
+                        </label>
                         <textarea
                           value={service.description}
-                          onChange={(e) => updateService(service.id, 'description', e.target.value)}
+                          onChange={(e) =>
+                            updateService(
+                              service.id,
+                              "description",
+                              e.target.value
+                            )
+                          }
                           rows={2}
                           className="input-field w-full resize-none"
                         />
@@ -241,8 +323,10 @@ export default function CreateInvoicePage() {
 
                       <div className="md:col-span-4 flex justify-end">
                         <div className="text-right">
-                          <div className="text-sm text-gray-400">Total</div>
-                          <div className="text-xl font-bold">${service.total.toFixed(2)}</div>
+                          <div className="text-mdtext-gray-400">Total</div>
+                          <div className="text-xl font-bold">
+                            ${service.total.toFixed(2)}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -262,15 +346,21 @@ export default function CreateInvoicePage() {
               <div className="mt-6 pt-6 border-t border-dark-tertiary space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Subtotal:</span>
-                  <span className="text-white font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="text-white font-medium">
+                    ${subtotal.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Tax (10%):</span>
-                  <span className="text-white font-medium">${tax.toFixed(2)}</span>
+                  <span className="text-white font-medium">
+                    ${tax.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Discount:</span>
-                  <span className="text-white font-medium">-${discount.toFixed(2)}</span>
+                  <span className="text-white font-medium">
+                    -${discount.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-3 border-t border-dark-tertiary">
                   <span>Total:</span>
@@ -280,11 +370,13 @@ export default function CreateInvoicePage() {
             </div>
 
             <div className="card">
-              <h2 className="text-xl font-semibold mb-6">Additional Information</h2>
+              <h2 className="text-xl font-semibold mb-6">
+                Additional Information
+              </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Notes</label>
+                  <label className="block text-mdfont-medium mb-2">Notes</label>
                   <textarea
                     name="notes"
                     value={formData.notes}
@@ -296,7 +388,9 @@ export default function CreateInvoicePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Payment Terms</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Payment Terms
+                  </label>
                   <select
                     name="paymentTerms"
                     value={formData.paymentTerms}
@@ -315,12 +409,18 @@ export default function CreateInvoicePage() {
 
           <div className="space-y-6">
             <div className="card">
-              <h2 className="text-xl font-semibold mb-6">Patient Information</h2>
-              <p className="text-gray-400 text-sm mb-6">Select a patient for this invoice</p>
+              <h2 className="text-xl font-semibold mb-6">
+                Patient Information
+              </h2>
+              <p className="text-gray-400 text-mdmb-6">
+                Select a patient for this invoice
+              </p>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Search patient...</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Search patient...
+                  </label>
                   <select
                     name="patient"
                     value={formData.patient}
@@ -329,7 +429,9 @@ export default function CreateInvoicePage() {
                   >
                     <option value="">Select patient</option>
                     <option value="john-smith">John Smith - P-00145</option>
-                    <option value="sarah-johnson">Sarah Johnson - P-00289</option>
+                    <option value="sarah-johnson">
+                      Sarah Johnson - P-00289
+                    </option>
                     <option value="michael-chen">Michael Chen - P-00312</option>
                   </select>
                 </div>
@@ -342,27 +444,48 @@ export default function CreateInvoicePage() {
                       </div>
                       <div>
                         <div className="font-medium">John Smith</div>
-                        <div className="text-sm text-gray-400">ID: P-00145</div>
+                        <div className="text-mdtext-gray-400">ID: P-00145</div>
                       </div>
                     </div>
-                    <div className="text-sm space-y-1">
-                      <div className="text-gray-400">Email: <span className="text-white">john.smith@example.com</span></div>
-                      <div className="text-gray-400">Phone: <span className="text-white">+1 (555) 123-4567</span></div>
-                      <div className="text-gray-400">Address: <span className="text-white">123 Main St, City, State 12345</span></div>
+                    <div className="text-mdspace-y-1">
+                      <div className="text-gray-400">
+                        Email:{" "}
+                        <span className="text-white">
+                          john.smith@example.com
+                        </span>
+                      </div>
+                      <div className="text-gray-400">
+                        Phone:{" "}
+                        <span className="text-white">+1 (555) 123-4567</span>
+                      </div>
+                      <div className="text-gray-400">
+                        Address:{" "}
+                        <span className="text-white">
+                          123 Main St, City, State 12345
+                        </span>
+                      </div>
                     </div>
-                    <button className="text-emerald-500 text-sm mt-3 hover:underline">View patient details</button>
+                    <button className="text-emerald-500 text-mdmt-3 hover:underline">
+                      View patient details
+                    </button>
                   </div>
                 )}
               </div>
             </div>
 
             <div className="card">
-              <h2 className="text-xl font-semibold mb-6">Insurance Information</h2>
-              <p className="text-gray-400 text-sm mb-6">Patient's insurance details</p>
+              <h2 className="text-xl font-semibold mb-6">
+                Insurance Information
+              </h2>
+              <p className="text-gray-400 text-mdmb-6">
+                Patient's insurance details
+              </p>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Insurance Provider</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Insurance Provider
+                  </label>
                   <select
                     name="insuranceProvider"
                     value={formData.insuranceProvider}
@@ -377,7 +500,9 @@ export default function CreateInvoicePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Policy Number</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Policy Number
+                  </label>
                   <input
                     type="text"
                     name="policyNumber"
@@ -389,7 +514,9 @@ export default function CreateInvoicePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Group Number</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Group Number
+                  </label>
                   <input
                     type="text"
                     name="groupNumber"
@@ -401,7 +528,9 @@ export default function CreateInvoicePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Coverage %</label>
+                  <label className="block text-mdfont-medium mb-2">
+                    Coverage %
+                  </label>
                   <input
                     type="number"
                     name="coveragePercentage"
@@ -421,31 +550,44 @@ export default function CreateInvoicePage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-3">Accepted Payment Methods</label>
+                  <label className="block text-mdfont-medium mb-3">
+                    Accepted Payment Methods
+                  </label>
                   <div className="grid grid-cols-2 gap-3">
                     {Object.entries(paymentMethods).map(([key, value]) => (
-                      <label key={key} className="flex items-center gap-2 cursor-pointer">
+                      <label
+                        key={key}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
                         <input
                           type="checkbox"
                           checked={value}
                           onChange={() => handlePaymentMethodChange(key)}
                           className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 rounded focus:ring-emerald-500"
                         />
-                        <span className="text-sm capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                        <span className="text-mdcapitalize">
+                          {key.replace(/([A-Z])/g, " $1").trim()}
+                        </span>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                <button className="btn-secondary w-full">View Payment Plan</button>
+                <button className="btn-secondary w-full">
+                  View Payment Plan
+                </button>
               </div>
             </div>
 
             <div className="flex gap-3">
               <Link href="/billing/invoices" className="flex-1">
-                <button type="button" className="btn-secondary w-full">Save as Draft</button>
+                <button type="button" className="btn-secondary w-full">
+                  Save as Draft
+                </button>
               </Link>
-              <button type="submit" className="btn-primary flex-1">Create Invoice</button>
+              <button type="submit" className="btn-primary flex-1">
+                Create Invoice
+              </button>
             </div>
           </div>
         </form>

@@ -1,10 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { Search, Plus, Edit, Trash2, Copy, Eye, AlertCircle } from 'lucide-react';
-import { prescriptionTemplateAPI } from '@/lib/api';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Copy,
+  Eye,
+  AlertCircle,
+} from "lucide-react";
+import { prescriptionTemplateAPI } from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 interface MedicationTemplate {
   id: string;
@@ -26,23 +34,29 @@ interface MedicationTemplate {
 
 export default function MedicineTemplatesPage() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
-  const [selectedTemplate, setSelectedTemplate] = useState<MedicationTemplate | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<MedicationTemplate | null>(null);
   const [templates, setTemplates] = useState<MedicationTemplate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [editingTemplate, setEditingTemplate] = useState<MedicationTemplate | null>(null);
+  const [editingTemplate, setEditingTemplate] =
+    useState<MedicationTemplate | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editFormData, setEditFormData] = useState({ name: '', category: '' });
+  const [editFormData, setEditFormData] = useState({ name: "", category: "" });
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [createFormData, setCreateFormData] = useState({ name: '', category: '', medicines: [] });
+  const [createFormData, setCreateFormData] = useState({
+    name: "",
+    category: "",
+    medicines: [],
+  });
 
   const tabs = [
-    { id: 'all', label: 'All Templates' },
-    { id: 'recent', label: 'Recently Used' },
+    { id: "all", label: "All Templates" },
+    { id: "recent", label: "Recently Used" },
   ];
 
   useEffect(() => {
@@ -52,47 +66,55 @@ export default function MedicineTemplatesPage() {
   const fetchTemplates = async () => {
     try {
       setLoading(true);
-      setError('');
-      const response = await prescriptionTemplateAPI.list(page, 10, searchQuery, activeTab);
-      
+      setError("");
+      const response = await prescriptionTemplateAPI.list(
+        page,
+        10,
+        searchQuery,
+        activeTab
+      );
+
       const templatesData = response.data.templates || [];
       const formattedTemplates = templatesData.map((t: any) => ({
         id: t.id,
         name: t.name,
-        category: t.category || 'General',
-        medications: typeof t.medicines === 'string' ? JSON.parse(t.medicines) : t.medicines || [],
-        createdBy: t.createdBy || 'System',
+        category: t.category || "General",
+        medications:
+          typeof t.medicines === "string"
+            ? JSON.parse(t.medicines)
+            : t.medicines || [],
+        createdBy: t.createdBy || "System",
         lastUsed: t.lastUsed || null,
         createdAt: t.createdAt,
         usageCount: t.usageCount || 0,
       }));
-      
+
       setTemplates(formattedTemplates);
-      
+
       const total = response.data.total || 0;
       const limit = response.data.limit || 10;
       const totalPages = Math.ceil(total / limit) || 1;
       setTotalPages(totalPages);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to fetch templates');
-      console.error('Failed to fetch templates', err);
+      setError(err.response?.data?.error || "Failed to fetch templates");
+      console.error("Failed to fetch templates", err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+    if (!confirm("Are you sure you want to delete this template?")) return;
 
     try {
       await prescriptionTemplateAPI.delete(id);
-      setTemplates(templates.filter(t => t.id !== id));
+      setTemplates(templates.filter((t) => t.id !== id));
       if (selectedTemplate?.id === id) {
         setSelectedTemplate(null);
       }
-      alert('Template deleted successfully');
+      alert("Template deleted successfully");
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to delete template');
+      alert(err.response?.data?.error || "Failed to delete template");
     }
   };
 
@@ -101,7 +123,7 @@ export default function MedicineTemplatesPage() {
       await prescriptionTemplateAPI.use(template.id);
       router.push(`/prescriptions/create?templateId=${template.id}`);
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to use template');
+      alert(err.response?.data?.error || "Failed to use template");
     }
   };
 
@@ -120,14 +142,14 @@ export default function MedicineTemplatesPage() {
         category: editFormData.category,
         medicines: editingTemplate.medications,
       });
-      
-      const updatedTemplates = templates.map(t =>
+
+      const updatedTemplates = templates.map((t) =>
         t.id === editingTemplate.id
           ? { ...t, name: editFormData.name, category: editFormData.category }
           : t
       );
       setTemplates(updatedTemplates);
-      
+
       if (selectedTemplate?.id === editingTemplate.id) {
         setSelectedTemplate({
           ...selectedTemplate,
@@ -135,18 +157,18 @@ export default function MedicineTemplatesPage() {
           category: editFormData.category,
         });
       }
-      
+
       setShowEditModal(false);
       setEditingTemplate(null);
-      alert('Template updated successfully');
+      alert("Template updated successfully");
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to update template');
+      alert(err.response?.data?.error || "Failed to update template");
     }
   };
 
   const handleCreateTemplate = async () => {
     if (!createFormData.name.trim()) {
-      alert('Please enter a template name');
+      alert("Please enter a template name");
       return;
     }
 
@@ -156,13 +178,13 @@ export default function MedicineTemplatesPage() {
         category: createFormData.category,
         medicines: createFormData.medicines,
       });
-      
+
       setShowCreateModal(false);
-      setCreateFormData({ name: '', category: '', medicines: [] });
-      alert('Template created successfully');
+      setCreateFormData({ name: "", category: "", medicines: [] });
+      alert("Template created successfully");
       fetchTemplates();
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to create template');
+      alert(err.response?.data?.error || "Failed to create template");
     }
   };
 
@@ -172,11 +194,14 @@ export default function MedicineTemplatesPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold mb-2">Prescription Templates</h1>
-            <p className="text-gray-400">Manage reusable medication templates for prescriptions.</p>
+            <p className="text-gray-400">
+              Manage reusable medication templates for prescriptions.
+            </p>
           </div>
-          <button 
+          <button
             onClick={() => setShowCreateModal(true)}
-            className="btn-primary flex items-center gap-2">
+            className="btn-primary flex items-center gap-2"
+          >
             <Plus size={20} />
             New Template
           </button>
@@ -196,8 +221,8 @@ export default function MedicineTemplatesPage() {
                       }}
                       className={`pb-4 px-2 font-medium transition-colors relative ${
                         activeTab === tab.id
-                          ? 'text-emerald-500'
-                          : 'text-gray-400 hover:text-gray-300'
+                          ? "text-emerald-500"
+                          : "text-gray-400 hover:text-gray-300"
                       }`}
                     >
                       {tab.label}
@@ -246,13 +271,27 @@ export default function MedicineTemplatesPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-dark-tertiary">
-                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Template Name</th>
-                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Category</th>
-                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Medications</th>
-                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Created By</th>
-                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Last Used</th>
-                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Usage</th>
-                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>
+                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                          Template Name
+                        </th>
+                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                          Category
+                        </th>
+                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                          Medications
+                        </th>
+                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                          Created By
+                        </th>
+                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                          Last Used
+                        </th>
+                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                          Usage
+                        </th>
+                        <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -260,12 +299,16 @@ export default function MedicineTemplatesPage() {
                         <tr
                           key={template.id}
                           className={`border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors cursor-pointer ${
-                            selectedTemplate?.id === template.id ? 'bg-dark-tertiary/50' : ''
+                            selectedTemplate?.id === template.id
+                              ? "bg-dark-tertiary/50"
+                              : ""
                           }`}
                           onClick={() => setSelectedTemplate(template)}
                         >
                           <td className="py-4 px-4">
-                            <div className="font-medium text-white">{template.name}</div>
+                            <div className="font-medium text-white">
+                              {template.name}
+                            </div>
                           </td>
                           <td className="py-4 px-4">
                             <span className="px-3 py-1 bg-blue-500/10 text-blue-400 text-xs rounded-full border border-blue-500/20">
@@ -273,27 +316,38 @@ export default function MedicineTemplatesPage() {
                             </span>
                           </td>
                           <td className="py-4 px-4">
-                            <span className="text-gray-300">{template.medications?.length || 0}</span>
+                            <span className="text-gray-300">
+                              {template.medications?.length || 0}
+                            </span>
                           </td>
                           <td className="py-4 px-4">
-                            <span className="text-gray-300">{template.createdBy}</span>
+                            <span className="text-gray-300">
+                              {template.createdBy}
+                            </span>
                           </td>
                           <td className="py-4 px-4">
                             <span className="text-gray-300">
                               {template.lastUsed
-                                ? new Date(template.lastUsed).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric',
+                                ? new Date(
+                                    template.lastUsed
+                                  ).toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
                                   })
-                                : 'Never'}
+                                : "Never"}
                             </span>
                           </td>
                           <td className="py-4 px-4">
-                            <span className="text-gray-300">{template.usageCount} times</span>
+                            <span className="text-gray-300">
+                              {template.usageCount} times
+                            </span>
                           </td>
                           <td className="py-4 px-4">
-                            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                            <div
+                              className="flex gap-2"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <button
                                 onClick={() => handleUseTemplate(template)}
                                 className="p-2 hover:bg-emerald-500/20 rounded transition-colors"
@@ -333,7 +387,9 @@ export default function MedicineTemplatesPage() {
                   >
                     Previous
                   </button>
-                  <span className="text-gray-400">Page {page} of {totalPages}</span>
+                  <span className="text-gray-400">
+                    Page {page} of {totalPages}
+                  </span>
                   <button
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
@@ -360,22 +416,31 @@ export default function MedicineTemplatesPage() {
                       <span className="px-3 py-1 bg-blue-500/10 text-blue-400 text-xs rounded-full border border-blue-500/20">
                         {selectedTemplate.category}
                       </span>
-                      <span className="text-sm text-gray-400">
+                      <span className="text-mdtext-gray-400">
                         • Created by {selectedTemplate.createdBy}
                       </span>
                     </div>
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-semibold text-gray-300 mb-3">Medications</h4>
+                    <h4 className="text-mdfont-semibold text-gray-300 mb-3">
+                      Medications
+                    </h4>
                     <div className="space-y-4">
                       {selectedTemplate.medications?.map((med, idx) => (
-                        <div key={idx} className="p-4 bg-dark-tertiary/50 rounded-lg">
-                          <div className="font-medium text-white mb-2">{med.name}</div>
+                        <div
+                          key={idx}
+                          className="p-4 bg-dark-tertiary/50 rounded-lg"
+                        >
+                          <div className="font-medium text-white mb-2">
+                            {med.name}
+                          </div>
                           <div className="space-y-1 text-sm">
                             <div className="flex justify-between">
                               <span className="text-gray-400">Dosage:</span>
-                              <span className="text-gray-300">{med.dosage}</span>
+                              <span className="text-gray-300">
+                                {med.dosage}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-400">Route:</span>
@@ -383,16 +448,24 @@ export default function MedicineTemplatesPage() {
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-400">Frequency:</span>
-                              <span className="text-gray-300">{med.frequency}</span>
+                              <span className="text-gray-300">
+                                {med.frequency}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-400">Duration:</span>
-                              <span className="text-gray-300">{med.duration}</span>
+                              <span className="text-gray-300">
+                                {med.duration}
+                              </span>
                             </div>
                             {med.instructions && (
                               <div className="mt-2 pt-2 border-t border-dark-tertiary">
-                                <span className="text-gray-400 text-xs">Instructions:</span>
-                                <p className="text-gray-300 text-xs mt-1">{med.instructions}</p>
+                                <span className="text-gray-400 text-xs">
+                                  Instructions:
+                                </span>
+                                <p className="text-gray-300 text-xs mt-1">
+                                  {med.instructions}
+                                </p>
                               </div>
                             )}
                           </div>
@@ -402,7 +475,9 @@ export default function MedicineTemplatesPage() {
                   </div>
 
                   <div className="pt-4 border-t border-dark-tertiary">
-                    <h4 className="text-sm font-semibold text-gray-300 mb-3">Usage Statistics</h4>
+                    <h4 className="text-mdfont-semibold text-gray-300 mb-3">
+                      Usage Statistics
+                    </h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 bg-dark-tertiary/50 rounded-lg">
                         <div className="text-2xl font-bold text-emerald-500">
@@ -411,23 +486,27 @@ export default function MedicineTemplatesPage() {
                         <div className="text-xs text-gray-400">Total Uses</div>
                       </div>
                       <div className="p-3 bg-dark-tertiary/50 rounded-lg">
-                        <div className="text-sm font-medium text-white">
+                        <div className="text-mdfont-medium text-white">
                           {selectedTemplate.lastUsed
-                            ? new Date(selectedTemplate.lastUsed).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
+                            ? new Date(
+                                selectedTemplate.lastUsed
+                              ).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
                               })
-                            : 'N/A'}
+                            : "N/A"}
                         </div>
                         <div className="text-xs text-gray-400">Last Used</div>
                       </div>
                     </div>
                     <div className="mt-3 p-3 bg-dark-tertiary/50 rounded-lg">
-                      <div className="text-sm font-medium text-white">
-                        {new Date(selectedTemplate.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
+                      <div className="text-mdfont-medium text-white">
+                        {new Date(
+                          selectedTemplate.createdAt
+                        ).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
                         })}
                       </div>
                       <div className="text-xs text-gray-400">Created On</div>
@@ -456,7 +535,9 @@ export default function MedicineTemplatesPage() {
                   <div className="w-16 h-16 bg-dark-tertiary rounded-full flex items-center justify-center mx-auto mb-4">
                     <Eye size={32} className="text-gray-500" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">No template selected</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    No template selected
+                  </h3>
                   <p className="text-gray-400 text-sm">
                     Click on a template to view its details
                   </p>
@@ -471,36 +552,37 @@ export default function MedicineTemplatesPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-dark-secondary rounded-lg p-6 max-w-md w-full mx-4 space-y-4">
             <h3 className="text-xl font-semibold">Edit Template</h3>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-mdfont-medium text-gray-300 mb-2">
                 Template Name
               </label>
               <input
                 type="text"
                 value={editFormData.name}
-                onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, name: e.target.value })
+                }
                 className="input-field w-full"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-mdfont-medium text-gray-300 mb-2">
                 Category
               </label>
               <input
                 type="text"
                 value={editFormData.category}
-                onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, category: e.target.value })
+                }
                 className="input-field w-full"
               />
             </div>
 
             <div className="flex gap-2 pt-4">
-              <button
-                onClick={handleSaveEdit}
-                className="btn-primary flex-1"
-              >
+              <button onClick={handleSaveEdit} className="btn-primary flex-1">
                 Save
               </button>
               <button
@@ -521,35 +603,45 @@ export default function MedicineTemplatesPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-dark-secondary rounded-lg p-6 max-w-md w-full mx-4 space-y-4">
             <h3 className="text-xl font-semibold">Create New Template</h3>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-mdfont-medium text-gray-300 mb-2">
                 Template Name
               </label>
               <input
                 type="text"
                 value={createFormData.name}
-                onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
+                onChange={(e) =>
+                  setCreateFormData({ ...createFormData, name: e.target.value })
+                }
                 placeholder="e.g., Common Antibiotics, Pain Management"
                 className="input-field w-full"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-mdfont-medium text-gray-300 mb-2">
                 Category
               </label>
               <input
                 type="text"
                 value={createFormData.category}
-                onChange={(e) => setCreateFormData({ ...createFormData, category: e.target.value })}
+                onChange={(e) =>
+                  setCreateFormData({
+                    ...createFormData,
+                    category: e.target.value,
+                  })
+                }
                 placeholder="e.g., Antibiotics, Pain Relief"
                 className="input-field w-full"
               />
             </div>
 
-            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm text-blue-300">
-              <p>You can add medications to this template after creation, or leave it empty for now.</p>
+            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-mdtext-blue-300">
+              <p>
+                You can add medications to this template after creation, or
+                leave it empty for now.
+              </p>
             </div>
 
             <div className="flex gap-2 pt-4">
@@ -562,7 +654,7 @@ export default function MedicineTemplatesPage() {
               <button
                 onClick={() => {
                   setShowCreateModal(false);
-                  setCreateFormData({ name: '', category: '', medicines: [] });
+                  setCreateFormData({ name: "", category: "", medicines: [] });
                 }}
                 className="btn-secondary flex-1"
               >

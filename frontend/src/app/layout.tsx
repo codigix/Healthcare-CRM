@@ -1,21 +1,21 @@
-import type { Metadata } from 'next'
-import './globals.css'
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'MedixPro - Medical Admin Dashboard',
-  description: 'Professional Medical Admin Dashboard',
-}
+  title: "MedixPro - Medical Admin Dashboard",
+  description: "Professional Medical Admin Dashboard",
+};
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-900 text-white">{children}</body>
+      <body className="bg-dark-primary text-white">{children}</body>
     </html>
-  )
+  );
 }

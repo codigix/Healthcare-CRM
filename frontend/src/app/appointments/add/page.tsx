@@ -1,11 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { appointmentAPI, doctorAPI, patientAPI } from '@/lib/api';
-import { ArrowLeft, Calendar, Clock, User, UserCheck, FileText, CheckCircle } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { appointmentAPI, doctorAPI, patientAPI } from "@/lib/api";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  User,
+  UserCheck,
+  FileText,
+  CheckCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface Doctor {
   id: string;
@@ -25,20 +33,20 @@ export default function AddAppointmentPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [searchPatient, setSearchPatient] = useState('');
-  const [searchDoctor, setSearchDoctor] = useState('');
+  const [error, setError] = useState("");
+  const [searchPatient, setSearchPatient] = useState("");
+  const [searchDoctor, setSearchDoctor] = useState("");
 
   const [formData, setFormData] = useState({
-    patientId: '',
-    doctorId: '',
-    appointmentType: '',
-    date: '',
-    time: '',
-    duration: '30',
-    status: 'scheduled',
-    reason: '',
-    notes: '',
+    patientId: "",
+    doctorId: "",
+    appointmentType: "",
+    date: "",
+    time: "",
+    duration: "30",
+    status: "scheduled",
+    reason: "",
+    notes: "",
   });
 
   useEffect(() => {
@@ -54,11 +62,15 @@ export default function AddAppointmentPage() {
       setDoctors(doctorsRes.data.doctors);
       setPatients(patientsRes.data.patients);
     } catch (error) {
-      console.error('Failed to fetch data', error);
+      console.error("Failed to fetch data", error);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -69,7 +81,7 @@ export default function AddAppointmentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       await appointmentAPI.create({
@@ -78,21 +90,23 @@ export default function AddAppointmentPage() {
         date: formData.date,
         time: formData.time,
         status: formData.status,
-        notes: formData.notes + (formData.reason ? `\nReason: ${formData.reason}` : ''),
+        notes:
+          formData.notes +
+          (formData.reason ? `\nReason: ${formData.reason}` : ""),
       });
-      router.push('/appointments/all');
+      router.push("/appointments/all");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create appointment');
+      setError(err.response?.data?.error || "Failed to create appointment");
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredPatients = patients.filter(p => 
+  const filteredPatients = patients.filter((p) =>
     p.name.toLowerCase().includes(searchPatient.toLowerCase())
   );
 
-  const filteredDoctors = doctors.filter(d => 
+  const filteredDoctors = doctors.filter((d) =>
     d.name.toLowerCase().includes(searchDoctor.toLowerCase())
   );
 
@@ -107,11 +121,16 @@ export default function AddAppointmentPage() {
           </Link>
           <div>
             <h1 className="text-3xl font-bold mb-2">Add Appointment</h1>
-            <p className="text-gray-400">Schedule a new appointment for a patient.</p>
+            <p className="text-gray-400">
+              Schedule a new appointment for a patient.
+            </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        >
           <div className="lg:col-span-2 space-y-6">
             <div className="card">
               <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
@@ -121,7 +140,7 @@ export default function AddAppointmentPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Appointment Type
                   </label>
                   <select
@@ -145,11 +164,14 @@ export default function AddAppointmentPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Date
                     </label>
                     <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                      <Calendar
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={20}
+                      />
                       <input
                         type="date"
                         name="date"
@@ -162,11 +184,14 @@ export default function AddAppointmentPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Time
                     </label>
                     <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                      <Clock
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={20}
+                      />
                       <select
                         name="time"
                         value={formData.time}
@@ -191,7 +216,7 @@ export default function AddAppointmentPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Duration (minutes)
                   </label>
                   <select
@@ -208,7 +233,7 @@ export default function AddAppointmentPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Reason for Visit
                   </label>
                   <textarea
@@ -246,8 +271,8 @@ export default function AddAppointmentPage() {
                       key={patient.id}
                       className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                         formData.patientId === patient.id
-                          ? 'border-emerald-500 bg-emerald-500/10'
-                          : 'border-dark-tertiary hover:border-gray-600'
+                          ? "border-emerald-500 bg-emerald-500/10"
+                          : "border-dark-tertiary hover:border-gray-600"
                       }`}
                     >
                       <input
@@ -261,7 +286,9 @@ export default function AddAppointmentPage() {
                       <div className="flex-1">
                         <div className="font-medium">{patient.name}</div>
                         {patient.email && (
-                          <div className="text-sm text-gray-400">{patient.email}</div>
+                          <div className="text-mdtext-gray-400">
+                            {patient.email}
+                          </div>
                         )}
                       </div>
                     </label>
@@ -299,8 +326,8 @@ export default function AddAppointmentPage() {
                       key={doctor.id}
                       className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                         formData.doctorId === doctor.id
-                          ? 'border-emerald-500 bg-emerald-500/10'
-                          : 'border-dark-tertiary hover:border-gray-600'
+                          ? "border-emerald-500 bg-emerald-500/10"
+                          : "border-dark-tertiary hover:border-gray-600"
                       }`}
                     >
                       <input
@@ -314,7 +341,9 @@ export default function AddAppointmentPage() {
                       <div className="flex-1">
                         <div className="font-medium">Dr. {doctor.name}</div>
                         {doctor.specialization && (
-                          <div className="text-sm text-gray-400">{doctor.specialization}</div>
+                          <div className="text-mdtext-gray-400">
+                            {doctor.specialization}
+                          </div>
                         )}
                       </div>
                     </label>
@@ -330,7 +359,7 @@ export default function AddAppointmentPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Status
                   </label>
                   <select
@@ -340,13 +369,15 @@ export default function AddAppointmentPage() {
                     className="input-field w-full"
                   >
                     <option value="scheduled">Scheduled</option>
-                    <option value="confirmed">Tentative (Pending Confirmation)</option>
+                    <option value="confirmed">
+                      Tentative (Pending Confirmation)
+                    </option>
                     <option value="pending">Add to Waitlist</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Notes for Staff
                   </label>
                   <textarea
@@ -373,7 +404,7 @@ export default function AddAppointmentPage() {
               className="btn-primary w-full flex items-center justify-center gap-2"
             >
               <CheckCircle size={20} />
-              {loading ? 'Creating...' : 'Create Appointment'}
+              {loading ? "Creating..." : "Create Appointment"}
             </button>
 
             <Link href="/appointments/all">

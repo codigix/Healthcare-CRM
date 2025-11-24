@@ -1,44 +1,48 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { ArrowLeft, AlertCircle, Phone, MapPin, User } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { emergencyCallsAPI } from '@/lib/api';
+import { useState } from "react";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { ArrowLeft, AlertCircle, Phone, MapPin, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { emergencyCallsAPI } from "@/lib/api";
 
 export default function AddEmergencyCallPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    patientName: '',
-    location: '',
-    emergencyType: '',
-    priority: 'Medium',
-    phone: '',
-    additionalInfo: '',
+    patientName: "",
+    location: "",
+    emergencyType: "",
+    priority: "Medium",
+    phone: "",
+    additionalInfo: "",
   });
 
   const emergencyTypes = [
-    'Cardiac Arrest',
-    'Fall Injury',
-    'Traffic Accident',
-    'Breathing Difficulty',
-    'Allergic Reaction',
-    'Workplace Injury',
-    'Stroke',
-    'Severe Bleeding',
-    'Chest Pain',
-    'Unconsciousness',
-    'Poisoning',
-    'Other',
+    "Cardiac Arrest",
+    "Fall Injury",
+    "Traffic Accident",
+    "Breathing Difficulty",
+    "Allergic Reaction",
+    "Workplace Injury",
+    "Stroke",
+    "Severe Bleeding",
+    "Chest Pain",
+    "Unconsciousness",
+    "Poisoning",
+    "Other",
   ];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -47,7 +51,7 @@ export default function AddEmergencyCallPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       await emergencyCallsAPI.create({
@@ -55,14 +59,14 @@ export default function AddEmergencyCallPage() {
         location: formData.location,
         emergencyType: formData.emergencyType,
         priority: formData.priority,
-        status: 'Pending',
-        callTime: new Date().toISOString().replace('T', ' ').slice(0, 16),
+        status: "Pending",
+        callTime: new Date().toISOString().replace("T", " ").slice(0, 16),
         phone: formData.phone,
         notes: formData.additionalInfo,
       });
-      router.push('/ambulance/calls');
+      router.push("/ambulance/calls");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create emergency call');
+      setError(err.response?.data?.error || "Failed to create emergency call");
     } finally {
       setLoading(false);
     }
@@ -72,12 +76,17 @@ export default function AddEmergencyCallPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Link href="/ambulance/calls" className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors">
+          <Link
+            href="/ambulance/calls"
+            className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
+          >
             <ArrowLeft size={24} />
           </Link>
           <div>
             <h1 className="text-3xl font-bold mb-2">New Emergency Call</h1>
-            <p className="text-gray-400">Register and dispatch a new emergency call.</p>
+            <p className="text-gray-400">
+              Register and dispatch a new emergency call.
+            </p>
           </div>
         </div>
 
@@ -97,7 +106,7 @@ export default function AddEmergencyCallPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Patient Name *
                     </label>
                     <input
@@ -112,7 +121,7 @@ export default function AddEmergencyCallPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Contact Phone *
                     </label>
                     <input
@@ -127,7 +136,7 @@ export default function AddEmergencyCallPage() {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Location *
                     </label>
                     <input
@@ -142,7 +151,7 @@ export default function AddEmergencyCallPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Emergency Type *
                     </label>
                     <select
@@ -153,14 +162,16 @@ export default function AddEmergencyCallPage() {
                       required
                     >
                       <option value="">Select emergency type</option>
-                      {emergencyTypes.map(type => (
-                        <option key={type} value={type}>{type}</option>
+                      {emergencyTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Priority Level *
                     </label>
                     <select
@@ -179,9 +190,11 @@ export default function AddEmergencyCallPage() {
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold mb-4">Additional Information</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  Additional Information
+                </h3>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
                     Additional Notes
                   </label>
                   <textarea
@@ -197,10 +210,16 @@ export default function AddEmergencyCallPage() {
 
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                 <div className="flex gap-2">
-                  <AlertCircle size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-blue-400">
+                  <AlertCircle
+                    size={16}
+                    className="text-blue-500 mt-0.5 flex-shrink-0"
+                  />
+                  <div className="text-mdtext-blue-400">
                     <p className="font-medium mb-1">Emergency Call Status</p>
-                    <p>This call will be created with "Pending" status and assigned to an available ambulance.</p>
+                    <p>
+                      This call will be created with "Pending" status and
+                      assigned to an available ambulance.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -213,7 +232,7 @@ export default function AddEmergencyCallPage() {
                 className="btn-primary flex items-center gap-2"
               >
                 <AlertCircle size={18} />
-                {loading ? 'Creating Call...' : 'Create Emergency Call'}
+                {loading ? "Creating Call..." : "Create Emergency Call"}
               </button>
               <Link href="/ambulance/calls">
                 <button type="button" className="btn-secondary">
