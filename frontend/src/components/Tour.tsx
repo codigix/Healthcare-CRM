@@ -22,7 +22,7 @@ export default function Tour({ onComplete }: TourProps) {
         scrollTo: { behavior: "smooth", block: "center" },
       },
       useModalOverlay: true,
-    });
+    } as any);
 
     // Clear existing steps
     tour.steps = [];
@@ -62,6 +62,34 @@ export default function Tour({ onComplete }: TourProps) {
       // Default to dashboard steps if on unknown page
       addDashboardSteps(tour);
     }
+
+    // Add event listener to reposition modal when it shows
+    tour.on('show', () => {
+      setTimeout(() => {
+        const element = document.querySelector('.shepherd-element');
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          
+          // If modal is off-screen vertically
+          if (rect.bottom > window.innerHeight) {
+            const offset = rect.bottom - window.innerHeight + 20;
+            window.scrollBy({ top: offset, behavior: 'smooth' });
+          }
+          if (rect.top < 0) {
+            window.scrollBy({ top: rect.top - 20, behavior: 'smooth' });
+          }
+          
+          // Ensure horizontal fit
+          if (rect.right > window.innerWidth) {
+            const offset = rect.right - window.innerWidth + 20;
+            window.scrollBy({ left: offset, behavior: 'smooth' });
+          }
+          if (rect.left < 0) {
+            window.scrollBy({ left: rect.left - 20, behavior: 'smooth' });
+          }
+        }
+      }, 100);
+    });
 
     // Start the tour
     tour.start();

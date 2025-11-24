@@ -391,6 +391,34 @@ body.light .divide-slate-700 > * + * {
   border-color: #d0d0d0;
 }
 
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(26, 188, 156, 0.6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 188, 156, 0.8);
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body {
+  scrollbar-color: rgba(26, 188, 156, 0.6) rgba(255, 255, 255, 0.05);
+  scrollbar-width: thin;
+}
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -398,6 +426,23 @@ body.light .divide-slate-700 > * + * {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Light mode scrollbar */
+body.light {
+  scrollbar-color: rgba(26, 188, 156, 0.5) rgba(0, 0, 0, 0.05);
+}
+
+body.light ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.light ::-webkit-scrollbar-thumb {
+  background: rgba(26, 188, 156, 0.5);
+}
+
+body.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 188, 156, 0.7);
 }
 
 /* Shepherd.js Tour Styles */
@@ -409,51 +454,66 @@ body.light .divide-slate-700 > * + * {
 }
 
 .shepherd-theme-dark .shepherd-element {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  max-width: 90vw !important;
+  min-width: 300px !important;
+  max-height: 85vh !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding: 0 !important;
 }
 
 .shepherd-theme-dark .shepherd-header {
-  background: rgba(255, 255, 255, 0.95);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 1rem;
-  border-radius: 8px 8px 0 0;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+  padding: 1rem !important;
+  border-radius: 8px 8px 0 0 !important;
+  flex-shrink: 0 !important;
 }
 
 .shepherd-theme-dark .shepherd-title {
-  color: #000000;
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0;
+  color: #000000 !important;
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
 }
 
 .shepherd-theme-dark .shepherd-text {
-  color: #000000;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  padding: 1rem;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  max-width: 400px;
-  white-space: pre-line;
-}
-
-.shepherd-theme-dark .shepherd-element {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  max-width: 450px;
-  min-width: 300px;
+  color: #000000 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  padding: 1rem !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  white-space: pre-line !important;
+  flex: 1 !important;
+  overflow-y: auto !important;
+  max-height: 45vh !important;
+  margin: 0 !important;
 }
 
 .shepherd-theme-dark .shepherd-footer {
-  background: rgba(255, 255, 255, 0.95);
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 1rem;
-  border-radius: 0 0 8px 8px;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+  padding: 1rem !important;
+  border-radius: 0 0 8px 8px !important;
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 10 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
 }
 
 .shepherd-theme-dark .shepherd-button {
@@ -632,5 +692,31 @@ body.light .divide-slate-700 > * + * {
   }
   50% {
     box-shadow: 0 0 0 8px #10b981, 0 0 30px rgba(16, 185, 129, 1);
+  }
+}
+
+
+
+/* Responsive Shepherd.js Modal Styles */
+@media (max-width: 768px) {
+  .shepherd-theme-dark .shepherd-element {
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+  }
+
+  .shepherd-theme-dark .shepherd-text {
+    max-height: 55vh !important;
+    font-size: 0.8rem !important;
+  }
+
+  .shepherd-theme-dark .shepherd-button {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .shepherd-element {
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    inset: 50% auto auto 50% !important;
   }
 }

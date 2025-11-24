@@ -406,46 +406,10 @@ export default function DashboardTour({
         }
       `}</style>
 
-      {showStartButton && (
-        <button
-          onClick={handleStartTour}
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            zIndex: 99999,
-            padding: '16px',
-            borderRadius: '9999px',
-            background: 'linear-gradient(135deg, #1ABC9C, #0D9B7F)',
-            border: 'none',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(26, 188, 156, 0.4)',
-            transition: 'all 0.3s ease',
-          }}
-          title="Start Guided Tour"
-          aria-label="Start Guided Tour"
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 20px rgba(26, 188, 156, 0.6)';
-            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.1)';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(26, 188, 156, 0.4)';
-            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-          }}
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="white"
-          >
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-          </svg>
-        </button>
-      )}
+
 
       {showModal && currentStep === 0 ? (
-        <div className="fixed inset-0 bg-black/80 z-[9998] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/80 z-[9998] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
           <style>{`
             @keyframes fadeIn {
               from { opacity: 0; transform: scale(0.95); }
@@ -464,6 +428,25 @@ export default function DashboardTour({
             
             .welcome-card {
               animation: fadeIn 0.6s ease-out;
+              max-height: calc(100vh - 48px);
+              overflow-y: auto;
+            }
+            
+            .welcome-card::-webkit-scrollbar {
+              width: 6px;
+            }
+            
+            .welcome-card::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            
+            .welcome-card::-webkit-scrollbar-thumb {
+              background: rgba(26, 188, 156, 0.3);
+              border-radius: 3px;
+            }
+            
+            .welcome-card::-webkit-scrollbar-thumb:hover {
+              background: rgba(26, 188, 156, 0.5);
             }
             
             .hospital-icon {
@@ -479,8 +462,8 @@ export default function DashboardTour({
             }
           `}</style>
 
-          <div className="welcome-card bg-dark-secondary border border-dark-tertiary rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden">
-            <div className="gradient-bg p-8 relative overflow-hidden">
+          <div className="welcome-card bg-dark-secondary border border-dark-tertiary rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="gradient-bg p-6 relative overflow-hidden">
               <button
                 onClick={handleCloseTour}
                 className="absolute top-4 right-4 p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
@@ -488,92 +471,38 @@ export default function DashboardTour({
                 <X size={20} className="text-gray-400" />
               </button>
 
-              <div className="grid grid-cols-3 gap-4 mb-6 opacity-20">
-                {[...Array(9)].map((_, i) => (
-                  <div key={i} className="text-4xl text-center">
-                    🏥
-                  </div>
-                ))}
-              </div>
-
               <div className="relative z-10 text-center">
                 <div className="flex justify-center mb-6">
                   <div className="relative">
                     <div className="pulse-icon absolute inset-0 rounded-full"></div>
                     <div className="relative bg-gradient-to-br from-accent to-accent-dark p-6 rounded-full w-24 h-24 flex items-center justify-center">
-                      <svg
+                      {/* <svg
                         className="hospital-icon w-12 h-12 text-white"
                         fill="currentColor"
                         viewBox="0 0 24 24"
                       >
                         <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 9h-2v2h-2v-2h-2v-2h2V8h2v2h2v2z" />
-                      </svg>
+                      </svg> */}
+                      <img src="/hospital-GIF.gif" alt="" className='w-[10%] h-[10%] object-contain' />
                     </div>
                   </div>
                 </div>
 
-                <h1 className="text-4xl font-bold text-white mb-2">
+                <h1 className="text-2xl font-bold text-white mb-2">
                   Welcome to MedixPro
                 </h1>
-                <p className="text-gray-400 text-lg mb-2">
+                <p className="text-gray-400 text-md mb-2">
                   Advanced Hospital Management System
                 </p>
-                <p className="text-accent font-semibold">
+                <p className="text-accent text-sm font-semibold">
                   Multispeciality Healthcare Excellence
                 </p>
               </div>
             </div>
 
-            <div className="p-8 border-b border-dark-tertiary">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-4xl mb-3">🏥</div>
-                  <h3 className="font-semibold text-white mb-2">Complete Hospital Management</h3>
-                  <p className="text-sm text-gray-400">
-                    Manage all aspects of your healthcare facility in one place
-                  </p>
-                </div>
 
-                <div className="text-center">
-                  <div className="text-4xl mb-3">👨‍⚕️</div>
-                  <h3 className="font-semibold text-white mb-2">Multiple Specialties</h3>
-                  <p className="text-sm text-gray-400">
-                    Support for various medical departments and specializations
-                  </p>
-                </div>
 
-                <div className="text-center">
-                  <div className="text-4xl mb-3">❤️</div>
-                  <h3 className="font-semibold text-white mb-2">Patient Focused</h3>
-                  <p className="text-sm text-gray-400">
-                    Comprehensive patient management and care coordination
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-8 border-b border-dark-tertiary">
-              <h3 className="text-white font-semibold mb-4">Key Features You'll Learn:</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[
-                  "📊 Dashboard Overview & Analytics",
-                  "👨‍⚕️ Doctor & Staff Management",
-                  "👥 Patient Records Management",
-                  "📅 Appointment Scheduling",
-                  "💊 Prescription Management",
-                  "🩸 Blood Bank Operations",
-                  "🚑 Ambulance Services",
-                  "💰 Billing & Payments",
-                ].map((feature, i) => (
-                  <div key={i} className="flex items-center gap-2 text-gray-300">
-                    <div className="w-2 h-2 rounded-full bg-accent"></div>
-                    <span className="text-sm">{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="p-8 bg-dark-primary flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="p-6 bg-dark-primary flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={handleCloseTour}
                 className="px-8 py-3 rounded-lg bg-dark-tertiary hover:bg-dark-tertiary/80 text-white transition-colors font-medium"
@@ -582,7 +511,7 @@ export default function DashboardTour({
               </button>
               <button
                 onClick={handleNextStep}
-                className="px-8 py-3 rounded-lg bg-accent hover:bg-accent-dark text-white transition-colors font-medium flex items-center justify-center gap-2"
+                className="px-8 py-3 rounded-lg bg-accent hover:bg-accent-dark text-white transition-colors text-sm flex items-center justify-center gap-2"
               >
                 <span>▶</span>
                 Start Guided Tour

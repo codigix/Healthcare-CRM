@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { X, ChevronRight, ChevronLeft, Move } from "lucide-react";
+import { X, ChevronRight, ChevronLeft } from "lucide-react";
 
 interface SystemTourModalProps {
   isOpen: boolean;
@@ -49,6 +49,7 @@ export default function SystemTourModal({
   const typewriterIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const textIndexRef = useRef(0);
   const modalRef = useRef<HTMLDivElement>(null);
+  const contentBodyRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const intersectionObserverRef = useRef<IntersectionObserver | null>(null);
 
@@ -98,6 +99,19 @@ export default function SystemTourModal({
     };
   }, [isOpen, description]);
 
+  // Auto-scroll to bottom while typing
+  useEffect(() => {
+    if (isTyping && contentBodyRef.current) {
+      // Small delay to ensure DOM has updated
+      const scrollTimer = setTimeout(() => {
+        if (contentBodyRef.current) {
+          contentBodyRef.current.scrollTop = contentBodyRef.current.scrollHeight;
+        }
+      }, 0);
+      return () => clearTimeout(scrollTimer);
+    }
+  }, [displayedText, isTyping]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -119,9 +133,12 @@ export default function SystemTourModal({
       const newX = e.clientX - dragOffset.x;
       const newY = e.clientY - dragOffset.y;
 
-      // Keep modal within viewport bounds
-      const maxX = window.innerWidth - (modalRef.current?.offsetWidth || 400);
-      const maxY = window.innerHeight - (modalRef.current?.offsetHeight || 300);
+      // Keep modal within viewport bounds (100% of screen width/height)
+      const modalWidth = modalRef.current?.offsetWidth || 400;
+      const modalHeight = modalRef.current?.offsetHeight || 300;
+      
+      const maxX = Math.max(0, window.innerWidth - modalWidth);
+      const maxY = Math.max(0, window.innerHeight - modalHeight);
 
       setPosition({
         x: Math.max(0, Math.min(newX, maxX)),
@@ -136,9 +153,12 @@ export default function SystemTourModal({
       const newX = touch.clientX - dragOffset.x;
       const newY = touch.clientY - dragOffset.y;
 
-      // Keep modal within viewport bounds
-      const maxX = window.innerWidth - (modalRef.current?.offsetWidth || 400);
-      const maxY = window.innerHeight - (modalRef.current?.offsetHeight || 300);
+      // Keep modal within viewport bounds (100% of screen width/height)
+      const modalWidth = modalRef.current?.offsetWidth || 400;
+      const modalHeight = modalRef.current?.offsetHeight || 300;
+      
+      const maxX = Math.max(0, window.innerWidth - modalWidth);
+      const maxY = Math.max(0, window.innerHeight - modalHeight);
 
       setPosition({
         x: Math.max(0, Math.min(newX, maxX)),
@@ -201,7 +221,8 @@ export default function SystemTourModal({
   // Calculate smart position based on target element
   const calculateSmartPosition = (): { x: number; y: number } => {
     if (!targetElement) {
-      return { x: window.innerWidth / 2 - 250, y: window.innerHeight / 2 - 200 };
+      // Center the modal on screen
+      return { x: Math.max(0, window.innerWidth / 2 - 250), y: Math.max(0, window.innerHeight / 2 - 200) };
     }
 
     const rect = targetElement.getBoundingClientRect();
@@ -278,12 +299,12 @@ export default function SystemTourModal({
       }
     }
 
-    // Ensure modal stays within viewport bounds with padding
-    const maxX = window.innerWidth - modalWidth - padding;
-    const maxY = document.documentElement.scrollHeight - modalHeight - padding;
+    // Ensure modal stays within 100% of viewport bounds (0 to window.innerWidth - modalWidth)
+    const maxX = Math.max(0, window.innerWidth - modalWidth);
+    const maxY = Math.max(0, document.documentElement.scrollHeight - modalHeight);
 
-    x = Math.max(padding, Math.min(x, maxX));
-    y = Math.max(padding, Math.min(y, maxY));
+    x = Math.max(0, Math.min(x, maxX));
+    y = Math.max(0, Math.min(y, maxY));
 
     return { x, y };
   };
@@ -406,7 +427,7 @@ export default function SystemTourModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 bg-black/50 p-4 animate-in fade-in duration-200 w-[100%] h-[100%] overflow-x-auto overflow-y-auto"
       style={{ zIndex: 9999, pointerEvents: 'auto' }}
       data-testid="system-tour-modal-overlay"
       onClick={handleOverlayClick}
@@ -513,7 +534,7 @@ export default function SystemTourModal({
           left: `${position.x}px`,
           top: `${position.y}px`,
           width: "clamp(300px, 90vw, 520px)",
-          maxHeight: "85vh",
+          maxHeight: "30pc",
           cursor: isDragging ? "grabbing" : "default",
           pointerEvents: 'auto',
         }}
@@ -566,10 +587,6 @@ export default function SystemTourModal({
             )}
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="flex items-center gap-1 text-gray-400 text-sm">
-              <Move size={16} />
-              <span className="hidden sm:inline">Drag to move</span>
-            </div>
             <button
               onClick={onClose}
               className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors duration-200"
@@ -582,6 +599,7 @@ export default function SystemTourModal({
         </div>
 
         <div
+          ref={contentBodyRef}
           className="flex-1 overflow-y-auto p-6"
           data-testid="system-tour-modal-body"
         >
