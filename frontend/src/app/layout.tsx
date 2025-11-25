@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import MedixProAI from "@/components/MedixProAI";
 
 export const metadata: Metadata = {
   title: "MedixPro - Medical Admin Dashboard",
@@ -15,7 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-dark-primary text-white">{children}</body>
+      <body className="bg-dark-primary text-white">
+        {children}
+        <MedixProAI />
+      </body>
     </html>
   );
 }

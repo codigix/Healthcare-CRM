@@ -30,6 +30,8 @@ export const authAPI = {
 export const doctorAPI = {
   list: (page = 1, limit = 10, search = '') => apiClient.get('/doctors', { params: { page, limit, search } }),
   get: (id: string) => apiClient.get(`/doctors/${id}`),
+  search: (name: string) => apiClient.get('/doctors', { params: { search: name, limit: 20 } }),
+  available: (specialization?: string) => apiClient.get('/doctors/available', { params: { specialization } }),
   create: (data: any) => apiClient.post('/doctors', data),
   update: (id: string, data: any) => apiClient.put(`/doctors/${id}`, data),
   delete: (id: string) => apiClient.delete(`/doctors/${id}`),
@@ -38,6 +40,7 @@ export const doctorAPI = {
 export const patientAPI = {
   list: (page = 1, limit = 10, search = '') => apiClient.get('/patients', { params: { page, limit, search } }),
   get: (id: string) => apiClient.get(`/patients/${id}`),
+  search: (name: string) => apiClient.get('/patients/search', { params: { name } }),
   create: (data: any) => apiClient.post('/patients', data),
   update: (id: string, data: any) => apiClient.put(`/patients/${id}`, data),
   delete: (id: string) => apiClient.delete(`/patients/${id}`),
@@ -49,6 +52,16 @@ export const appointmentAPI = {
   create: (data: any) => apiClient.post('/appointments', data),
   update: (id: string, data: any) => apiClient.put(`/appointments/${id}`, data),
   delete: (id: string) => apiClient.delete(`/appointments/${id}`),
+};
+
+export const roomAllotmentAPI = {
+  available: () => apiClient.get('/room-allotment/available'),
+  list: (page = 1, limit = 10) => apiClient.get('/room-allotment/allotments', { params: { page, limit } }),
+  create: (data: any) => apiClient.post('/room-allotment/allotments', data),
+  update: (id: string, data: any) => apiClient.put(`/room-allotment/allotments/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/room-allotment/allotments/${id}`),
+  getDetails: (roomNumber?: string) => apiClient.get('/room-allotment/allotments', { params: { roomNumber, limit: 100 } }),
+  getAllRooms: () => apiClient.get('/room-allotment/allotments', { params: { limit: 100 } }),
 };
 
 export const invoiceAPI = {

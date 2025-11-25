@@ -4,6 +4,67 @@ import pool from '../db';
 
 const router = Router();
 
+router.get('/search', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { name } = req.query;
+
+    if (!name) {
+      return res.status(400).json({ error: 'Patient name is required' });
+    }
+
+    const connection = await pool.getConnection();
+    
+    const query = `SELECT 
+                    p.*,
+                    MAX(a.date) as lastVisitDate,
+                    MAX(a.date) as lastAppointmentDate
+                  FROM patients p
+                  LEFT JOIN appointments a ON p.id = a.patientId
+                  WHERE p.name LIKE ?
+                  GROUP BY p.id
+                  LIMIT 10`;
+    const searchTerm = `%${String(name)}%`;
+    
+    const [patients]: any = await connection.query(query, [searchTerm]);
+    connection.release();
+
+    if (patients.length === 0) {
+      return res.status(404).json({ error: 'Patient not found', patients: [] });
+    }
+
+    const calculateAge = (dob: Date) => {
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+      return age;
+    };
+
+    const formatDate = (date: Date | null) => {
+      if (!date) return null;
+      return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    };
+
+    const enrichedPatients = patients.map((patient: any) => ({
+      ...patient,
+      age: calculateAge(patient.dob),
+      lastVisit: patient.lastVisitDate ? formatDate(patient.lastVisitDate) : null,
+      medicalHistory: patient.history || null,
+    }));
+
+    res.json({ success: true, patients: enrichedPatients });
+  } catch (error: any) {
+    console.error('[PATIENTS SEARCH] Error:', error);
+    res.status(500).json({ error: 'Failed to search patients', details: error.message });
+  }
+});
+
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
@@ -12,10 +73,11 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     let query = `SELECT 
                   p.*, 
                   MAX(a.date) as lastVisitDate,
-                  ANY_VALUE(d.name) as doctorName
+                  d.name as assignedDoctorName,
+                  d.specialization as assignedDoctorSpecialty
                 FROM patients p
                 LEFT JOIN appointments a ON p.id = a.patientId
-                LEFT JOIN doctors d ON a.doctorId = d.id
+                LEFT JOIN doctors d ON p.doctorId = d.id
                 WHERE 1=1`;
     const params: any[] = [];
 
@@ -71,7 +133,8 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         status: 'Active',
         lastVisit: patient.lastVisitDate ? formatDate(patient.lastVisitDate) : null,
         condition: patient.history || null,
-        doctor: patient.doctorName || null,
+        doctor: patient.assignedDoctorName || null,
+        doctorSpecialty: patient.assignedDoctorSpecialty || null,
       };
     });
 
@@ -101,14 +164,14 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, phone, dob, gender, address, history } = req.body;
+    const { name, email, phone, dob, gender, address, history, specialization, doctorId } = req.body;
 
     const connection = await pool.getConnection();
     
-    const query = `INSERT INTO patients (id, name, email, phone, dob, gender, address, history, createdAt, updatedAt)
-                   VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+    const query = `INSERT INTO patients (id, name, email, phone, dob, gender, address, history, specialization, doctorId, createdAt, updatedAt)
+                   VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
     
-    await connection.query(query, [name, email, phone, new Date(dob), gender, address, history]);
+    await connection.query(query, [name, email, phone, new Date(dob), gender, address, history, specialization, doctorId]);
 
     const [patient]: any = await connection.query('SELECT * FROM patients WHERE email = ? ORDER BY createdAt DESC LIMIT 1', [email]);
     connection.release();
@@ -122,7 +185,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, phone, dob, gender, address, history } = req.body;
+    const { name, email, phone, dob, gender, address, history, specialization, doctorId } = req.body;
     const connection = await pool.getConnection();
     
     const updates: string[] = [];
@@ -135,6 +198,8 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     if (gender) { updates.push('gender = ?'); values.push(gender); }
     if (address) { updates.push('address = ?'); values.push(address); }
     if (history !== undefined) { updates.push('history = ?'); values.push(history); }
+    if (specialization !== undefined) { updates.push('specialization = ?'); values.push(specialization); }
+    if (doctorId !== undefined) { updates.push('doctorId = ?'); values.push(doctorId); }
 
     if (updates.length === 0) {
       connection.release();

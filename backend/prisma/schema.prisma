@@ -54,16 +54,18 @@ model Doctor {
 }
 
 model Patient {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  phone     String
-  dob       DateTime
-  gender    String
-  address   String?
-  history   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  phone          String
+  dob            DateTime
+  gender         String
+  address        String?
+  history        String?
+  specialization String?
+  doctorId       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   appointments    Appointment[]
   invoices        Invoice[]
@@ -74,15 +76,17 @@ model Patient {
 }
 
 model Appointment {
-  id        String   @id @default(cuid())
-  doctorId  String
-  patientId String
-  date      DateTime
-  time      String
-  status    String   @default("pending")
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  doctorId    String
+  patientId   String
+  date        DateTime
+  time        String
+  roomId      String?
+  tokenNumber String?
+  status      String   @default("pending")
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)

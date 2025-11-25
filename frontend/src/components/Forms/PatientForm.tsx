@@ -12,6 +12,7 @@ interface Patient {
   gender: string;
   address?: string;
   history?: string;
+  specialization?: string;
 }
 
 interface PatientFormProps {
@@ -28,6 +29,7 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
     gender: "",
     address: "",
     history: "",
+    specialization: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -177,6 +179,26 @@ export default function PatientForm({ patient, onSuccess }: PatientFormProps) {
           placeholder="Add medical history..."
           rows={3}
         />
+      </div>
+
+      <div>
+        <label className="block text-mdfont-medium text-gray-300 mb-2">
+          Required Specialty
+        </label>
+        <select
+          name="specialization"
+          value={formData.specialization || ""}
+          onChange={handleChange}
+          className="input-field w-full"
+        >
+          <option value="">Select Specialty (Optional)</option>
+          <option value="Cardiology">Cardiology</option>
+          <option value="Dermatology">Dermatology</option>
+          <option value="Neurology">Neurology</option>
+          <option value="Orthopedics">Orthopedics</option>
+          <option value="Pediatrics">Pediatrics</option>
+          <option value="General Practice">General Practice</option>
+        </select>
       </div>
 
       {error && (

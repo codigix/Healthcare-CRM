@@ -4,13 +4,49 @@ import pool from '../db';
 
 const router = Router();
 
+router.post('/create', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { doctorId, patientId, date, time, roomId, status, notes, tokenNumber } = req.body;
+
+    if (!doctorId || !patientId || !date || !time) {
+      return res.status(400).json({ error: 'Missing required fields: doctorId, patientId, date, time' });
+    }
+
+    const connection = await pool.getConnection();
+    
+    const query = `INSERT INTO appointments (id, doctorId, patientId, date, time, roomId, tokenNumber, status, notes, createdAt, updatedAt)
+                   VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+    
+    await connection.query(query, [doctorId, patientId, new Date(date), time, roomId || null, tokenNumber || null, status || 'scheduled', notes || null]);
+
+    const [appointment]: any = await connection.query(
+      `SELECT a.*, d.name as doctorName, d.specialization, p.name as patientName 
+       FROM appointments a 
+       LEFT JOIN doctors d ON a.doctorId = d.id
+       LEFT JOIN patients p ON a.patientId = p.id
+       WHERE a.doctorId = ? AND a.patientId = ? ORDER BY a.createdAt DESC LIMIT 1`,
+      [doctorId, patientId]
+    );
+    connection.release();
+
+    res.status(201).json({ 
+      success: true, 
+      appointment: appointment[0],
+      message: 'Appointment created successfully'
+    });
+  } catch (error: any) {
+    console.error('[APPOINTMENTS CREATE] Error:', error);
+    res.status(500).json({ error: 'Failed to create appointment', details: error.message });
+  }
+});
+
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { page = 1, limit = 10, status, doctorId, patientId, startDate, endDate } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
     let query = `SELECT 
-                  a.id, a.doctorId, a.patientId, a.date, a.time, a.status, a.notes, 
+                  a.id, a.doctorId, a.patientId, a.date, a.time, a.roomId, a.tokenNumber, a.status, a.notes, 
                   a.createdAt, a.updatedAt,
                   d.name as doctorName,
                   p.name as patientName, p.email as patientEmail, p.phone as patientPhone
@@ -118,14 +154,14 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { doctorId, patientId, date, time, status, notes } = req.body;
+    const { doctorId, patientId, date, time, roomId, tokenNumber, status, notes } = req.body;
 
     const connection = await pool.getConnection();
     
-    const query = `INSERT INTO appointments (id, doctorId, patientId, date, time, status, notes, createdAt, updatedAt)
-                   VALUES (UUID(), ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+    const query = `INSERT INTO appointments (id, doctorId, patientId, date, time, roomId, tokenNumber, status, notes, createdAt, updatedAt)
+                   VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
     
-    await connection.query(query, [doctorId, patientId, new Date(date), time, status || 'pending', notes]);
+    await connection.query(query, [doctorId, patientId, new Date(date), time, roomId || null, tokenNumber || null, status || 'pending', notes]);
 
     const [appointment]: any = await connection.query('SELECT * FROM appointments WHERE doctorId = ? AND patientId = ? ORDER BY createdAt DESC LIMIT 1', [doctorId, patientId]);
     connection.release();
@@ -139,7 +175,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { doctorId, patientId, date, time, status, notes } = req.body;
+    const { doctorId, patientId, date, time, roomId, tokenNumber, status, notes } = req.body;
     const connection = await pool.getConnection();
     
     const updates: string[] = [];
@@ -149,6 +185,8 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     if (patientId) { updates.push('patientId = ?'); values.push(patientId); }
     if (date) { updates.push('date = ?'); values.push(new Date(date)); }
     if (time) { updates.push('time = ?'); values.push(time); }
+    if (roomId !== undefined) { updates.push('roomId = ?'); values.push(roomId || null); }
+    if (tokenNumber !== undefined) { updates.push('tokenNumber = ?'); values.push(tokenNumber || null); }
     if (status) { updates.push('status = ?'); values.push(status); }
     if (notes !== undefined) { updates.push('notes = ?'); values.push(notes); }
 

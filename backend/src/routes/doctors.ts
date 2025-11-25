@@ -4,6 +4,36 @@ import pool from '../db';
 
 const router = Router();
 
+router.get('/available', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { specialization } = req.query;
+
+    let query = 'SELECT * FROM doctors WHERE 1=1';
+    const params: any[] = [];
+
+    if (specialization) {
+      query += ' AND specialization = ?';
+      params.push(String(specialization));
+    }
+
+    query += ' ORDER BY createdAt DESC LIMIT 20';
+
+    const connection = await pool.getConnection();
+    
+    const [doctors]: any = await connection.query(query, params);
+    connection.release();
+
+    if (doctors.length === 0) {
+      return res.status(404).json({ error: 'No doctors available for this specialization', doctors: [] });
+    }
+
+    res.json({ success: true, doctors });
+  } catch (error: any) {
+    console.error('[DOCTORS AVAILABLE] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch available doctors', details: error.message });
+  }
+});
+
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { page = 1, limit = 10, search } = req.query;

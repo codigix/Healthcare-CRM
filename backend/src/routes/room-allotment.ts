@@ -4,6 +4,26 @@ import pool from '../db';
 
 const router = Router();
 
+router.get('/available', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const connection = await pool.getConnection();
+    const [rooms]: any = await connection.query(
+      'SELECT * FROM rooms WHERE status = ? ORDER BY roomNumber ASC LIMIT 10',
+      ['Available']
+    );
+    connection.release();
+
+    if (rooms.length === 0) {
+      return res.status(404).json({ error: 'No rooms available right now', rooms: [] });
+    }
+
+    res.json({ success: true, rooms });
+  } catch (error: any) {
+    console.error('[ROOMS AVAILABLE] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch available rooms', details: error.message });
+  }
+});
+
 router.get('/allotments', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();

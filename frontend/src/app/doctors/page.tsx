@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
-import { doctorAPI } from '@/lib/api';
+import { doctorAPI, appointmentAPI } from '@/lib/api';
 import { Plus, Search, Filter, Download, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -34,7 +34,26 @@ export default function DoctorsPage() {
     try {
       setLoading(true);
       const response = await doctorAPI.list(page, 10, search);
-      setDoctors(response.data.doctors);
+      let doctorsData = response.data.doctors;
+
+      try {
+        const appointmentsResponse = await appointmentAPI.list(1, 500, {});
+        const appointments = appointmentsResponse.data.appointments || [];
+
+        doctorsData = doctorsData.map((doctor: Doctor) => {
+          const doctorAppointments = appointments.filter(
+            (apt: any) => apt.doctorId === doctor.id
+          );
+          return {
+            ...doctor,
+            patients: doctorAppointments.length,
+          };
+        });
+      } catch (error) {
+        console.error('Failed to fetch appointments for patient count', error);
+      }
+
+      setDoctors(doctorsData);
       setTotal(response.data.total);
     } catch (error) {
       console.error('Failed to fetch doctors', error);
