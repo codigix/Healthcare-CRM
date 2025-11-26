@@ -1,5 +1,4 @@
-import apiClient from './api';
-import { patientAPI, doctorAPI, roomAllotmentAPI } from './api';
+import apiClient, { patientAPI, doctorAPI, roomAllotmentAPI } from './api';
 
 export interface WorkflowStep {
   step: number;
@@ -142,10 +141,15 @@ export const medixproAI = {
 
       let doctorData: any;
       try {
+        console.log('[WORKFLOW] Searching for doctor:', doctorName);
         const response = await doctorAPI.search(doctorName);
+        
+        console.log('[WORKFLOW] Doctor search response:', response.data);
+        console.log('[WORKFLOW] Doctor response keys:', Object.keys(response.data));
         
         if (response.data.doctors && response.data.doctors.length > 0) {
           doctorData = response.data.doctors[0];
+          console.log('[WORKFLOW] Doctor found:', doctorData);
           steps[currentStep - 1] = {
             ...steps[currentStep - 1],
             status: 'completed',
@@ -153,9 +157,12 @@ export const medixproAI = {
             data: doctorData,
           };
         } else {
+          console.error('[WORKFLOW] No doctors found in response');
           throw new Error(`Doctor "${doctorName}" not found`);
         }
       } catch (error: any) {
+        console.error('[WORKFLOW DOCTOR SEARCH ERROR]', error);
+        console.error('[WORKFLOW] Doctor error response:', error.response?.data);
         steps[currentStep - 1] = {
           ...steps[currentStep - 1],
           status: 'failed',
@@ -493,22 +500,37 @@ export const medixproAI = {
 
       let patientData: any;
       try {
-        const response = await apiClient.get('/patients/search', {
-          params: { name: patientName },
-        });
+        console.log('[WORKFLOW] Searching for patient:', patientName);
+        const response = await patientAPI.search(patientName);
+
+        console.log('[WORKFLOW] Patient search response:', response.data);
+        console.log('[WORKFLOW] Response status:', response.status);
+        console.log('[WORKFLOW] Response keys:', Object.keys(response.data));
 
         if (response.data.patients && response.data.patients.length > 0) {
           patientData = response.data.patients[0];
+          console.log('[WORKFLOW] Patient found:', patientData);
+          
+          const calculateAge = (dob: string) => {
+            const today = new Date();
+            const birthDate = new Date(dob);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+              age--;
+            }
+            return age;
+          };
           
           const patientDetailsMessage = `1️⃣ Fetching patient info…
 🧾 Patient Found
 Name: ${patientData.name}
-Age: ${patientData.age || 'N/A'}
+Age: ${patientData.age || (patientData.dob ? calculateAge(patientData.dob) : 'N/A')}
 Gender: ${patientData.gender || 'N/A'}
 Phone: ${patientData.phone || 'N/A'}
 Address: ${patientData.address || 'N/A'}
 Required Specialty: ${patientData.specialization || 'General'}
-Medical History: ${patientData.history || 'No history'}
+Medical History: ${patientData.medicalHistory || patientData.history || 'No history'}
 Last Visit: ${patientData.lastVisit || 'First visit'}`;
 
           steps[currentStep - 1] = {
@@ -518,9 +540,15 @@ Last Visit: ${patientData.lastVisit || 'First visit'}`;
             data: patientData,
           };
         } else {
+          console.error('[WORKFLOW] No patients found in response');
           throw new Error(`Patient "${patientName}" not found`);
         }
       } catch (error: any) {
+        console.error('[WORKFLOW PATIENT SEARCH ERROR]', error);
+        console.error('[WORKFLOW] Error response status:', error.response?.status);
+        console.error('[WORKFLOW] Error response data:', error.response?.data);
+        console.error('[WORKFLOW] Error response headers:', error.response?.headers);
+        
         steps[currentStep - 1] = {
           ...steps[currentStep - 1],
           status: 'failed',

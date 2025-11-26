@@ -20,8 +20,9 @@ router.get('/search', authMiddleware, async (req: AuthRequest, res: Response) =>
                     MAX(a.date) as lastAppointmentDate
                   FROM patients p
                   LEFT JOIN appointments a ON p.id = a.patientId
-                  WHERE p.name LIKE ?
+                  WHERE LOWER(p.name) LIKE LOWER(?)
                   GROUP BY p.id
+                  ORDER BY p.createdAt DESC
                   LIMIT 10`;
     const searchTerm = `%${String(name)}%`;
     
@@ -168,12 +169,13 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const connection = await pool.getConnection();
     
+    const patientId = require('uuid').v4();
     const query = `INSERT INTO patients (id, name, email, phone, dob, gender, address, history, specialization, doctorId, createdAt, updatedAt)
-                   VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
     
-    await connection.query(query, [name, email, phone, new Date(dob), gender, address, history, specialization, doctorId]);
+    await connection.query(query, [patientId, name, email, phone, new Date(dob), gender, address, history, specialization, doctorId]);
 
-    const [patient]: any = await connection.query('SELECT * FROM patients WHERE email = ? ORDER BY createdAt DESC LIMIT 1', [email]);
+    const [patient]: any = await connection.query('SELECT * FROM patients WHERE id = ?', [patientId]);
     connection.release();
 
     res.status(201).json(patient[0]);

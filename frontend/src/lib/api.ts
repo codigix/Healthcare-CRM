@@ -30,7 +30,7 @@ export const authAPI = {
 export const doctorAPI = {
   list: (page = 1, limit = 10, search = '') => apiClient.get('/doctors', { params: { page, limit, search } }),
   get: (id: string) => apiClient.get(`/doctors/${id}`),
-  search: (name: string) => apiClient.get('/doctors', { params: { search: name, limit: 20 } }),
+  search: (name: string) => apiClient.get('/doctors/search', { params: { search: name, limit: 20 } }),
   available: (specialization?: string) => apiClient.get('/doctors/available', { params: { specialization } }),
   create: (data: any) => apiClient.post('/doctors', data),
   update: (id: string, data: any) => apiClient.put(`/doctors/${id}`, data),

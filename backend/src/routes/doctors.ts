@@ -4,6 +4,36 @@ import pool from '../db';
 
 const router = Router();
 
+router.get('/search', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { search } = req.query;
+
+    if (!search) {
+      return res.status(400).json({ error: 'Doctor search term is required' });
+    }
+
+    const connection = await pool.getConnection();
+    
+    const query = `SELECT * FROM doctors 
+                   WHERE LOWER(name) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?) OR LOWER(specialization) LIKE LOWER(?)
+                   ORDER BY createdAt DESC
+                   LIMIT 20`;
+    const searchTerm = `%${String(search)}%`;
+    
+    const [doctors]: any = await connection.query(query, [searchTerm, searchTerm, searchTerm]);
+    connection.release();
+
+    if (doctors.length === 0) {
+      return res.status(404).json({ error: 'Doctor not found', doctors: [] });
+    }
+
+    res.json({ success: true, doctors });
+  } catch (error: any) {
+    console.error('[DOCTORS SEARCH] Error:', error);
+    res.status(500).json({ error: 'Failed to search doctors', details: error.message });
+  }
+});
+
 router.get('/available', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { specialization } = req.query;
@@ -96,12 +126,13 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const connection = await pool.getConnection();
     
+    const doctorId = require('uuid').v4();
     const query = `INSERT INTO doctors (id, name, email, phone, specialization, experience, schedule, avatar, createdAt, updatedAt)
-                   VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
     
-    await connection.query(query, [name, email, phone, specialization, Number(experience), schedule, avatar]);
+    await connection.query(query, [doctorId, name, email, phone, specialization, Number(experience), schedule, avatar]);
 
-    const [doctor]: any = await connection.query('SELECT * FROM doctors WHERE email = ? ORDER BY createdAt DESC LIMIT 1', [email]);
+    const [doctor]: any = await connection.query('SELECT * FROM doctors WHERE id = ?', [doctorId]);
     connection.release();
 
     res.status(201).json(doctor[0]);
