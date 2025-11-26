@@ -23,16 +23,24 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       params.push(searchTerm, searchTerm);
     }
 
+    const countParams = params.slice();
     query += ' ORDER BY createdAt DESC LIMIT ? OFFSET ?';
     params.push(Number(limit), skip);
 
     const connection = await pool.getConnection();
     
     const [departments]: any = await connection.query(query, params);
-    const countParams = params.slice(0, params.length - 2);
-    const countSql = 'SELECT COUNT(*) as total FROM departments WHERE 1=1' + query.substring(query.indexOf('WHERE') + 5, query.indexOf('ORDER BY'));
-    const [countResult]: any = await connection.query(countSql, countParams);
-    const total = countResult[0].total;
+    
+    let countSql = 'SELECT COUNT(*) as total FROM departments WHERE 1=1';
+    if (status) {
+      countSql += ' AND status = ?';
+    }
+    if (search) {
+      countSql += ' AND (name LIKE ? OR head LIKE ?)';
+    }
+    
+    const result: any = await connection.query(countSql, countParams);
+    const total = result[0][0].total;
     
     connection.release();
 

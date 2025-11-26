@@ -6,15 +6,21 @@ const router = Router();
 
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { page = 1, limit = 10, type } = req.query;
+    const { page = 1, limit = 10, type, search } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
     let query = 'SELECT * FROM records WHERE 1=1';
     const params: any[] = [];
 
-    if (type) {
+    if (type && String(type).trim() !== '') {
       query += ' AND type = ?';
       params.push(String(type));
+    }
+
+    if (search && String(search).trim() !== '') {
+      query += ' AND (patientName LIKE ? OR details LIKE ?)';
+      const searchTerm = `%${String(search)}%`;
+      params.push(searchTerm, searchTerm);
     }
 
     const countParams = params.slice();
@@ -26,8 +32,11 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const [records]: any = await connection.query(query, params);
     
     let countSql = 'SELECT COUNT(*) as total FROM records WHERE 1=1';
-    if (type) {
+    if (type && String(type).trim() !== '') {
       countSql += ' AND type = ?';
+    }
+    if (search && String(search).trim() !== '') {
+      countSql += ' AND (patientName LIKE ? OR details LIKE ?)';
     }
     
     const result: any = await connection.query(countSql, countParams);

@@ -410,7 +410,7 @@ export default function StockAlertsPage() {
                 {filteredItems.map((item) => (
                   <tr
                     key={item.id}
-                    className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
+                    className="border-b border-dark-tertiary hover:bg-emerald-500/10 transition-colors"
                   >
                     <td className="py-4 px-4 text-gray-300 font-medium">
                       {item.id}
@@ -455,7 +455,7 @@ export default function StockAlertsPage() {
                 Notification Preferences
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-dark-tertiary/30 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                   <div>
                     <div className="font-medium">Email Notifications</div>
                     <div className="text-mdtext-gray-400">
@@ -465,7 +465,7 @@ export default function StockAlertsPage() {
                   <button className="btn-primary text-sm">Configure</button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-dark-tertiary/30 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
                   <div>
                     <div className="font-medium">Alert Frequency</div>
                     <div className="text-mdtext-gray-400">
@@ -480,7 +480,7 @@ export default function StockAlertsPage() {
             <div>
               <h3 className="text-lg font-medium mb-4">Alert Thresholds</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-dark-tertiary/30 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                   <div>
                     <div className="font-medium">Low Stock Threshold</div>
                     <div className="text-mdtext-gray-400">
@@ -490,7 +490,7 @@ export default function StockAlertsPage() {
                   <button className="btn-primary text-sm">Configure</button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-dark-tertiary/30 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-rose-500/10 border border-rose-500/20 rounded-lg">
                   <div>
                     <div className="font-medium">Expiry Alert Period</div>
                     <div className="text-mdtext-gray-400">

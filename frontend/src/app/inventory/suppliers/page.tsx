@@ -416,7 +416,7 @@ export default function SuppliersPage() {
                 {filteredSuppliers.map((supplier) => (
                   <tr
                     key={supplier.id}
-                    className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
+                    className="border-b border-dark-tertiary hover:bg-blue-500/10 transition-colors"
                   >
                     <td className="py-4 px-4 text-gray-300 font-medium">
                       {supplier.id}
@@ -475,7 +475,7 @@ export default function SuppliersPage() {
               {featuredSuppliers.map((supplier) => (
                 <div
                   key={supplier.id}
-                  className="p-4 bg-dark-tertiary/30 rounded-lg"
+                  className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -545,7 +545,7 @@ export default function SuppliersPage() {
 
             <div className="space-y-4">
               {recentOrders.map((order, index) => (
-                <div key={index} className="p-4 bg-dark-tertiary/30 rounded-lg">
+                <div key={index} className="p-4 bg-gradient-to-r from-indigo-500/10 to-blue-500/10 border border-indigo-500/20 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <div className="font-semibold">{order.supplier}</div>
                     <span

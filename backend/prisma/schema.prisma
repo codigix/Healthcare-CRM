@@ -501,3 +501,19 @@ model Supplier {
 
   @@map("suppliers")
 }
+
+model Record {
+  id        String   @id @default(cuid())
+  type      String
+  patientName String
+  date      DateTime
+  details   String?  @db.LongText
+  status    String   @default("Pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([status])
+  @@index([date])
+  @@map("records")
+}

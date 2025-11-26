@@ -163,8 +163,8 @@ export default function AppointmentRequestsPage() {
           </div>
 
           <div className="flex items-center gap-4 mb-6">
-            <div className="flex-1 flex items-center gap-2 bg-dark-tertiary rounded-lg px-4">
-              <Search size={20} className="text-gray-400" />
+            <div className="flex-1 flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4">
+              <Search size={20} className="text-emerald-400" />
               <input
                 type="text"
                 placeholder="Search requests..."
@@ -181,8 +181,8 @@ export default function AppointmentRequestsPage() {
             </div>
           ) : filteredRequests.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 bg-dark-tertiary rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock size={32} className="text-gray-500" />
+              <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock size={32} className="text-emerald-400" />
               </div>
               <h3 className="text-xl font-semibold mb-2">
                 No {activeTab} requests
@@ -196,7 +196,7 @@ export default function AppointmentRequestsPage() {
               {filteredRequests.map((request) => (
                 <div
                   key={request.id}
-                  className="p-6 bg-dark-tertiary/50 rounded-lg border border-dark-tertiary hover:border-gray-600 transition-all"
+                  className="p-6 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-lg border border-emerald-500/30 hover:border-emerald-500/50 transition-all"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1 space-y-3">
