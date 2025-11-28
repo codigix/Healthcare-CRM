@@ -321,7 +321,7 @@ export default function CreatePrescriptionPage() {
                   />
                 </div>
 
-                <div className="flex items-center gap-3 p-4 bg-white rounded-lg">
+                <div className="flex items-center gap-3 p-4 bg-dark-secondary rounded-lg border border-dark-tertiary">
                   <input
                     type="checkbox"
                     id="useTemplate"
@@ -331,7 +331,7 @@ export default function CreatePrescriptionPage() {
                   />
                   <label
                     htmlFor="useTemplate"
-                    className="text-mdtext-gray-700 cursor-pointer"
+                    className="text-mdtext-gray-300 cursor-pointer"
                   >
                     Use Medication Template
                   </label>
@@ -373,7 +373,7 @@ export default function CreatePrescriptionPage() {
                 {medications.map((medication, index) => (
                   <div
                     key={medication.id}
-                    className="p-6 bg-white rounded-lg border border-gray-200"
+                    className="p-6 bg-dark-secondary rounded-lg border border-dark-tertiary"
                   >
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="font-semibold">Medication #{index + 1}</h3>
@@ -390,7 +390,7 @@ export default function CreatePrescriptionPage() {
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-mdfont-medium text-gray-700 mb-2">
+                        <label className="block text-mdfont-medium text-gray-300 mb-2">
                           Medication Name
                         </label>
                         <input
@@ -411,7 +411,7 @@ export default function CreatePrescriptionPage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-mdfont-medium text-gray-700 mb-2">
+                          <label className="block text-mdfont-medium text-gray-300 mb-2">
                             Dosage
                           </label>
                           <select
@@ -438,7 +438,7 @@ export default function CreatePrescriptionPage() {
                         </div>
 
                         <div>
-                          <label className="block text-mdfont-medium text-gray-700 mb-2">
+                          <label className="block text-mdfont-medium text-gray-300 mb-2">
                             Route
                           </label>
                           <select
@@ -462,7 +462,7 @@ export default function CreatePrescriptionPage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-mdfont-medium text-gray-700 mb-2">
+                          <label className="block text-mdfont-medium text-gray-300 mb-2">
                             Frequency
                           </label>
                           <select
@@ -491,7 +491,7 @@ export default function CreatePrescriptionPage() {
                         </div>
 
                         <div>
-                          <label className="block text-mdfont-medium text-gray-700 mb-2">
+                          <label className="block text-mdfont-medium text-gray-300 mb-2">
                             Duration
                           </label>
                           <div className="flex gap-2">
@@ -519,7 +519,7 @@ export default function CreatePrescriptionPage() {
                       </div>
 
                       <div>
-                        <label className="block text-mdfont-medium text-gray-700 mb-2">
+                        <label className="block text-mdfont-medium text-gray-300 mb-2">
                           Special Instructions
                         </label>
                         <textarea
@@ -537,7 +537,7 @@ export default function CreatePrescriptionPage() {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between p-4 bg-white rounded-lg">
+                      <div className="flex items-center justify-between p-4 bg-dark-secondary rounded-lg border border-dark-tertiary">
                         <div className="flex items-center gap-3">
                           <button
                             type="button"
@@ -556,13 +556,13 @@ export default function CreatePrescriptionPage() {
                               <ToggleLeft size={24} className="text-gray-500" />
                             )}
                           </button>
-                          <label className="text-mdtext-gray-700">
+                          <label className="text-mdtext-gray-300">
                             Allow Refills
                           </label>
                         </div>
                         {medication.allowRefills && (
                           <div className="flex items-center gap-2">
-                            <label className="text-mdtext-gray-700">
+                            <label className="text-mdtext-gray-300">
                               Number of Refills:
                             </label>
                             <input
@@ -608,7 +608,7 @@ export default function CreatePrescriptionPage() {
                   />
                 </div>
 
-                <div className="flex items-center gap-3 p-4 bg-white rounded-lg">
+                <div className="flex items-center gap-3 p-4 bg-dark-secondary rounded-lg border border-dark-tertiary">
                   <input
                     type="checkbox"
                     id="saveAsTemplate"
@@ -618,7 +618,7 @@ export default function CreatePrescriptionPage() {
                   />
                   <label
                     htmlFor="saveAsTemplate"
-                    className="text-mdtext-gray-700 cursor-pointer flex-1"
+                    className="text-mdtext-gray-300 cursor-pointer flex-1"
                   >
                     Save as Template
                   </label>
@@ -718,9 +718,9 @@ export default function CreatePrescriptionPage() {
                 </div>
 
                 {selectedPatient && (
-                  <div className="mt-4 p-4 bg-white rounded-lg space-y-3">
+                  <div className="mt-4 p-4 bg-dark-secondary rounded-lg border border-dark-tertiary space-y-3">
                     <div>
-                      <div className="text-xs text-gray-700 mb-1">
+                      <div className="text-xs text-gray-300 mb-1">
                         Allergies:
                       </div>
                       {selectedPatient.allergies &&
@@ -736,13 +736,13 @@ export default function CreatePrescriptionPage() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-mdtext-gray-700">
+                        <span className="text-mdtext-gray-300">
                           No known allergies
                         </span>
                       )}
                     </div>
                     <div>
-                      <div className="text-xs text-gray-700 mb-1">
+                      <div className="text-xs text-gray-300 mb-1">
                         Conditions:
                       </div>
                       {selectedPatient.conditions &&
@@ -758,7 +758,7 @@ export default function CreatePrescriptionPage() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-mdtext-gray-700">
+                        <span className="text-mdtext-gray-300">
                           No conditions listed
                         </span>
                       )}
