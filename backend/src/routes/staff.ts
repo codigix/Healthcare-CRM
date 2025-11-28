@@ -13,7 +13,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const params: any[] = [];
 
     if (search) {
-      query += ' AND (firstName LIKE ? OR lastName LIKE ? OR email LIKE ? OR role LIKE ?)';
+      query += ' AND (firstName LIKE ? OR lastName LIKE ? OR email LIKE ? OR department LIKE ?)';
       const searchTerm = `%${String(search)}%`;
       params.push(searchTerm, searchTerm, searchTerm, searchTerm);
     }
@@ -80,7 +80,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       emergencyContact,
       emergencyPhone,
       relationship,
-      role,
+      roleId,
       department,
       joinedDate,
       status,
@@ -88,11 +88,11 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const connection = await pool.getConnection();
     
-    const query = `INSERT INTO Staff (id, firstName, lastName, email, phone, dateOfBirth, gender, address, city, postalCode, country, emergencyContact, emergencyPhone, relationship, role, department, joinedDate, status, createdAt, updatedAt)
+    const query = `INSERT INTO Staff (id, firstName, lastName, email, phone, dateOfBirth, gender, address, city, postalCode, country, emergencyContact, emergencyPhone, relationship, roleId, department, joinedDate, status, createdAt, updatedAt)
                    VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
     
     await connection.query(query, [
-      firstName, lastName, email, phone, new Date(dateOfBirth), gender, address, city, postalCode, country, emergencyContact, emergencyPhone, relationship, role, department, joinedDate ? new Date(joinedDate) : new Date(), status || 'Active'
+      firstName, lastName, email, phone, new Date(dateOfBirth), gender, address, city, postalCode, country, emergencyContact, emergencyPhone, relationship, roleId || null, department, joinedDate ? new Date(joinedDate) : new Date(), status || 'Active'
     ]);
 
     const [staff]: any = await connection.query('SELECT * FROM Staff WHERE email = ? ORDER BY createdAt DESC LIMIT 1', [email]);
@@ -124,7 +124,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       emergencyContact,
       emergencyPhone,
       relationship,
-      role,
+      roleId,
       department,
       status,
     } = req.body;
@@ -147,7 +147,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     if (emergencyContact) { updates.push('emergencyContact = ?'); values.push(emergencyContact); }
     if (emergencyPhone) { updates.push('emergencyPhone = ?'); values.push(emergencyPhone); }
     if (relationship) { updates.push('relationship = ?'); values.push(relationship); }
-    if (role) { updates.push('role = ?'); values.push(role); }
+    if (roleId) { updates.push('roleId = ?'); values.push(roleId); }
     if (department) { updates.push('department = ?'); values.push(department); }
     if (status) { updates.push('status = ?'); values.push(status); }
 
