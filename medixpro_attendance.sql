@@ -1,0 +1,60 @@
+-- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
+--
+-- Host: localhost    Database: medixpro
+-- ------------------------------------------------------
+-- Server version	8.0.43
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `attendance`
+--
+
+DROP TABLE IF EXISTS `attendance`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `attendance` (
+  `id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `staffId` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `checkIn` datetime(3) DEFAULT NULL,
+  `checkOut` datetime(3) DEFAULT NULL,
+  `hours` double NOT NULL DEFAULT '0',
+  `status` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Present',
+  `date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `createdAt` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updatedAt` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `attendance_staffId_fkey` (`staffId`),
+  CONSTRAINT `attendance_staffId_fkey` FOREIGN KEY (`staffId`) REFERENCES `staff` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `attendance`
+--
+
+LOCK TABLES `attendance` WRITE;
+/*!40000 ALTER TABLE `attendance` DISABLE KEYS */;
+INSERT INTO `attendance` VALUES ('2cb9e2e5-c525-11f0-84f2-c8d9d20837fa','cmi4bz35a0021um3sxv6cyh8k','2025-11-19 14:56:00.000','2025-11-19 22:22:00.000',7.433333333333334,'Present','2025-11-19 05:30:00.000','2025-11-19 14:23:10.000','2025-11-19 14:23:10.000'),('5e56359d-c525-11f0-84f2-c8d9d20837fa','cmi4bz349001tum3sfli8o1w6','2025-11-19 17:24:00.000','2025-11-19 21:24:00.000',4,'On Leave','2025-11-19 05:30:00.000','2025-11-19 14:24:33.000','2025-11-19 14:24:33.000'),('a2be7fac-c9e9-11f0-a4c7-ecb1d7504d91','cmi4bz35a0021um3sxv6cyh8k','2025-11-25 09:59:00.000','2025-11-25 22:02:00.000',12.05,'Present','2025-11-25 05:30:00.000','2025-11-25 15:59:34.000','2025-11-25 15:59:34.000'),('cmi4bz35j0023um3sbjob6aas','cmi4bz349001tum3sfli8o1w6','2025-11-18 03:30:00.686','2025-11-18 12:00:00.686',8.5,'Present','2025-11-18 08:47:49.686','2025-11-18 08:47:49.687','2025-11-18 08:47:49.687'),('cmi4bz35s0025um3sng0m5r6c','cmi4bz34k001vum3siakk22bq','2025-11-18 03:45:00.686','2025-11-18 12:30:00.686',8.75,'Present','2025-11-18 08:47:49.695','2025-11-18 08:47:49.696','2025-11-18 08:47:49.696'),('cmi4bz3600027um3srfkil8t2','cmi4bz34t001xum3s2vh0fo4j',NULL,NULL,0,'Absent','2025-11-18 08:47:49.703','2025-11-18 08:47:49.704','2025-11-18 08:47:49.704');
+/*!40000 ALTER TABLE `attendance` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-11-26 14:54:37

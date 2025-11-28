@@ -84,7 +84,7 @@ export default function AddAppointmentPage() {
     setError("");
 
     try {
-      await appointmentAPI.create({
+      const response = await appointmentAPI.create({
         doctorId: formData.doctorId,
         patientId: formData.patientId,
         date: formData.date,
@@ -94,7 +94,8 @@ export default function AddAppointmentPage() {
           formData.notes +
           (formData.reason ? `\nReason: ${formData.reason}` : ""),
       });
-      router.push("/appointments/all");
+      const appointmentId = response.data.appointment?.id || response.data.id;
+      router.push(`/appointments/success?id=${appointmentId}`);
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to create appointment");
     } finally {

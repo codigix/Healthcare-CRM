@@ -19,7 +19,7 @@ export default function MedixProAI() {
     {
       id: '1',
       type: 'assistant',
-      content: 'Hello! 👋 I\'m MedixPro AI Assistant.\n\n📅 I can help you:\n• Book appointments: "John Cardiology"\n• Check doctor schedule: "Dr. Sanika schedule" or "Sanika availability"\n• Room allocation: "Room 101" or "Show all rooms"',
+      content: 'Hello! 👋 I\'m MedixPro AI Assistant.\n\n📅 I can help you:\n• Book appointments: "John Cardiology"\n• Check doctor schedule: "Dr. Sanika schedule" or "Sanika availability" or "aurtho kale schedule"\n• Room allocation: "Room 101" or "Show all rooms"\n\nTip: Use the doctor\'s full name for schedule queries (e.g., "DR.aurtho kale schedule")',
       timestamp: new Date(),
     }
   ]);
@@ -101,7 +101,7 @@ export default function MedixProAI() {
         const assistantMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
-          content: '❓ I can help you with:\n• Booking appointments: "John Cardiology"\n• Checking doctor schedule: "Dr. Sanika Mote schedule"\n• Room allocation: "Room 101" or "Show all rooms"',
+          content: '❓ I can help you with:\n• Booking appointments: "John Cardiology" or "Maria surgery"\n• Checking doctor schedule: "Dr. Sanika Mote schedule" or "aurtho kale availability"\n• Room allocation: "Room 101" or "Show all rooms"\n\n💡 Try saying something like: "aurtho schedule" or "john cardiology"',
           timestamp: new Date(),
         };
         setMessages(prev => [...prev, assistantMessage]);

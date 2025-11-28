@@ -74,8 +74,8 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     let query = `SELECT 
                   p.*, 
                   MAX(a.date) as lastVisitDate,
-                  d.name as assignedDoctorName,
-                  d.specialization as assignedDoctorSpecialty
+                  MAX(d.name) as assignedDoctorName,
+                  MAX(d.specialization) as assignedDoctorSpecialty
                 FROM patients p
                 LEFT JOIN appointments a ON p.id = a.patientId
                 LEFT JOIN doctors d ON p.doctorId = d.id

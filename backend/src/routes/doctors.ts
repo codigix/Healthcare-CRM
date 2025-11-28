@@ -9,7 +9,7 @@ router.get('/search', authMiddleware, async (req: AuthRequest, res: Response) =>
     const { search } = req.query;
 
     if (!search) {
-      return res.status(400).json({ error: 'Doctor search term is required' });
+      return res.status(400).json({ error: 'Doctor search term is required', doctors: [] });
     }
 
     const connection = await pool.getConnection();
@@ -20,17 +20,19 @@ router.get('/search', authMiddleware, async (req: AuthRequest, res: Response) =>
                    LIMIT 20`;
     const searchTerm = `%${String(search)}%`;
     
+    console.log('[DOCTORS SEARCH] Searching for:', search);
     const [doctors]: any = await connection.query(query, [searchTerm, searchTerm, searchTerm]);
     connection.release();
 
-    if (doctors.length === 0) {
-      return res.status(404).json({ error: 'Doctor not found', doctors: [] });
+    console.log('[DOCTORS SEARCH] Found', doctors.length, 'doctors');
+    if (doctors && doctors.length > 0) {
+      res.json({ success: true, doctors });
+    } else {
+      res.json({ success: false, error: `No doctors found matching "${search}"`, doctors: [] });
     }
-
-    res.json({ success: true, doctors });
   } catch (error: any) {
     console.error('[DOCTORS SEARCH] Error:', error);
-    res.status(500).json({ error: 'Failed to search doctors', details: error.message });
+    res.status(500).json({ error: 'Failed to search doctors', details: error.message, doctors: [] });
   }
 });
 
@@ -50,17 +52,19 @@ router.get('/available', authMiddleware, async (req: AuthRequest, res: Response)
 
     const connection = await pool.getConnection();
     
+    console.log('[DOCTORS AVAILABLE] Fetching available doctors', specialization ? `for ${specialization}` : 'for all specializations');
     const [doctors]: any = await connection.query(query, params);
     connection.release();
 
-    if (doctors.length === 0) {
-      return res.status(404).json({ error: 'No doctors available for this specialization', doctors: [] });
+    console.log('[DOCTORS AVAILABLE] Found', doctors.length, 'available doctors');
+    if (doctors && doctors.length > 0) {
+      res.json({ success: true, doctors });
+    } else {
+      res.json({ success: false, error: `No doctors available for ${specialization || 'this'} specialization`, doctors: [] });
     }
-
-    res.json({ success: true, doctors });
   } catch (error: any) {
     console.error('[DOCTORS AVAILABLE] Error:', error);
-    res.status(500).json({ error: 'Failed to fetch available doctors', details: error.message });
+    res.status(500).json({ error: 'Failed to fetch available doctors', details: error.message, doctors: [] });
   }
 });
 

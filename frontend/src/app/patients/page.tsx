@@ -18,9 +18,22 @@ interface Patient {
   lastVisit?: string;
   condition?: string;
   doctor?: string;
+  doctorSpecialty?: string;
   address?: string;
   history?: string;
 }
+
+const calculateAge = (dob: string): number => {
+  if (!dob) return 0;
+  const today = new Date();
+  const birthDate = new Date(dob);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age < 0 ? 0 : age;
+};
 
 export default function PatientsPage() {
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -114,18 +127,20 @@ export default function PatientsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {patients.map((patient) => (
+                  {patients.map((patient) => {
+                    const displayAge = patient.age && patient.age > 0 ? patient.age : calculateAge(patient.dob);
+                    return (
                     <tr key={patient.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 font-semibold">
-                            {patient.name.charAt(0)}
+                            {patient.name.charAt(0).toUpperCase()}
                           </div>
                           <span className="font-medium">{patient.name}</span>
                         </div>
                       </td>
                       <td className="py-4 px-4 text-gray-300">
-                        {patient.age || '-'} • {patient.gender || '-'}
+                        {displayAge > 0 ? displayAge : '-'} • {patient.gender || '-'}
                       </td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -136,9 +151,22 @@ export default function PatientsPage() {
                           {patient.status || 'Active'}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-gray-300">{patient.lastVisit || '-'}</td>
-                      <td className="py-4 px-4 text-gray-300">{patient.condition || '-'}</td>
-                      <td className="py-4 px-4 text-gray-300">{patient.doctor ? `Dr. ${patient.doctor}` : '-'}</td>
+                      <td className="py-4 px-4 text-gray-300">{patient.lastVisit ? patient.lastVisit : '-'}</td>
+                      <td className="py-4 px-4 text-gray-300">{patient.condition ? patient.condition : '-'}</td>
+                      <td className="py-4 px-4">
+                        <div className="text-gray-300">
+                          {patient.doctor ? (
+                            <div>
+                              <div className="font-medium">{patient.doctor}</div>
+                              {patient.doctorSpecialty && (
+                                <div className="text-xs text-gray-400">{patient.doctorSpecialty}</div>
+                              )}
+                            </div>
+                          ) : (
+                            '-'
+                          )}
+                        </div>
+                      </td>
                       <td className="py-4 px-4 relative">
                         <div className="flex items-center justify-center">
                           <button 
@@ -171,7 +199,8 @@ export default function PatientsPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -158,21 +158,23 @@ export const medixproAI = {
           };
         } else {
           console.error('[WORKFLOW] No doctors found in response');
-          throw new Error(`Doctor "${doctorName}" not found`);
+          const errorMsg = response.data.error || `Doctor "${doctorName}" not found`;
+          throw new Error(errorMsg);
         }
       } catch (error: any) {
         console.error('[WORKFLOW DOCTOR SEARCH ERROR]', error);
         console.error('[WORKFLOW] Doctor error response:', error.response?.data);
+        const errorMessage = error.response?.data?.error || error.message || `Doctor "${doctorName}" not found in the system`;
         steps[currentStep - 1] = {
           ...steps[currentStep - 1],
           status: 'failed',
           message: `🔍 Searching for Dr. ${doctorName}…`,
-          error: `Doctor "${doctorName}" not found in the system.`,
+          error: errorMessage,
         };
         return {
           success: false,
           steps,
-          summary: `❌ Doctor "${doctorName}" not found. Please check the spelling or provide a different doctor name.`,
+          summary: `❌ ${errorMessage}. Please check the spelling or use a different doctor name. Try searching by specialization instead (e.g., "John Neurology").`,
         };
       }
 
@@ -618,10 +620,13 @@ Last Visit: ${patientData.lastVisit || 'First visit'}`;
           params.specialization = specialization;
         }
 
+        console.log('[WORKFLOW] Fetching available doctors', specialization ? `for ${specialization}` : 'for any specialization');
         const response = await apiClient.get('/doctors/available', { params });
 
+        console.log('[WORKFLOW] Available doctors response:', response.data);
         if (response.data.doctors && response.data.doctors.length > 0) {
           doctorData = response.data.doctors[0];
+          console.log('[WORKFLOW] Doctor assigned:', doctorData);
           steps[currentStep - 1] = {
             ...steps[currentStep - 1],
             status: 'completed',
@@ -629,20 +634,24 @@ Last Visit: ${patientData.lastVisit || 'First visit'}`;
             data: doctorData,
           };
         } else {
-          throw new Error('No doctors available');
+          const errorMsg = response.data.error || `No doctors available for ${specialization || 'any'} specialization`;
+          console.error('[WORKFLOW] No doctors available:', errorMsg);
+          throw new Error(errorMsg);
         }
       } catch (error: any) {
+        console.error('[WORKFLOW DOCTOR AVAILABILITY ERROR]', error);
+        const errorMsg = error.response?.data?.error || error.message || `No doctors available for ${specialization || 'any'} specialization`;
         steps[currentStep - 1] = {
           ...steps[currentStep - 1],
           status: 'failed',
           message: '3️⃣ Assigning doctor…',
-          error: `No doctors available for ${specialization || 'any'} specialization`,
+          error: errorMsg,
         };
         return {
           success: false,
           patientName,
           steps,
-          summary: `❌ Workflow failed at Step 3: No doctors available for ${specialization || 'any'} specialization.`,
+          summary: `❌ Workflow failed at Step 3: ${errorMsg}. Please try again or add more doctors to the system.`,
         };
       }
 

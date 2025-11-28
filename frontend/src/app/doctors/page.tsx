@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/Layout/DashboardLayout';
 import { doctorAPI, appointmentAPI } from '@/lib/api';
-import { Plus, Search, Filter, Download, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Filter, Download, MoreVertical, Edit, Trash2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 interface Doctor {
