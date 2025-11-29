@@ -24,6 +24,7 @@ jobs:
             # Backend
             cd backend
             npm install --production  # ← using npm install
+            npm run build
             cd ..
 
             # Frontend (Next.js)
