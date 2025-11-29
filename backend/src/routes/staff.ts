@@ -9,7 +9,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const { page = 1, limit = 10, search, department, status } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    let query = 'SELECT * FROM Staff WHERE 1=1';
+    let query = 'SELECT * FROM staff WHERE 1=1';
     const params: any[] = [];
 
     if (search) {
@@ -35,7 +35,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     
     const [staff]: any = await connection.query(query, params);
     const countParams = params.slice(0, params.length - 2);
-    const countSql = 'SELECT COUNT(*) as total FROM Staff WHERE 1=1' + query.substring(query.indexOf('WHERE 1=1') + 9, query.indexOf('ORDER BY'));
+    const countSql = 'SELECT COUNT(*) as total FROM staff WHERE 1=1' + query.substring(query.indexOf('WHERE 1=1') + 9, query.indexOf('ORDER BY'));
     const [countResult]: any = await connection.query(countSql, countParams);
     const total = countResult[0].total;
     
@@ -51,7 +51,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
-    const [staff]: any = await connection.query('SELECT * FROM Staff WHERE id = ?', [req.params.id]);
+    const [staff]: any = await connection.query('SELECT * FROM staff WHERE id = ?', [req.params.id]);
     connection.release();
 
     if (staff.length === 0) {
@@ -88,14 +88,14 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const connection = await pool.getConnection();
     
-    const query = `INSERT INTO Staff (id, firstName, lastName, email, phone, dateOfBirth, gender, address, city, postalCode, country, emergencyContact, emergencyPhone, relationship, roleId, department, joinedDate, status, createdAt, updatedAt)
+    const query = `INSERT INTO staff (id, firstName, lastName, email, phone, dateOfBirth, gender, address, city, postalCode, country, emergencyContact, emergencyPhone, relationship, roleId, department, joinedDate, status, createdAt, updatedAt)
                    VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
     
     await connection.query(query, [
       firstName, lastName, email, phone, new Date(dateOfBirth), gender, address, city, postalCode, country, emergencyContact, emergencyPhone, relationship, roleId || null, department, joinedDate ? new Date(joinedDate) : new Date(), status || 'Active'
     ]);
 
-    const [staff]: any = await connection.query('SELECT * FROM Staff WHERE email = ? ORDER BY createdAt DESC LIMIT 1', [email]);
+    const [staff]: any = await connection.query('SELECT * FROM staff WHERE email = ? ORDER BY createdAt DESC LIMIT 1', [email]);
     connection.release();
 
     res.status(201).json(staff[0]);
@@ -159,15 +159,15 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     updates.push('updatedAt = NOW()');
     values.push(req.params.id);
 
-    const query = `UPDATE Staff SET ${updates.join(', ')} WHERE id = ?`;
+    const query = `UPDATE staff SET ${updates.join(', ')} WHERE id = ?`;
     const result = await connection.query(query, values);
     
     if ((result[0] as any).affectedRows === 0) {
       connection.release();
-      return res.status(404).json({ error: 'Staff member not found' });
+      return res.status(404).json({ error: 'staff member not found' });
     }
 
-    const [staff]: any = await connection.query('SELECT * FROM Staff WHERE id = ?', [req.params.id]);
+    const [staff]: any = await connection.query('SELECT * FROM staff WHERE id = ?', [req.params.id]);
     connection.release();
 
     res.json(staff[0]);
@@ -182,7 +182,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
-    const result = await connection.query('DELETE FROM Staff WHERE id = ?', [req.params.id]);
+    const result = await connection.query('DELETE FROM staff WHERE id = ?', [req.params.id]);
     connection.release();
 
     if ((result[0] as any).affectedRows === 0) {
