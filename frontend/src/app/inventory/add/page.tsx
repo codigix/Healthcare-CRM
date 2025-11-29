@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function AddInventoryItemPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("basic");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     itemName: "",
     itemId: "",
@@ -27,6 +31,8 @@ export default function AddInventoryItemPage() {
     controlledSubstance: false,
     sterile: false,
     notes: "",
+    purchasePrice: "",
+    sellingPrice: "",
   });
 
   const handleInputChange = (
@@ -43,9 +49,59 @@ export default function AddInventoryItemPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    setError("");
+    setLoading(true);
+
+    try {
+      if (!formData.itemName || !formData.category || !formData.unitOfMeasure) {
+        throw new Error("Please fill in all required fields (Item Name, Category, Unit of Measure)");
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication required. Please log in.");
+      }
+
+      const medicineData = {
+        name: formData.itemName,
+        genericName: formData.itemId || formData.itemName,
+        category: formData.category,
+        medicineType: formData.subcategory || "General",
+        medicineForm: formData.unitOfMeasure,
+        description: formData.description,
+        manufacturer: formData.manufacturer || formData.brand,
+        supplier: formData.brand,
+        initialQuantity: parseInt(formData.unitQuantity) || 0,
+        purchasePrice: parseFloat(formData.purchasePrice) || 0,
+        sellingPrice: parseFloat(formData.sellingPrice) || 0,
+        roomTemperature: !formData.requiresRefrigeration,
+        refrigerated: formData.requiresRefrigeration,
+        status: "Active",
+      };
+
+      const response = await fetch(`${API_URL}/medicines`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(medicineData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save inventory item");
+      }
+
+      router.push("/inventory");
+    } catch (err: any) {
+      setError(err.message || "Failed to save inventory item");
+      console.error("Error saving inventory item:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -63,6 +119,13 @@ export default function AddInventoryItemPage() {
             <p className="text-gray-400">Add a new item to your inventory</p>
           </div>
         </div>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="text-red-500 mt-0.5 flex-shrink-0" size={20} />
+            <p className="text-red-500">{error}</p>
+          </div>
+        )}
 
         <div className="card">
           <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
@@ -375,6 +438,42 @@ export default function AddInventoryItemPage() {
                       className="input-field w-full"
                     />
                   </div>
+
+                  <div className="mt-6">
+                    <h3 className="text-lg font-medium mb-4">
+                      Pricing Information
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-mdfont-medium mb-2">
+                          Purchase Price
+                        </label>
+                        <input
+                          type="number"
+                          name="purchasePrice"
+                          value={formData.purchasePrice}
+                          onChange={handleInputChange}
+                          placeholder="Enter purchase price"
+                          step="0.01"
+                          className="input-field w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-mdfont-medium mb-2">
+                          Selling Price
+                        </label>
+                        <input
+                          type="number"
+                          name="sellingPrice"
+                          value={formData.sellingPrice}
+                          onChange={handleInputChange}
+                          placeholder="Enter selling price"
+                          step="0.01"
+                          className="input-field w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -415,10 +514,20 @@ export default function AddInventoryItemPage() {
               </Link>
               <button
                 type="submit"
-                className="btn-primary flex items-center gap-2"
+                disabled={loading}
+                className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Save size={18} />
-                Save Item
+                {loading ? (
+                  <>
+                    <span className="animate-spin">⟳</span>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} />
+                    Save Item
+                  </>
+                )}
               </button>
             </div>
           </form>

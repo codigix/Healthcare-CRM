@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import {
   Search,
@@ -9,10 +9,8 @@ import {
   DollarSign,
   TrendingUp,
   Star,
-  Phone,
-  Mail,
-  MapPin,
-  ExternalLink,
+  X,
+  AlertCircle,
 } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -27,179 +25,144 @@ interface Supplier {
   status: "Active" | "Inactive";
 }
 
-interface FeaturedSupplier {
-  id: string;
-  name: string;
-  description: string;
-  contact: string;
-  phone: string;
-  email: string;
-  location: string;
-  rating: number;
-  badge: string;
-}
 
-interface RecentOrder {
-  supplier: string;
-  orderId: string;
-  date: string;
-  amount: number;
-  status: string;
-}
 
 export default function SuppliersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("active");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("all");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [errorSubmit, setErrorSubmit] = useState("");
+  const [loadingData, setLoadingData] = useState(true);
+  const [errorData, setErrorData] = useState("");
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [totalSuppliers, setTotalSuppliers] = useState(0);
+  const [topSupplier, setTopSupplier] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "",
+    contact: "",
+    email: "",
+    phone: "",
+    location: "",
+    description: "",
+    rating: 3,
+    status: "Active",
+  });
 
-  const [suppliers] = useState<Supplier[]>([
-    {
-      id: "SUP001",
-      name: "MedPlus Supplies",
-      category: "Medical Supplies",
-      contact: "contact@medplus.com",
-      email: "sales@medplus.com",
-      rating: 5,
-      status: "Active",
-    },
-    {
-      id: "SUP002",
-      name: "PharmaTech Inc.",
-      category: "Medications",
-      contact: "sales@pharmatech.com",
-      email: "sales@pharmatech.com",
-      rating: 4,
-      status: "Active",
-    },
-    {
-      id: "SUP003",
-      name: "MediEquip Solutions",
-      category: "Equipment",
-      contact: "info@mediequip.com",
-      email: "info@mediequip.com",
-      rating: 4,
-      status: "Active",
-    },
-    {
-      id: "SUP004",
-      name: "Health Supply Co.",
-      category: "Medical Supplies",
-      contact: "order@healthsupply.com",
-      email: "order@healthsupply.com",
-      rating: 3,
-      status: "Active",
-    },
-    {
-      id: "SUP005",
-      name: "Office Depot Medical",
-      category: "Office Supplies",
-      contact: "medical@officedepot.com",
-      email: "medical@officedepot.com",
-      rating: 4,
-      status: "Active",
-    },
-    {
-      id: "SUP006",
-      name: "Global Pharma Ltd.",
-      category: "Medications",
-      contact: "sales@globalpharma.com",
-      email: "sales@globalpharma.com",
-      rating: 5,
-      status: "Active",
-    },
-    {
-      id: "SUP008",
-      name: "Lab Supplies Direct",
-      category: "Laboratory",
-      contact: "order@labsupplies.com",
-      email: "order@labsupplies.com",
-      rating: 3,
-      status: "Active",
-    },
-  ]);
+  useEffect(() => {
+    fetchSuppliers();
+  }, []);
 
-  const [featuredSuppliers] = useState<FeaturedSupplier[]>([
-    {
-      id: "SUP001",
-      name: "MedPlus Supplies",
-      description:
-        "Leading provider of high-quality medical supplies and equipment for healthcare facilities.",
-      contact: "Sarah Johnson",
-      phone: "(555) 123-4567",
-      email: "contact@medplus.com",
-      location: "Chicago, IL",
-      rating: 5,
-      badge: "Active",
-    },
-    {
-      id: "SUP002",
-      name: "PharmaTech Inc.",
-      description:
-        "Specialized pharmaceutical supplier with a wide range of medications and healthcare products.",
-      contact: "Michael Chen",
-      phone: "(543) 987-5643",
-      email: "sales@pharmatech.com",
-      location: "Boston, MA",
-      rating: 4,
-      badge: "Active",
-    },
-    {
-      id: "SUP003",
-      name: "MediEquip Solutions",
-      description:
-        "Premium medical equipment provider specializing in diagnostic and treatment devices.",
-      contact: "David Rodriguez",
-      phone: "(555) 456-7890",
-      email: "info@mediequip.com",
-      location: "San Diego, CA",
-      rating: 4,
-      badge: "Active",
-    },
-    {
-      id: "SUP006",
-      name: "Global Pharma Ltd.",
-      description:
-        "International pharmaceutical supplier with extensive inventory of medications and treatments.",
-      contact: "James Wilson",
-      phone: "(553) 789-0123",
-      email: "sales@globalpharma.com",
-      location: "New York, NY",
-      rating: 5,
-      badge: "Active",
-    },
-  ]);
+  const fetchSuppliers = async () => {
+    try {
+      setLoadingData(true);
+      setErrorData("");
+      const token = localStorage.getItem("token");
+      
+      const response = await fetch(`${API_URL}/suppliers`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-  const [recentOrders] = useState<RecentOrder[]>([
-    {
-      supplier: "MedPlus Supplies",
-      orderId: "#ORD4815",
-      date: "Apr 15, 2025",
-      amount: 1245.0,
-      status: "Delivered",
-    },
-    {
-      supplier: "PharmaTech Inc.",
-      orderId: "#ORD4815",
-      date: "Apr 15, 2025",
-      amount: 876.5,
-      status: "Shipped",
-    },
-    {
-      supplier: "MediEquip Solutions",
-      orderId: "#ORD4841",
-      date: "Apr 12, 2025",
-      amount: 2340.75,
-      status: "Processing",
-    },
-    {
-      supplier: "Health Supply Co.",
-      orderId: "#ORD4808",
-      date: "Apr 10, 2025",
-      amount: 567.25,
-      status: "Delivered",
-    },
-  ]);
+      if (!response.ok) {
+        throw new Error("Failed to fetch suppliers");
+      }
+
+      const data = await response.json();
+      const supplierList = Array.isArray(data) ? data : data.data || [];
+      
+      setSuppliers(supplierList);
+      setTotalSuppliers(supplierList.length);
+
+      if (supplierList.length > 0) {
+        const topRated = supplierList.reduce((prev, current) =>
+          (prev.rating || 0) > (current.rating || 0) ? prev : current
+        );
+        setTopSupplier(topRated.name);
+      }
+    } catch (err: any) {
+      setErrorData(err.message || "Failed to load suppliers");
+      console.error("Error fetching suppliers:", err);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  const handleFormChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddSupplier = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorSubmit("");
+    setLoadingSubmit(true);
+
+    try {
+      if (!formData.name || !formData.category || !formData.contact || !formData.email) {
+        throw new Error("Please fill in all required fields (Name, Category, Contact Person, Email)");
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication required. Please log in.");
+      }
+
+      const payloadData = {
+        name: formData.name,
+        category: formData.category,
+        contact: formData.contact,
+        email: formData.email,
+        phone: formData.phone || null,
+        location: formData.location || null,
+        description: formData.description || null,
+        rating: parseInt(String(formData.rating)) || 0,
+        status: formData.status,
+        contactPerson: formData.contact,
+      };
+
+      const response = await fetch(`${API_URL}/suppliers`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payloadData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to add supplier");
+      }
+
+      setShowAddModal(false);
+      setFormData({
+        name: "",
+        category: "",
+        contact: "",
+        email: "",
+        phone: "",
+        location: "",
+        description: "",
+        rating: 3,
+        status: "Active",
+      });
+      fetchSuppliers();
+    } catch (err: any) {
+      setErrorSubmit(err.message || "Failed to add supplier");
+      console.error("Error adding supplier:", err);
+    } finally {
+      setLoadingSubmit(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -207,19 +170,6 @@ export default function SuppliersPage() {
         return "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
       case "Inactive":
         return "bg-gray-500/10 text-gray-400 border border-gray-500/20";
-      default:
-        return "bg-gray-500/10 text-gray-400 border border-gray-500/20";
-    }
-  };
-
-  const getOrderStatusColor = (status: string) => {
-    switch (status) {
-      case "Delivered":
-        return "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
-      case "Shipped":
-        return "bg-blue-500/10 text-blue-500 border border-blue-500/20";
-      case "Processing":
-        return "bg-orange-500/10 text-orange-500 border border-orange-500/20";
       default:
         return "bg-gray-500/10 text-gray-400 border border-gray-500/20";
     }
@@ -243,10 +193,6 @@ export default function SuppliersPage() {
     return matchesSearch && matchesCategory && matchesStatus && matchesTab;
   });
 
-  const uniqueCategories = Array.from(
-    new Set(suppliers.map((s) => s.category))
-  );
-
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -258,7 +204,9 @@ export default function SuppliersPage() {
             </p>
           </div>
           <div className="flex gap-3">
-            <button className="btn-primary">+ Add Supplier</button>
+            <button onClick={() => setShowAddModal(true)} className="btn-primary">
+              + Add Supplier
+            </button>
             <button className="btn-secondary">Export</button>
           </div>
         </div>
@@ -270,10 +218,10 @@ export default function SuppliersPage() {
                 <Package className="text-blue-500" size={24} />
               </div>
               <div>
-                <div className="text-2xl font-bold">38</div>
+                <div className="text-2xl font-bold">{totalSuppliers}</div>
                 <div className="text-mdtext-gray-400">Total Suppliers</div>
                 <div className="text-xs text-blue-500">
-                  +3 added this quarter
+                  {suppliers.filter(s => s.status === "Active").length} active
                 </div>
               </div>
             </div>
@@ -285,10 +233,10 @@ export default function SuppliersPage() {
                 <ShoppingCart className="text-emerald-500" size={24} />
               </div>
               <div>
-                <div className="text-2xl font-bold">12</div>
-                <div className="text-mdtext-gray-400">Active Orders</div>
+                <div className="text-2xl font-bold">{suppliers.filter(s => s.category === "Medical Supplies").length}</div>
+                <div className="text-mdtext-gray-400">Medical Supplies</div>
                 <div className="text-xs text-emerald-500">
-                  +4 orders this week
+                  {suppliers.filter(s => s.category === "Medications").length} medications
                 </div>
               </div>
             </div>
@@ -300,10 +248,10 @@ export default function SuppliersPage() {
                 <Star className="text-purple-500" size={24} />
               </div>
               <div>
-                <div className="text-2xl font-bold">MedPlus</div>
+                <div className="text-2xl font-bold">{topSupplier || "N/A"}</div>
                 <div className="text-mdtext-gray-400">Top Supplier</div>
                 <div className="text-xs text-purple-500">
-                  98% reliability rating
+                  Highest rated
                 </div>
               </div>
             </div>
@@ -312,13 +260,13 @@ export default function SuppliersPage() {
           <div className="card">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-orange-500" size={24} />
+                <TrendingUp className="text-orange-500" size={24} />
               </div>
               <div>
-                <div className="text-2xl font-bold">$24,350</div>
-                <div className="text-mdtext-gray-400">Monthly Spend</div>
+                <div className="text-2xl font-bold">{suppliers.length}</div>
+                <div className="text-mdtext-gray-400">Total Providers</div>
                 <div className="text-xs text-orange-500">
-                  -8% from last month
+                  {suppliers.filter(s => s.rating >= 4).length} highly rated
                 </div>
               </div>
             </div>
@@ -464,115 +412,191 @@ export default function SuppliersPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-4">Featured Suppliers</h2>
-            <p className="text-gray-400 text-mdmb-6">
-              Your top-rated and most reliable suppliers
-            </p>
 
-            <div className="space-y-4">
-              {featuredSuppliers.map((supplier) => (
-                <div
-                  key={supplier.id}
-                  className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg"
+
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-dark-secondary rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold">Add Supplier</h2>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="p-1 hover:bg-dark-tertiary rounded transition-colors"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                        <Package className="text-emerald-500" size={20} />
-                      </div>
-                      <div>
-                        <div className="font-semibold">{supplier.name}</div>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                            supplier.badge
-                          )}`}
-                        >
-                          {supplier.badge}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          size={14}
-                          className={
-                            i < supplier.rating
-                              ? "text-yellow-500 fill-yellow-500"
-                              : "text-gray-600"
-                          }
-                        />
-                      ))}
-                    </div>
+                  <X size={24} />
+                </button>
+              </div>
+
+              {errorSubmit && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-4 flex items-start gap-3">
+                  <AlertCircle className="text-red-500 mt-0.5 flex-shrink-0" size={20} />
+                  <p className="text-red-500 text-sm">{errorSubmit}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleAddSupplier} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Supplier Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleFormChange}
+                    placeholder="Enter supplier name"
+                    className="input-field w-full"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Category *
+                  </label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleFormChange}
+                    className="input-field w-full"
+                    required
+                  >
+                    <option value="">Select category</option>
+                    <option value="Medical Supplies">Medical Supplies</option>
+                    <option value="Medications">Medications</option>
+                    <option value="Equipment">Equipment</option>
+                    <option value="Office Supplies">Office Supplies</option>
+                    <option value="Laboratory">Laboratory</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Contact Person *
+                  </label>
+                  <input
+                    type="text"
+                    name="contact"
+                    value={formData.contact}
+                    onChange={handleFormChange}
+                    placeholder="Enter contact person name"
+                    className="input-field w-full"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleFormChange}
+                    placeholder="Enter email address"
+                    className="input-field w-full"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Phone
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleFormChange}
+                    placeholder="Enter phone number"
+                    className="input-field w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleFormChange}
+                    placeholder="Enter location/city"
+                    className="input-field w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleFormChange}
+                    placeholder="Enter supplier description"
+                    rows={3}
+                    className="input-field w-full"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Rating
+                    </label>
+                    <select
+                      name="rating"
+                      value={formData.rating}
+                      onChange={handleFormChange}
+                      className="input-field w-full"
+                    >
+                      <option value="1">1 Star</option>
+                      <option value="2">2 Stars</option>
+                      <option value="3">3 Stars</option>
+                      <option value="4">4 Stars</option>
+                      <option value="5">5 Stars</option>
+                    </select>
                   </div>
-                  <p className="text-mdtext-gray-400 mb-3">
-                    {supplier.description}
-                  </p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <Phone size={14} />
-                      <span>{supplier.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <Mail size={14} />
-                      <span>{supplier.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <MapPin size={14} />
-                      <span>{supplier.location}</span>
-                    </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Status
+                    </label>
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={handleFormChange}
+                      className="input-field w-full"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
                   </div>
-                  <button className="mt-4 w-full btn-secondary text-mdflex items-center justify-center gap-2">
-                    <ExternalLink size={14} />
-                    Visit Website
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-dark-tertiary">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(false)}
+                    className="btn-secondary flex-1"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loadingSubmit}
+                    className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loadingSubmit ? "Adding..." : "Add Supplier"}
                   </button>
                 </div>
-              ))}
+              </form>
             </div>
-
-            <button className="mt-4 w-full btn-secondary text-sm">
-              View All Orders
-            </button>
           </div>
-
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-4">Recent Orders</h2>
-            <p className="text-gray-400 text-mdmb-6">
-              Your most recent supplier orders
-            </p>
-
-            <div className="space-y-4">
-              {recentOrders.map((order, index) => (
-                <div key={index} className="p-4 bg-gradient-to-r from-indigo-500/10 to-blue-500/10 border border-indigo-500/20 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-semibold">{order.supplier}</div>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${getOrderStatusColor(
-                        order.status
-                      )}`}
-                    >
-                      {order.status}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-mdtext-gray-400">
-                    <span>
-                      Order {order.orderId} • {order.date}
-                    </span>
-                    <span className="font-semibold text-white">
-                      ${order.amount.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <button className="mt-4 w-full btn-secondary text-sm">
-              View All Orders
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     </DashboardLayout>
   );

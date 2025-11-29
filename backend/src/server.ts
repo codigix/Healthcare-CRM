@@ -37,6 +37,7 @@ import recordsRoutes from './routes/records';
 import reportsRoutes from './routes/reports';
 import reviewsRoutes from './routes/reviews';
 import feedbackRoutes from './routes/feedback';
+import servicesRoutes from './routes/services';
 
 console.log('Registering routes...');
 app.use('/api/auth', authRoutes);
@@ -52,6 +53,7 @@ app.use('/api/prescriptions', prescriptionRoutes);
 app.use('/api/prescription-templates', prescriptionTemplateRoutes);
 app.use('/api/ambulances', ambulanceRoutes);
 app.use('/api/emergency-calls', emergencyCallsRoutes);
+app.use('/api/departments/services', servicesRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/attendance', attendanceRoutes);

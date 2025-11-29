@@ -10,7 +10,7 @@ interface Service {
   price: number;
   description: string;
   status: string;
-  department: { name: string };
+  departmentId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,12 +19,14 @@ interface ServiceViewModalProps {
   service: Service | null;
   isOpen: boolean;
   onClose: () => void;
+  departmentName?: string;
 }
 
 export default function ServiceViewModal({
   service,
   isOpen,
   onClose,
+  departmentName,
 }: ServiceViewModalProps) {
   if (!isOpen || !service) return null;
 
@@ -49,7 +51,7 @@ export default function ServiceViewModal({
             </div>
             <div>
               <p className="text-mdtext-gray-400 mb-1">Department</p>
-              <p className="font-medium">{service.department?.name || "N/A"}</p>
+              <p className="font-medium">{departmentName || "N/A"}</p>
             </div>
             <div>
               <p className="text-mdtext-gray-400 mb-1">Service Type</p>

@@ -31,7 +31,7 @@ interface Service {
   price: number;
   description: string;
   status: string;
-  department: Department;
+  departmentId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -399,7 +399,7 @@ export default function ServicesOfferedPage() {
                         <div className="text-mdtext-gray-400">{service.id}</div>
                       </td>
                       <td className="py-4 px-4 text-gray-300">
-                        {service.department?.name || "N/A"}
+                        {departmentMap[service.departmentId] || "N/A"}
                       </td>
                       <td className="py-4 px-4">
                         <span
@@ -496,6 +496,7 @@ export default function ServicesOfferedPage() {
           service={selectedService}
           isOpen={showViewModal}
           onClose={() => setShowViewModal(false)}
+          departmentName={selectedService ? departmentMap[selectedService.departmentId] : undefined}
         />
       </div>
     </DashboardLayout>

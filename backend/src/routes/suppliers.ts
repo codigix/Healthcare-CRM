@@ -9,49 +9,51 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const { page = 1, limit = 10, status, search, category } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    let query = 'SELECT * FROM Supplier WHERE 1=1';
+    let whereClause = '';
     const params: any[] = [];
 
     if (status) {
-      query += ' AND status = ?';
+      whereClause += ' AND status = ?';
       params.push(String(status));
     }
 
     if (category) {
-      query += ' AND category = ?';
+      whereClause += ' AND category = ?';
       params.push(String(category));
     }
 
     if (search) {
-      query += ' AND (name LIKE ? OR contact LIKE ? OR email LIKE ? OR category LIKE ?)';
+      whereClause += ' AND (name LIKE ? OR contact LIKE ? OR email LIKE ? OR category LIKE ?)';
       const searchTerm = `%${String(search)}%`;
       params.push(searchTerm, searchTerm, searchTerm, searchTerm);
     }
 
-    let countQuery = query;
-    query += ' ORDER BY createdAt DESC LIMIT ? OFFSET ?';
+    const countParams = [...params];
+    const countSql = `SELECT COUNT(*) as total FROM suppliers WHERE 1=1${whereClause}`;
+    
+    const query = `SELECT * FROM suppliers WHERE 1=1${whereClause} ORDER BY createdAt DESC LIMIT ? OFFSET ?`;
     params.push(Number(limit), skip);
 
     const connection = await pool.getConnection();
     
+    const [countResult]: any = await connection.query(countSql, countParams);
+    const total = countResult[0].total;
+    
     const [suppliers]: any = await connection.query(query, params);
-    const countParams = params.slice(0, params.length - 2);
-    const countSql = `SELECT COUNT(*) as total FROM Supplier WHERE 1=1` + countQuery.substring(countQuery.indexOf('WHERE')).replace('ORDER BY createdAt DESC LIMIT ? OFFSET ?', '');
-    const result: any = await connection.query(countSql, countParams);
-    const total = result[0][0].total;
     
     connection.release();
 
-    res.json({ suppliers, total, page: Number(page), limit: Number(limit) });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch suppliers' });
+    res.json(suppliers.length > 0 ? suppliers : []);
+  } catch (error: any) {
+    console.error('[SUPPLIERS GET] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch suppliers', details: error.message });
   }
 });
 
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
-    const [rows]: any = await connection.query('SELECT * FROM Supplier WHERE id = ?', [req.params.id]);
+    const [rows]: any = await connection.query('SELECT * FROM suppliers WHERE id = ?', [req.params.id]);
     connection.release();
 
     if (rows.length === 0) {
@@ -59,8 +61,9 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     }
 
     res.json(rows[0]);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch supplier' });
+  } catch (error: any) {
+    console.error('[SUPPLIERS GET BY ID] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch supplier', details: error.message });
   }
 });
 
@@ -80,12 +83,12 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     } = req.body;
 
     if (!name || !category || !contact || !email) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: 'Missing required fields: name, category, contact, email' });
     }
 
     const connection = await pool.getConnection();
     
-    const query = `INSERT INTO Supplier (
+    const query = `INSERT INTO suppliers (
       id, name, category, contact, email, phone, location, rating, status, description, contactPerson, createdAt, updatedAt
     ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
 
@@ -102,15 +105,16 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       contactPerson || null,
     ]);
 
-    const [result]: any = await connection.query('SELECT * FROM Supplier WHERE name = ? ORDER BY createdAt DESC LIMIT 1', [name]);
+    const [result]: any = await connection.query('SELECT * FROM suppliers WHERE name = ? ORDER BY createdAt DESC LIMIT 1', [name]);
     connection.release();
 
     res.status(201).json(result[0]);
   } catch (error: any) {
+    console.error('[SUPPLIERS POST] Error:', error);
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ error: 'Supplier name already exists' });
     }
-    res.status(500).json({ error: 'Failed to create supplier' });
+    res.status(500).json({ error: 'Failed to create supplier', details: error.message });
   }
 });
 
@@ -153,7 +157,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     updates.push('updatedAt = NOW()');
     values.push(req.params.id);
 
-    const query = `UPDATE Supplier SET ${updates.join(', ')} WHERE id = ?`;
+    const query = `UPDATE suppliers SET ${updates.join(', ')} WHERE id = ?`;
     const result = await connection.query(query, values);
     
     if ((result[0] as any).affectedRows === 0) {
@@ -161,22 +165,23 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Supplier not found' });
     }
 
-    const [supplier]: any = await connection.query('SELECT * FROM Supplier WHERE id = ?', [req.params.id]);
+    const [supplier]: any = await connection.query('SELECT * FROM suppliers WHERE id = ?', [req.params.id]);
     connection.release();
 
     res.json(supplier[0]);
   } catch (error: any) {
+    console.error('[SUPPLIERS PUT] Error:', error);
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(400).json({ error: 'Supplier name already exists' });
     }
-    res.status(500).json({ error: 'Failed to update supplier' });
+    res.status(500).json({ error: 'Failed to update supplier', details: error.message });
   }
 });
 
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
-    const result = await connection.query('DELETE FROM Supplier WHERE id = ?', [req.params.id]);
+    const result = await connection.query('DELETE FROM suppliers WHERE id = ?', [req.params.id]);
     connection.release();
 
     if ((result[0] as any).affectedRows === 0) {
@@ -185,7 +190,8 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) =>
 
     res.json({ message: 'Supplier deleted successfully' });
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to delete supplier' });
+    console.error('[SUPPLIERS DELETE] Error:', error);
+    res.status(500).json({ error: 'Failed to delete supplier', details: error.message });
   }
 });
 

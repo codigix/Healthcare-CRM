@@ -241,7 +241,7 @@ export const medixproAI = {
           
           const slot: ScheduleSlot = {
             time,
-            patient: appointment.patient?.name || 'Unknown',
+            patient: appointment.patientName || appointment.patient?.name || 'Unknown',
             room: assignedRoom,
             token: assignedToken,
             status: 'booked' as const,
