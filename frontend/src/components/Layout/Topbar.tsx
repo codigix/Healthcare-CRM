@@ -40,7 +40,7 @@ export default function Topbar() {
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors relative">
+        <button suppressHydrationWarning className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors relative">
           <Bell size={20} />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
@@ -49,12 +49,13 @@ export default function Topbar() {
 
         <button
           onClick={toggleTheme}
+          suppressHydrationWarning
           className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
         >
           {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
-        <button className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors">
+        <button suppressHydrationWarning className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors">
           <Settings size={20} />
         </button>
 

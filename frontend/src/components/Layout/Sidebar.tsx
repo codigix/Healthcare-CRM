@@ -33,7 +33,7 @@ import {
   Users2,
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/lib/store";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import ModuleTour from "@/components/ModuleTour";
 
 const menuItems = [
@@ -483,6 +483,29 @@ export default function Sidebar() {
   ]);
   const [showModuleTour, setShowModuleTour] = useState(false);
   const [selectedModule, setSelectedModule] = useState<ModuleInfo | null>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (navRef.current) {
+      const savedScroll = sessionStorage.getItem('sidebarScrollPos');
+      if (savedScroll) {
+        navRef.current.scrollTop = parseInt(savedScroll, 10);
+      }
+    }
+    
+    return () => {
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    };
+  }, [pathname]);
+
+  const handleScroll = (e: React.UIEvent<HTMLElement>) => {
+    const target = e.currentTarget;
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(() => {
+      sessionStorage.setItem('sidebarScrollPos', target.scrollTop.toString());
+    }, 150);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -502,6 +525,7 @@ export default function Sidebar() {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
+        suppressHydrationWarning
         className="fixed z-50 p-2 top-4 left-4 lg:hidden bg-dark-secondary rounded-lg"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -522,7 +546,11 @@ export default function Sidebar() {
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav 
+          ref={navRef}
+          onScroll={handleScroll}
+          className="flex-1 p-4 space-y-2 overflow-y-auto"
+        >
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -535,6 +563,7 @@ export default function Sidebar() {
                   <>
                     <button
                       onClick={() => toggleExpand(item.label)}
+                      suppressHydrationWarning
                       className={`flex items-center justify-between w-full gap-3 px-4 py-3 rounded-lg transition-colors ${
                         pathname.startsWith(item.href)
                           ? "bg-accent/10 text-accent"
@@ -560,7 +589,7 @@ export default function Sidebar() {
                           const isSubActive = pathname === subItem.href;
                           return (
                             <Link
-                              key={subItem.href}
+                              key={`${subItem.href}-${subItem.label}`}
                               href={subItem.href}
                               className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-md ${
                                 isSubActive
@@ -626,6 +655,7 @@ export default function Sidebar() {
         <div className="p-4 border-t border-dark-tertiary">
           <button
             onClick={handleLogout}
+            suppressHydrationWarning
             className="flex items-center gap-3 w-full px-4 py-3 text-gray-300 hover:bg-dark-tertiary rounded-lg transition-colors"
           >
             <LogOut size={20} />

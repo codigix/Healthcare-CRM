@@ -202,6 +202,7 @@ export default function MedixProAI() {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
+        suppressHydrationWarning
         className="fixed bottom-6 right-6 z-40 group"
         aria-label="MedixPro AI Assistant"
       >
@@ -236,6 +237,7 @@ export default function MedixProAI() {
           </div>
           <button
             onClick={() => setIsOpen(false)}
+            suppressHydrationWarning
             className="text-white hover:bg-white/10 p-1 rounded-lg transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -462,6 +464,7 @@ export default function MedixProAI() {
             />
             <button
               type="submit"
+              suppressHydrationWarning
               disabled={isLoading || !input.trim()}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white px-4 py-2 rounded-lg transition-colors disabled:cursor-not-allowed flex items-center justify-center"
             >

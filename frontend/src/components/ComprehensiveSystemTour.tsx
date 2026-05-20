@@ -379,6 +379,7 @@ export default function ComprehensiveSystemTour({
     <>
       <button
         onClick={handleStartTour}
+        suppressHydrationWarning
         className="flex items-center gap-2 px-4 py-2 bg-red-800 hover:bg-red-700 text-white rounded-lg transition-colors duration-200"
         data-testid="comprehensive-tour-start-button"
         title="Start complete interactive system tour"
