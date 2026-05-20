@@ -34,5 +34,5 @@ jobs:
             cd ..
 
             # Restart PM2 apps
-            pm2 restart healthcare-crm-backend
-            pm2 restart healthcare-crm-frontend
+            pm2 restart medixpro-frontend
+            pm2 restart medixpro-backend
