@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authAPI } from "@/lib/api";
+import { authAPI, API_URL } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { 
   Shield, 
@@ -104,7 +104,11 @@ export default function LoginPage() {
         router.push("/dashboard");
       }, 1000);
     } catch (err: any) {
-      setError(err.response?.data?.error || "Invalid credentials. Please try again.");
+      if (!err.response) {
+        setError(`Unable to connect to the backend server (${API_URL}). Please verify that your backend server is running and accessible.`);
+      } else {
+        setError(err.response?.data?.error || "Invalid credentials. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -152,7 +156,11 @@ export default function LoginPage() {
         router.push("/dashboard");
       }, 1500);
     } catch (err: any) {
-      setError(err.response?.data?.error || "Registration failed. Try using another email.");
+      if (!err.response) {
+        setError(`Unable to connect to the backend server (${API_URL}). Please verify that your backend server is running and accessible.`);
+      } else {
+        setError(err.response?.data?.error || "Registration failed. Try using another email.");
+      }
     } finally {
       setLoading(false);
     }

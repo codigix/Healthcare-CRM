@@ -1,6 +1,24 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api';
+const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api';
+
+export const getApiUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    // If the API URL is pointing to the default placeholder domain, apply smart fallbacks
+    if (BASE_API_URL.includes('api.medixpro.com')) {
+      const hostname = window.location.hostname;
+      // 1. Local Testing Fallback
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://127.0.0.1:5000/api';
+      }
+      // 2. Relative Origin Fallback (same domain hosting/reverse proxy)
+      return `${window.location.origin}/api`;
+    }
+  }
+  return BASE_API_URL;
+};
+
+export const API_URL = getApiUrl();
 
 const apiClient = axios.create({
   baseURL: API_URL,
