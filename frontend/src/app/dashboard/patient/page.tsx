@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { appointmentAPI, recordsAPI, prescriptionAPI } from "@/lib/api";
 import {
   Calendar,
@@ -283,7 +283,7 @@ export default function PatientDashboard() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Welcome back, Patient</h1>
@@ -777,6 +777,6 @@ export default function PatientDashboard() {
           </>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

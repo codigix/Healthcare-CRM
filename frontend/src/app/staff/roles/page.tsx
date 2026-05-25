@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   Search,
   Shield,
@@ -143,7 +143,7 @@ export default function RolesPage() {
   const totalStaff = roles.reduce((sum, r) => sum + r.staffCount, 0);
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -327,6 +327,6 @@ export default function RolesPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

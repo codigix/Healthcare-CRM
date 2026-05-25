@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   PieChart,
   Pie,
@@ -161,7 +161,7 @@ export default function PatientVisitReportsPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -443,6 +443,6 @@ export default function PatientVisitReportsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

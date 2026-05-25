@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   BarChart,
   Bar,
@@ -56,7 +56,7 @@ export default function InventoryReportsPage() {
     },
     {
       label: "Inventory Value",
-      value: "$248,320",
+      value: "₹248,320",
       change: "+4.3% from previous period",
       color: "text-emerald-500",
       bgColor: "bg-emerald-500/10",
@@ -130,7 +130,7 @@ export default function InventoryReportsPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -380,6 +380,6 @@ export default function InventoryReportsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

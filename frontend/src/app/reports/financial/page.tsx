@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   BarChart,
   Bar,
@@ -35,28 +35,28 @@ export default function FinancialReportsPage() {
   const financialStats = [
     {
       label: "Total Revenue",
-      value: "$128,450",
+      value: "₹1,28,450",
       change: "+15.2% from last month",
       color: "text-emerald-500",
       icon: TrendingUp,
     },
     {
       label: "Total Expenses",
-      value: "$87,325",
+      value: "₹87,325",
       change: "-5.4% from last month",
       color: "text-blue-500",
       icon: TrendingDown,
     },
     {
       label: "Net Profit",
-      value: "$41,125",
+      value: "₹41,125",
       change: "+12.3% from last month",
       color: "text-yellow-500",
       icon: TrendingUp,
     },
     {
       label: "Outstanding Payments",
-      value: "$23,540",
+      value: "₹23,540",
       change: "+1.5% from last month",
       color: "text-red-500",
       icon: TrendingUp,
@@ -129,40 +129,40 @@ export default function FinancialReportsPage() {
   const financialSummary = [
     {
       month: "April 2025",
-      revenue: "$118,000",
-      expenses: "$82,000",
-      profit: "$36,000",
+      revenue: "₹1,18,000",
+      expenses: "₹82,000",
+      profit: "₹36,000",
       margin: "31%",
       growth: "+12.8%",
     },
     {
       month: "March 2025",
-      revenue: "$112,000",
-      expenses: "$78,000",
-      profit: "$34,000",
+      revenue: "₹1,12,000",
+      expenses: "₹78,000",
+      profit: "₹34,000",
       margin: "30%",
       growth: "+8.5%",
     },
     {
       month: "February 2025",
-      revenue: "$105,000",
-      expenses: "$71,000",
-      profit: "$34,000",
+      revenue: "₹1,05,000",
+      expenses: "₹71,000",
+      profit: "₹34,000",
       margin: "32%",
       growth: "+7.1%",
     },
     {
       month: "January 2025",
-      revenue: "$98,000",
-      expenses: "$65,000",
-      profit: "$33,000",
+      revenue: "₹98,000",
+      expenses: "₹65,000",
+      profit: "₹33,000",
       margin: "34%",
       growth: "+5.2%",
     },
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -288,7 +288,7 @@ export default function FinancialReportsPage() {
                         borderRadius: "8px",
                         color: "white",
                       }}
-                      formatter={(value) => `$${value}`}
+                      formatter={(value) => `₹${value}`}
                     />
                     <Legend />
                     <Bar
@@ -362,7 +362,7 @@ export default function FinancialReportsPage() {
                       borderRadius: "8px",
                       color: "white",
                     }}
-                    formatter={(value) => `$${value}`}
+                    formatter={(value) => `₹${value}`}
                   />
                   <Legend />
                   <Bar
@@ -461,6 +461,6 @@ export default function FinancialReportsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

@@ -6,13 +6,19 @@ const router = Router();
 
 router.get('/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const connection = await pool.getConnection();
-    const [[{ totalDoctors }]]: any = await connection.query('SELECT COUNT(*) as totalDoctors FROM doctors');
-    const [[{ totalPatients }]]: any = await connection.query('SELECT COUNT(*) as totalPatients FROM patients');
-    const [[{ totalAppointments }]]: any = await connection.query('SELECT COUNT(*) as totalAppointments FROM appointments');
-    const [[{ pendingAppointments }]]: any = await connection.query('SELECT COUNT(*) as pendingAppointments FROM appointments WHERE status = "pending"');
-    const [[{ totalRevenue }]]: any = await connection.query('SELECT COALESCE(SUM(amount), 0) as totalRevenue FROM invoices WHERE status = "paid"');
-    connection.release();
+    const [
+      [[{ totalDoctors }]],
+      [[{ totalPatients }]],
+      [[{ totalAppointments }]],
+      [[{ pendingAppointments }]],
+      [[{ totalRevenue }]]
+    ]: any = await Promise.all([
+      pool.query('SELECT COUNT(*) as totalDoctors FROM doctors'),
+      pool.query('SELECT COUNT(*) as totalPatients FROM patients'),
+      pool.query('SELECT COUNT(*) as totalAppointments FROM appointments'),
+      pool.query('SELECT COUNT(*) as pendingAppointments FROM appointments WHERE status = "pending"'),
+      pool.query('SELECT COALESCE(SUM(amount), 0) as totalRevenue FROM invoices WHERE status = "paid"')
+    ]);
 
     res.json({
       totalDoctors,
@@ -28,8 +34,9 @@ router.get('/stats', authMiddleware, async (req: AuthRequest, res: Response) => 
 });
 
 router.get('/recent-appointments', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
     const [appointments]: any = await connection.query(`
       SELECT 
         a.id,
@@ -43,59 +50,61 @@ router.get('/recent-appointments', authMiddleware, async (req: AuthRequest, res:
       LEFT JOIN patients p ON a.patientId = p.id
       ORDER BY a.date DESC LIMIT 10
     `);
-    connection.release();
 
     res.json(appointments);
   } catch (error: any) {
     console.error('[DASHBOARD RECENT APPOINTMENTS] Error:', error);
     res.status(500).json({ error: 'Failed to fetch recent appointments', details: error.message });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
 router.get('/revenue-chart', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
-    const connection = await pool.getConnection();
-    const [invoices]: any = await connection.query('SELECT amount, createdAt FROM invoices');
-    connection.release();
+    connection = await pool.getConnection();
+    const [results]: any = await connection.query(`
+      SELECT DATE_FORMAT(createdAt, '%b') as name, SUM(amount) as value 
+      FROM invoices 
+      GROUP BY DATE_FORMAT(createdAt, '%Y-%m'), DATE_FORMAT(createdAt, '%b')
+      ORDER BY DATE_FORMAT(createdAt, '%Y-%m') ASC
+    `);
 
-    const monthlyData = new Map<string, number>();
-
-    invoices.forEach((invoice: any) => {
-      const month = new Date(invoice.createdAt).toLocaleDateString('en-US', { month: 'short' });
-      const current = monthlyData.get(month) || 0;
-      monthlyData.set(month, current + Number(invoice.amount));
-    });
-
-    const chartData = Array.from(monthlyData, ([name, value]) => ({ name, value }));
+    const chartData = results.map((row: any) => ({ name: row.name, value: Number(row.value) }));
 
     res.json(chartData);
   } catch (error: any) {
     console.error('[DASHBOARD REVENUE CHART] Error:', error);
     res.status(500).json({ error: 'Failed to fetch revenue chart', details: error.message });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
 router.get('/patient-growth', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
-    const connection = await pool.getConnection();
-    const [patients]: any = await connection.query('SELECT createdAt FROM patients ORDER BY createdAt ASC');
-    connection.release();
+    connection = await pool.getConnection();
+    const [results]: any = await connection.query(`
+      SELECT DATE_FORMAT(createdAt, '%b') as name, COUNT(*) as newPatients
+      FROM patients 
+      GROUP BY DATE_FORMAT(createdAt, '%Y-%m'), DATE_FORMAT(createdAt, '%b')
+      ORDER BY DATE_FORMAT(createdAt, '%Y-%m') ASC
+    `);
 
-    const monthlyData = new Map<string, number>();
     let cumulative = 0;
-
-    patients.forEach((patient: any) => {
-      const month = new Date(patient.createdAt).toLocaleDateString('en-US', { month: 'short' });
-      cumulative++;
-      monthlyData.set(month, cumulative);
+    const chartData = results.map((row: any) => {
+      cumulative += Number(row.newPatients);
+      return { name: row.name, value: cumulative };
     });
-
-    const chartData = Array.from(monthlyData, ([name, value]) => ({ name, value }));
 
     res.json(chartData);
   } catch (error: any) {
     console.error('[DASHBOARD PATIENT GROWTH] Error:', error);
     res.status(500).json({ error: 'Failed to fetch patient growth', details: error.message });
+  } finally {
+    if (connection) connection.release();
   }
 });
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { appointmentAPI, patientAPI } from "@/lib/api";
 import { CheckCircle, ArrowLeft, Plus, Calendar, Clock, Users, FileText, Phone, Heart } from "lucide-react";
 import Link from "next/link";
@@ -96,17 +96,17 @@ export default function AppointmentSuccessPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="flex items-center justify-center py-20">
           <div className="text-gray-400">Loading appointment details...</div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (error || !appointment) {
     return (
-      <DashboardLayout>
+      <>
         <div className="space-y-6">
           <div className="flex items-center gap-4">
             <Link href="/appointments/all">
@@ -120,7 +120,7 @@ export default function AppointmentSuccessPage() {
             </div>
           </div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
@@ -131,7 +131,7 @@ export default function AppointmentSuccessPage() {
   });
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <Link href="/appointments/all">
@@ -280,6 +280,6 @@ export default function AppointmentSuccessPage() {
           </Link>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

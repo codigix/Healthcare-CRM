@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   Search,
   Users,
@@ -113,7 +113,7 @@ export default function StaffPage() {
   const inactive = staffMembers.filter((s) => s.status === "Inactive").length;
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -126,7 +126,7 @@ export default function StaffPage() {
             <Link href="/staff/add" className="btn-primary">
               + Add New Staff
             </Link>
-            <button className="btn-secondary">More Options</button>
+            <button className="btn-secondary" suppressHydrationWarning>More Options</button>
           </div>
         </div>
 
@@ -297,6 +297,7 @@ export default function StaffPage() {
                               setSelectedStaff(staff);
                               setViewModal(true);
                             }}
+                            suppressHydrationWarning
                             className="p-2 hover:bg-gray-500/20 rounded transition-colors"
                             title="View"
                           >
@@ -311,6 +312,7 @@ export default function StaffPage() {
                           </Link>
                           <button
                             onClick={() => setDeleteConfirm(staff.id)}
+                            suppressHydrationWarning
                             className="p-2 hover:bg-gray-500/20 rounded transition-colors"
                             title="Delete"
                           >
@@ -335,6 +337,7 @@ export default function StaffPage() {
                 </h2>
                 <button
                   onClick={() => setViewModal(false)}
+                  suppressHydrationWarning
                   className="p-1 hover:bg-dark-tertiary rounded"
                 >
                   <X size={24} />
@@ -391,12 +394,14 @@ export default function StaffPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
+                  suppressHydrationWarning
                   className="flex-1 btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => handleDelete(deleteConfirm)}
+                  suppressHydrationWarning
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg transition-colors"
                 >
                   Delete
@@ -481,7 +486,7 @@ export default function StaffPage() {
                 <span className="text-mdfont-semibold">9</span>
               </div>
             </div>
-            <button className="mt-4 w-full btn-secondary text-sm">
+            <button className="mt-4 w-full btn-secondary text-sm" suppressHydrationWarning>
               Manage Departments
             </button>
           </div>
@@ -529,6 +534,6 @@ export default function StaffPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

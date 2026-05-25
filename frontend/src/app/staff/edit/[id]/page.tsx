@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { ArrowLeft, Save, Upload } from "lucide-react";
 import Link from "next/link";
 
@@ -128,16 +128,16 @@ export default function EditStaffPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="text-center py-12 text-gray-400">
           Loading staff data...
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link
@@ -512,6 +512,6 @@ export default function EditStaffPage() {
           </form>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

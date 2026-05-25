@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 interface CalendarEvent {
@@ -104,7 +104,7 @@ export default function CalendarPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <div className="card p-6">
@@ -243,6 +243,6 @@ export default function CalendarPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

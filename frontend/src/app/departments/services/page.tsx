@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import ServiceViewModal from "@/components/ServiceViewModal";
 import {
   Search,
   Stethoscope,
-  DollarSign,
+  IndianRupee,
   Clock,
   TrendingUp,
   MoreVertical,
@@ -172,7 +172,7 @@ export default function ServicesOfferedPage() {
   });
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -218,7 +218,7 @@ export default function ServicesOfferedPage() {
                 </div>
                 <div className="text-mdtext-gray-400">Latest Service</div>
                 <div className="text-xs text-emerald-500">
-                  $
+                  ₹
                   {mostPopularService
                     ? parseFloat(String(mostPopularService.price)).toFixed(2)
                     : "0.00"}
@@ -245,11 +245,11 @@ export default function ServicesOfferedPage() {
           <div className="card">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-purple-500" size={24} />
+                <IndianRupee className="text-purple-500" size={24} />
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  ${parseFloat(String(totalRevenue)).toFixed(2)}
+                  ₹{parseFloat(String(totalRevenue)).toFixed(2)}
                 </div>
                 <div className="text-mdtext-gray-400">Total Revenue</div>
                 <div className="text-xs text-purple-500">
@@ -414,7 +414,7 @@ export default function ServicesOfferedPage() {
                         {service.duration} min
                       </td>
                       <td className="py-4 px-4 text-white font-medium">
-                        ${parseFloat(String(service.price)).toFixed(2)}
+                        ₹{parseFloat(String(service.price)).toFixed(2)}
                       </td>
                       <td className="py-4 px-4">
                         <span
@@ -499,6 +499,6 @@ export default function ServicesOfferedPage() {
           departmentName={selectedService ? departmentMap[selectedService.departmentId] : undefined}
         />
       </div>
-    </DashboardLayout>
+    </>
   );
 }

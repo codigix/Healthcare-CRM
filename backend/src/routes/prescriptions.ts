@@ -134,9 +134,10 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { patientId, doctorId, prescriptionType, diagnosis, medications, notesForPharmacist } = req.body;
     const connection = await pool.getConnection();
+    const medicationsStr = typeof medications === 'object' ? JSON.stringify(medications) : medications;
     const query = `INSERT INTO prescriptions (id, patientId, doctorId, prescriptionType, diagnosis, medications, notesForPharmacist, prescriptionDate, status, createdAt, updatedAt)
                    VALUES (UUID(), ?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), NOW())`;
-    await connection.query(query, [patientId, doctorId, prescriptionType || 'Standard', diagnosis, medications, notesForPharmacist, 'Active']);
+    await connection.query(query, [patientId, doctorId, prescriptionType || 'Standard', diagnosis, medicationsStr, notesForPharmacist, 'Active']);
     const [prescription]: any = await connection.query(`
       SELECT 
         pr.*,
@@ -198,7 +199,11 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     const connection = await pool.getConnection();
     const updates: string[] = ['updatedAt = NOW()'];
     const values: any[] = [];
-    if (medications) { updates.unshift('medications = ?'); values.push(medications); }
+    if (medications) { 
+      const medicationsStr = typeof medications === 'object' ? JSON.stringify(medications) : medications;
+      updates.unshift('medications = ?'); 
+      values.push(medicationsStr); 
+    }
     if (diagnosis) { updates.unshift('diagnosis = ?'); values.push(diagnosis); }
     if (notesForPharmacist) { updates.unshift('notesForPharmacist = ?'); values.push(notesForPharmacist); }
     if (status) { updates.unshift('status = ?'); values.push(status); }

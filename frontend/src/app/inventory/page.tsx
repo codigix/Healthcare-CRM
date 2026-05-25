@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   Search,
   Package,
   AlertTriangle,
-  DollarSign,
+  IndianRupee,
   TrendingUp,
   MoreVertical,
   Filter,
@@ -105,7 +105,7 @@ export default function InventoryPage() {
   const uniqueCategories = Array.from(new Set(items.map((i) => i.category)));
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -156,11 +156,11 @@ export default function InventoryPage() {
           <div className="card">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-emerald-500" size={24} />
+                <IndianRupee className="text-emerald-500" size={24} />
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  $
+                  ₹
                   {typeof totalValue === "number"
                     ? totalValue.toLocaleString("en-US", {
                         maximumFractionDigits: 0,
@@ -350,7 +350,7 @@ export default function InventoryPage() {
                           </span>
                         </td>
                         <td className="py-4 px-4 text-gray-300">
-                          $
+                          ₹
                           {typeof item.purchasePrice === "string"
                             ? parseFloat(item.purchasePrice).toFixed(2)
                             : item.purchasePrice.toFixed(2)}
@@ -392,6 +392,6 @@ export default function InventoryPage() {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

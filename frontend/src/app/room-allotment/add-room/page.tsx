@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { ChevronLeft, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -99,7 +99,7 @@ export default function AddNewRoomPage() {
   const floors = ["Ground", "First", "Second", "Third", "Fourth", "Fifth"];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link href="/room-allotment/by-department">
@@ -401,6 +401,6 @@ export default function AddNewRoomPage() {
           </div>
         </form>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { ArrowLeft, AlertCircle, Phone, MapPin, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -73,7 +73,7 @@ export default function AddEmergencyCallPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link
@@ -243,6 +243,6 @@ export default function AddEmergencyCallPage() {
           </div>
         </form>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
-import { ChevronLeft, Check } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+
+import { ChevronLeft, Check, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { patientAPI, doctorAPI } from "@/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -30,9 +31,88 @@ export default function NewAllotmentPage() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Patient Search State
+  const [patientSearchTerm, setPatientSearchTerm] = useState("");
+  const [patientsList, setPatientsList] = useState<any[]>([]);
+  const [showPatientDropdown, setShowPatientDropdown] = useState(false);
+  const [searchingPatients, setSearchingPatients] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Doctor Search State
+  const [doctorSearchTerm, setDoctorSearchTerm] = useState("");
+  const [doctorsList, setDoctorsList] = useState<any[]>([]);
+  const [showDoctorDropdown, setShowDoctorDropdown] = useState(false);
+  const [searchingDoctors, setSearchingDoctors] = useState(false);
+  const doctorDropdownRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     fetchAvailableRooms();
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowPatientDropdown(false);
+      }
+      if (doctorDropdownRef.current && !doctorDropdownRef.current.contains(event.target as Node)) {
+        setShowDoctorDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const searchPatients = async () => {
+      try {
+        setSearchingPatients(true);
+        const response = await patientAPI.list(1, 10, patientSearchTerm);
+        setPatientsList(response.data.patients || []);
+      } catch (err) {
+        console.error("Failed to search patients:", err);
+      } finally {
+        setSearchingPatients(false);
+      }
+    };
+
+    const timeoutId = setTimeout(searchPatients, 300);
+    return () => clearTimeout(timeoutId);
+  }, [patientSearchTerm]);
+
+  const selectPatient = (patient: any) => {
+    setFormData(prev => ({
+      ...prev,
+      patientId: patient.id,
+      patientName: patient.name,
+      patientPhone: patient.phone || prev.patientPhone
+    }));
+    setPatientSearchTerm(patient.name);
+    setShowPatientDropdown(false);
+  };
+
+  useEffect(() => {
+    const searchDoctors = async () => {
+      try {
+        setSearchingDoctors(true);
+        const response = await doctorAPI.list(1, 10, doctorSearchTerm);
+        setDoctorsList(response.data.doctors || []);
+      } catch (err) {
+        console.error("Failed to search doctors:", err);
+      } finally {
+        setSearchingDoctors(false);
+      }
+    };
+
+    const timeoutId = setTimeout(searchDoctors, 300);
+    return () => clearTimeout(timeoutId);
+  }, [doctorSearchTerm]);
+
+  const selectDoctor = (doctor: any) => {
+    setFormData(prev => ({
+      ...prev,
+      attendingDoctor: doctor.name
+    }));
+    setDoctorSearchTerm(doctor.name);
+    setShowDoctorDropdown(false);
+  };
 
   const fetchAvailableRooms = async () => {
     try {
@@ -133,7 +213,7 @@ export default function NewAllotmentPage() {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link href="/room-allotment/alloted">
@@ -161,54 +241,125 @@ export default function NewAllotmentPage() {
                 </h2>
 
                 <div className="space-y-4">
-                  <div>
+                  <div className="relative" ref={dropdownRef}>
                     <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Patient ID
+                      Search Patient
                     </label>
-                    <input
-                      type="text"
-                      name="patientId"
-                      value={formData.patientId}
-                      onChange={handleChange}
-                      placeholder="Enter patient ID"
-                      className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500"
-                    />
-                    <p className="text-xs text-gray-400 mt-1">
-                      Enter the unique ID of the patient
-                    </p>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <input
+                        type="text"
+                        value={patientSearchTerm}
+                        onChange={(e) => {
+                          setPatientSearchTerm(e.target.value);
+                          setShowPatientDropdown(true);
+                          if (formData.patientId) {
+                            setFormData(prev => ({ ...prev, patientId: "", patientName: "" }));
+                          }
+                        }}
+                        onFocus={() => setShowPatientDropdown(true)}
+                        placeholder="Search patient by name..."
+                        className="w-full pl-10 pr-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    {showPatientDropdown && (
+                      <div className="absolute z-10 w-full mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {searchingPatients ? (
+                          <div className="p-3 text-sm text-gray-400 text-center">Searching...</div>
+                        ) : patientsList.length > 0 ? (
+                          patientsList.map((patient: any) => (
+                            <div
+                              key={patient.id}
+                              onClick={() => selectPatient(patient)}
+                              className="px-4 py-3 hover:bg-dark-tertiary cursor-pointer border-b border-dark-tertiary last:border-0"
+                            >
+                              <div className="font-medium text-white">{patient.name}</div>
+                              <div className="text-xs text-gray-400 mt-1">
+                                ID: {patient.id} {patient.phone ? `• Phone: ${patient.phone}` : ""}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-3 text-sm text-gray-400 text-center">No patients found</div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Patient Name
-                    </label>
-                    <input
-                      type="text"
-                      name="patientName"
-                      value={formData.patientName}
-                      onChange={handleChange}
-                      placeholder="Enter patient name"
-                      className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500"
-                    />
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="block text-mdfont-medium text-gray-300 mb-2">
+                        Patient ID
+                      </label>
+                      <input
+                        type="text"
+                        name="patientId"
+                        value={formData.patientId}
+                        readOnly
+                        className="w-full px-4 py-2 bg-dark-tertiary/50 border border-dark-tertiary rounded-lg text-gray-400 cursor-not-allowed"
+                        placeholder="Auto-filled"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-mdfont-medium text-gray-300 mb-2">
+                        Patient Name
+                      </label>
+                      <input
+                        type="text"
+                        name="patientName"
+                        value={formData.patientName}
+                        readOnly
+                        className="w-full px-4 py-2 bg-dark-tertiary/50 border border-dark-tertiary rounded-lg text-gray-400 cursor-not-allowed"
+                        placeholder="Auto-filled"
+                      />
+                    </div>
                   </div>
 
-                  <div>
+                  <div className="relative" ref={doctorDropdownRef}>
                     <label className="block text-mdfont-medium text-gray-300 mb-2">
                       Attending Doctor
                     </label>
-                    <select
-                      name="attendingDoctor"
-                      value={formData.attendingDoctor}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white focus:outline-none focus:border-emerald-500"
-                    >
-                      <option value="">Select doctor</option>
-                      {doctors.map((doctor) => (
-                        <option key={doctor} value={doctor}>
-                          {doctor}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                      <input
+                        type="text"
+                        value={doctorSearchTerm}
+                        onChange={(e) => {
+                          setDoctorSearchTerm(e.target.value);
+                          setShowDoctorDropdown(true);
+                          if (formData.attendingDoctor) {
+                            setFormData(prev => ({ ...prev, attendingDoctor: "" }));
+                          }
+                        }}
+                        onFocus={() => setShowDoctorDropdown(true)}
+                        placeholder="Search doctor by name..."
+                        className="w-full pl-10 pr-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    {showDoctorDropdown && (
+                      <div className="absolute z-10 w-full mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {searchingDoctors ? (
+                          <div className="p-3 text-sm text-gray-400 text-center">Searching...</div>
+                        ) : doctorsList.length > 0 ? (
+                          doctorsList.map((doctor: any) => (
+                            <div
+                              key={doctor.id}
+                              onClick={() => selectDoctor(doctor)}
+                              className="px-4 py-3 hover:bg-dark-tertiary cursor-pointer border-b border-dark-tertiary last:border-0"
+                            >
+                              <div className="font-medium text-white">{doctor.name}</div>
+                              {doctor.specialization && (
+                                <div className="text-xs text-gray-400 mt-1">
+                                  {doctor.specialization}
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-3 text-sm text-gray-400 text-center">No doctors found</div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div>
@@ -425,6 +576,6 @@ export default function NewAllotmentPage() {
           </div>
         </form>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

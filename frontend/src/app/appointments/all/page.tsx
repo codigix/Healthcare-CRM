@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { appointmentAPI, doctorAPI, patientAPI } from "@/lib/api";
 import {
   Plus,
@@ -129,7 +129,7 @@ export default function AllAppointmentsPage() {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -355,6 +355,6 @@ export default function AllAppointmentsPage() {
           }}
         />
       </Modal>
-    </DashboardLayout>
+    </>
   );
 }

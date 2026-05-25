@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   Calendar,
   TrendingUp,
@@ -30,8 +30,8 @@ export default function ReportsPage() {
       title: "Financial Reports",
       description: "Track revenue, expenses, and financial performance metrics",
       stats: [
-        { label: "Total Revenue", value: "$128,450" },
-        { label: "Net Profit", value: "$41,125" },
+        { label: "Total Revenue", value: "₹1,28,450" },
+        { label: "Net Profit", value: "₹41,125" },
       ],
       href: "/reports/financial",
       color: "from-emerald-500/10 to-emerald-500/5",
@@ -44,7 +44,7 @@ export default function ReportsPage() {
         "Track inventory levels, usage patterns, and supply chain metrics",
       stats: [
         { label: "Total Items", value: "1,245" },
-        { label: "Inventory Value", value: "$248,320" },
+        { label: "Inventory Value", value: "₹2,48,320" },
       ],
       href: "/reports/inventory",
       color: "from-purple-500/10 to-purple-500/5",
@@ -65,7 +65,7 @@ export default function ReportsPage() {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">Reports</h1>
@@ -131,7 +131,7 @@ export default function ReportsPage() {
             </div>
             <div className="card">
               <p className="text-gray-400 text-mdmb-2">Total Revenue</p>
-              <h3 className="text-3xl font-bold text-emerald-500">$128K</h3>
+              <h3 className="text-3xl font-bold text-emerald-500">₹1.28L</h3>
               <p className="text-xs text-emerald-500 mt-2">
                 +15.2% from last month
               </p>
@@ -153,6 +153,6 @@ export default function ReportsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

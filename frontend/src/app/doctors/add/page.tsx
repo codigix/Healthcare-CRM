@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -80,7 +80,7 @@ export default function AddDoctorPage() {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link
@@ -279,6 +279,6 @@ export default function AddDoctorPage() {
           </form>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

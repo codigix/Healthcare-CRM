@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   Search,
   Plus,
@@ -75,19 +75,46 @@ export default function MedicineTemplatesPage() {
       );
 
       const templatesData = response.data.templates || [];
-      const formattedTemplates = templatesData.map((t: any) => ({
-        id: t.id,
-        name: t.name,
-        category: t.category || "General",
-        medications:
-          typeof t.medicines === "string"
-            ? JSON.parse(t.medicines)
-            : t.medicines || [],
-        createdBy: t.createdBy || "System",
-        lastUsed: t.lastUsed || null,
-        createdAt: t.createdAt,
-        usageCount: t.usageCount || 0,
-      }));
+      const safeParseMedications = (medsField: any) => {
+        if (!medsField) return [];
+        if (Array.isArray(medsField)) return medsField;
+        if (typeof medsField === "string") {
+          const trimmed = medsField.trim();
+          if (!trimmed) return [];
+          try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) return parsed;
+            if (parsed && typeof parsed === "object") return [parsed];
+          } catch (e) {
+            // Quietly fall back to raw text without console noise
+          }
+          return [
+            {
+              name: trimmed,
+              dosage: "",
+              route: "Oral",
+              frequency: "",
+              duration: "30",
+              instructions: "",
+            },
+          ];
+        }
+        return [];
+      };
+
+      const formattedTemplates = templatesData.map((t: any) => {
+        const medsField = t.medications || t.medicines;
+        return {
+          id: t.id,
+          name: t.name,
+          category: t.category || "General",
+          medications: safeParseMedications(medsField),
+          createdBy: t.createdBy || "System",
+          lastUsed: t.lastUsed || null,
+          createdAt: t.createdAt,
+          usageCount: t.usageCount || 0,
+        };
+      });
 
       setTemplates(formattedTemplates);
 
@@ -189,7 +216,7 @@ export default function MedicineTemplatesPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -201,6 +228,7 @@ export default function MedicineTemplatesPage() {
           <button
             onClick={() => setShowCreateModal(true)}
             className="btn-primary flex items-center gap-2"
+            suppressHydrationWarning
           >
             <Plus size={20} />
             New Template
@@ -224,6 +252,7 @@ export default function MedicineTemplatesPage() {
                           ? "text-emerald-500"
                           : "text-gray-400 hover:text-gray-300"
                       }`}
+                      suppressHydrationWarning
                     >
                       {tab.label}
                       {activeTab === tab.id && (
@@ -246,6 +275,7 @@ export default function MedicineTemplatesPage() {
                       setPage(1);
                     }}
                     className="bg-transparent py-3 flex-1 outline-none"
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -664,6 +694,6 @@ export default function MedicineTemplatesPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 }

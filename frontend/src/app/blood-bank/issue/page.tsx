@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { bloodBankAPI } from "@/lib/api";
@@ -74,7 +74,7 @@ export default function IssueBloodPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -320,6 +320,6 @@ export default function IssueBloodPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

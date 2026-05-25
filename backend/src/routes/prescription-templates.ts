@@ -49,10 +49,11 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { name, category, medicines } = req.body;
+    const { name, category, medicines, medications } = req.body;
+    const templateMeds = medicines || medications || [];
     const connection = await pool.getConnection();
     await connection.query(`UPDATE prescription_templates SET name = ?, category = ?, medications = ?, updatedAt = NOW() WHERE id = ?`, 
-      [name, category, JSON.stringify(medicines), req.params.id]);
+      [name, category, JSON.stringify(templateMeds), req.params.id]);
     const [template]: any = await connection.query('SELECT * FROM prescription_templates WHERE id = ?', [req.params.id]);
     connection.release();
     res.json(template[0]);
@@ -64,11 +65,12 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { name, category, medicines } = req.body;
+    const { name, category, medicines, medications } = req.body;
+    const templateMeds = medicines || medications || [];
     const connection = await pool.getConnection();
     const query = `INSERT INTO prescription_templates (id, name, category, medications, createdBy, createdAt, updatedAt)
                    VALUES (UUID(), ?, ?, ?, ?, NOW(), NOW())`;
-    await connection.query(query, [name, category, JSON.stringify(medicines), req.user!.id]);
+    await connection.query(query, [name, category, JSON.stringify(templateMeds), req.user!.id]);
     const [template]: any = await connection.query('SELECT * FROM prescription_templates WHERE name = ? ORDER BY createdAt DESC LIMIT 1', [name]);
     connection.release();
     res.status(201).json(template[0]);

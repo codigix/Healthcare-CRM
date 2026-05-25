@@ -9,14 +9,32 @@ import DashboardTour from "@/components/DashboardTour";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { isAuthenticated, token } = useAuthStore();
+  const { user, token, setAuth, logout } = useAuthStore();
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (!token && !storedToken) {
       router.push("/login");
+      return;
     }
-  }, [token, router]);
+
+    // Hydrate user session if token exists but user profile is null (e.g., on page refresh)
+    if (storedToken && !user) {
+      const hydrateSession = async () => {
+        try {
+          const { authAPI } = await import("@/lib/api");
+          const response = await authAPI.getProfile();
+          setAuth(response.data, storedToken);
+        } catch (error) {
+          console.error("Failed to re-hydrate user session:", error);
+          localStorage.removeItem("token");
+          logout();
+          router.push("/login");
+        }
+      };
+      hydrateSession();
+    }
+  }, [token, user, setAuth, logout, router]);
 
   if (
     !token &&

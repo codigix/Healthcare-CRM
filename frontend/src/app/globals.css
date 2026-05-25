@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -28,7 +26,7 @@
 body {
   background-color: var(--dark-bg);
   color: white;
-  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  font-family: var(--font-public-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
     "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
     "Helvetica Neue", sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { Search, Eye, Edit, Trash2, Filter, MoreVertical } from "lucide-react";
 import Link from "next/link";
+import Modal from "@/components/UI/Modal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -22,6 +23,8 @@ interface AllotedRoom {
   roomId: string;
   attendingDoctor: string;
   allotmentDate: string;
+  expectedDischargeDate?: string;
+  additionalNotes?: string;
   status: string;
   room: RoomData;
 }
@@ -34,6 +37,16 @@ export default function AllotedRoomsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [departments, setDepartments] = useState<string[]>(["all"]);
+
+  // Modal State
+  const [viewRoomId, setViewRoomId] = useState<string | null>(null);
+  const [editRoomId, setEditRoomId] = useState<string | null>(null);
+  const [editData, setEditData] = useState({
+    status: "",
+    expectedDischargeDate: "",
+    additionalNotes: "",
+  });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchAllotments();
@@ -94,6 +107,42 @@ export default function AllotedRoomsPage() {
     }
   };
 
+  const handleEditClick = (room: AllotedRoom) => {
+    setEditRoomId(room.id);
+    setEditData({
+      status: room.status || "Occupied",
+      expectedDischargeDate: room.expectedDischargeDate ? room.expectedDischargeDate.split('T')[0] : "",
+      additionalNotes: room.additionalNotes || "",
+    });
+  };
+
+  const handleUpdate = async () => {
+    if (!editRoomId) return;
+    try {
+      setSaving(true);
+      const response = await fetch(`${API_URL}/room-allotment/allotments/${editRoomId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(editData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to update");
+      }
+      
+      setEditRoomId(null);
+      fetchAllotments();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const filteredRooms = allotedRooms.filter((room) => {
     const matchesSearch =
       room.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -137,7 +186,7 @@ export default function AllotedRoomsPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Alloted Rooms</h1>
@@ -371,14 +420,18 @@ export default function AllotedRoomsPage() {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex items-center gap-2">
-                          <button className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-emerald-400 transition-colors">
+                          <button 
+                            onClick={() => setViewRoomId(room.id)}
+                            className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-emerald-400 transition-colors"
+                          >
                             <Eye size={16} />
                           </button>
-                          <Link href={`/room-allotment/edit/${room.id}`}>
-                            <button className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-blue-400 transition-colors">
-                              <Edit size={16} />
-                            </button>
-                          </Link>
+                          <button 
+                            onClick={() => handleEditClick(room)}
+                            className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-blue-400 transition-colors"
+                          >
+                            <Edit size={16} />
+                          </button>
                           <button
                             onClick={() => handleDelete(room.id)}
                             className="p-1 hover:bg-dark-tertiary rounded text-gray-400 hover:text-red-400 transition-colors"
@@ -410,6 +463,113 @@ export default function AllotedRoomsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+
+      {/* View Modal */}
+      <Modal
+        isOpen={!!viewRoomId}
+        onClose={() => setViewRoomId(null)}
+        title="Allotment Details"
+      >
+        {(() => {
+          const room = allotedRooms.find((r) => r.id === viewRoomId);
+          if (!room) return null;
+          return (
+            <div className="space-y-4 text-gray-300">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-400">Patient</p>
+                  <p className="font-medium text-white">{room.patientName}</p>
+                  <p className="text-xs">{room.patientId}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">Doctor</p>
+                  <p className="font-medium text-white">{room.attendingDoctor}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">Room</p>
+                  <p className="font-medium text-white">{room.room.roomNumber} ({room.room.roomType})</p>
+                  <p className="text-xs">{room.room.department}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">Status</p>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(room.status)}`}>
+                    {room.status}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">Allotment Date</p>
+                  <p>{new Date(room.allotmentDate).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">Expected Discharge</p>
+                  <p>{room.expectedDischargeDate ? new Date(room.expectedDischargeDate).toLocaleDateString() : 'N/A'}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400 mb-1">Additional Notes</p>
+                <div className="p-3 bg-dark-tertiary rounded-lg min-h-[60px] text-sm">
+                  {room.additionalNotes || 'No notes provided.'}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={!!editRoomId}
+        onClose={() => setEditRoomId(null)}
+        title="Edit Allotment"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Status</label>
+            <select
+              value={editData.status}
+              onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+              className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white focus:outline-none focus:border-emerald-500"
+            >
+              <option value="Occupied">Occupied</option>
+              <option value="Discharged">Discharged</option>
+              <option value="Reserved">Reserved</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Expected Discharge Date</label>
+            <input
+              type="date"
+              value={editData.expectedDischargeDate}
+              onChange={(e) => setEditData({ ...editData, expectedDischargeDate: e.target.value })}
+              className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white focus:outline-none focus:border-emerald-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-400 mb-2">Additional Notes</label>
+            <textarea
+              value={editData.additionalNotes}
+              onChange={(e) => setEditData({ ...editData, additionalNotes: e.target.value })}
+              className="w-full px-4 py-2 bg-dark-tertiary border border-dark-tertiary rounded-lg text-white focus:outline-none focus:border-emerald-500 resize-none h-24"
+              placeholder="Enter any notes..."
+            />
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={() => setEditRoomId(null)}
+              className="px-4 py-2 bg-dark-tertiary text-white rounded-lg hover:bg-dark-tertiary/80 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdate}
+              disabled={saving}
+              className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }

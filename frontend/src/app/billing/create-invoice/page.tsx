@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { Plus, Trash2, Calendar } from "lucide-react";
 import Link from "next/link";
 
@@ -112,7 +112,7 @@ export default function CreateInvoicePage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -325,7 +325,7 @@ export default function CreateInvoicePage() {
                         <div className="text-right">
                           <div className="text-mdtext-gray-400">Total</div>
                           <div className="text-xl font-bold">
-                            ${service.total.toFixed(2)}
+                            ₹{service.total.toFixed(2)}
                           </div>
                         </div>
                       </div>
@@ -347,24 +347,24 @@ export default function CreateInvoicePage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Subtotal:</span>
                   <span className="text-white font-medium">
-                    ${subtotal.toFixed(2)}
+                    ₹{subtotal.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Tax (10%):</span>
                   <span className="text-white font-medium">
-                    ${tax.toFixed(2)}
+                    ₹{tax.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Discount:</span>
                   <span className="text-white font-medium">
-                    -${discount.toFixed(2)}
+                    -₹{discount.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-3 border-t border-dark-tertiary">
                   <span>Total:</span>
-                  <span className="text-emerald-500">${total.toFixed(2)}</span>
+                  <span className="text-emerald-500">₹{total.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -592,6 +592,6 @@ export default function CreateInvoicePage() {
           </div>
         </form>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/store";
+
 import DashboardTour from "@/components/DashboardTour";
 import { dashboardAPI } from "@/lib/api";
 import {
@@ -23,7 +25,7 @@ import {
   Users,
   UserCheck,
   Calendar,
-  DollarSign,
+  IndianRupee,
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
@@ -45,11 +47,37 @@ interface Appointment {
 }
 
 export default function DashboardPage() {
+  const { user } = useAuthStore();
+  const router = useRouter();
+
   const [stats, setStats] = useState<Stats | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [revenueData, setRevenueData] = useState([]);
   const [patientGrowth, setPatientGrowth] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      let dept = user.department;
+      if (!dept) {
+        if (user.role === 'admin') dept = 'Admin';
+        else if (user.role === 'doctor') dept = 'Doctor';
+        else dept = 'Admin';
+      }
+      const lowerDept = dept.toLowerCase();
+      if (lowerDept === 'admin') {
+        router.push('/dashboard/admin');
+      } else if (lowerDept === 'doctor') {
+        router.push('/dashboard/doctor');
+      } else if (lowerDept === 'inventory') {
+        router.push('/dashboard/inventory');
+      } else if (lowerDept === 'laboratory') {
+        router.push('/dashboard/laboratory');
+      } else if (lowerDept === 'receptionist') {
+        router.push('/dashboard/receptionist');
+      }
+    }
+  }, [user, router]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,7 +116,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div data-tour="dashboard-header">
           <div className="flex justify-between items-start">
@@ -117,7 +145,7 @@ export default function DashboardPage() {
                   <div>
                     <p className="text-gray-400 text-mdmb-2">Total Revenue</p>
                     <p className="text-2xl font-bold">
-                      $
+                      ₹
                       {typeof stats?.totalRevenue === "number"
                         ? stats.totalRevenue.toFixed(2)
                         : 0}
@@ -126,7 +154,7 @@ export default function DashboardPage() {
                       +20.1% from last month
                     </p>
                   </div>
-                  <DollarSign className="text-emerald-500" size={24} />
+                  <IndianRupee className="text-emerald-500" size={24} />
                 </div>
               </div>
 
@@ -286,6 +314,6 @@ export default function DashboardPage() {
           </>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

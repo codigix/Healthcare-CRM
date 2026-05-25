@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { appointmentAPI, doctorAPI } from "@/lib/api";
 import {
   ChevronLeft,
@@ -119,7 +119,7 @@ export default function CalendarViewPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -362,6 +362,6 @@ export default function CalendarViewPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

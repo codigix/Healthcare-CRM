@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { ArrowLeft } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -133,16 +133,16 @@ export default function EditServicePage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="flex items-center justify-center h-96">
           <div className="text-gray-400">Loading...</div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <button
@@ -234,7 +234,7 @@ export default function EditServicePage() {
 
               <div>
                 <label className="block text-mdfont-medium text-gray-300 mb-2">
-                  Price ($)
+                  Price (₹)
                 </label>
                 <input
                   type="number"
@@ -291,6 +291,6 @@ export default function EditServicePage() {
           </form>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

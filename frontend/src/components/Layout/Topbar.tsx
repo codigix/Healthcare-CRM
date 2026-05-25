@@ -62,7 +62,9 @@ export default function Topbar() {
         <div className="flex items-center gap-3 pl-4 border-l border-dark-tertiary">
           <div>
             <div className="text-mdfont-semibold">{user?.name}</div>
-            <div className="text-xs text-gray-400">{user?.role}</div>
+            <div className="text-xs text-gray-400">
+              {user?.department ? user.department.toUpperCase() : user?.role?.toUpperCase()}
+            </div>
           </div>
           <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold">
             {user?.name?.charAt(0) || "U"}

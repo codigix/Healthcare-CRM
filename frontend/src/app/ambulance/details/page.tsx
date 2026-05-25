@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   ArrowLeft,
   Calendar,
@@ -85,21 +85,21 @@ function AmbulanceDetailsContent() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="flex justify-center items-center py-8">
           <div className="text-gray-400">Loading ambulance details...</div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (error || !ambulanceData) {
     return (
-      <DashboardLayout>
+      <>
         <div className="flex justify-center items-center py-8">
           <div className="text-red-400">{error || "Ambulance not found"}</div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
@@ -108,21 +108,21 @@ function AmbulanceDetailsContent() {
       date: "2023-04-02",
       type: "Regular Service",
       description: "Oil change, filter replacement, brake inspection",
-      cost: "$450",
+      cost: "₹450",
       status: "Completed",
     },
     {
       date: "2023-01-15",
       type: "Repair",
       description: "Replaced rear suspension components",
-      cost: "$890",
+      cost: "₹890",
       status: "Completed",
     },
     {
       date: "2022-10-20",
       type: "Regular Service",
       description: "Comprehensive inspection and fluid top-up",
-      cost: "$320",
+      cost: "₹320",
       status: "Completed",
     },
   ];
@@ -178,7 +178,7 @@ function AmbulanceDetailsContent() {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link href="/ambulance/list">
@@ -623,7 +623,7 @@ function AmbulanceDetailsContent() {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }
 

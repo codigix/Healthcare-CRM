@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { useAuthStore } from "@/lib/store";
+
 import { appointmentAPI, dashboardAPI } from "@/lib/api";
 import {
   Calendar,
@@ -75,6 +76,7 @@ interface DashboardStats {
 }
 
 export default function DoctorDashboard() {
+  const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState("schedule");
   const [loading, setLoading] = useState(true);
   const [doctorStats, setDoctorStats] = useState<DoctorStats>({
@@ -110,17 +112,22 @@ export default function DoctorDashboard() {
         const todayRes = await appointmentAPI.list(1, 100, {
           startDate: today.toISOString(),
           endDate: tomorrow.toISOString(),
+          doctorId: user?.doctorId
         });
 
         const nextWeekRes = await appointmentAPI.list(1, 100, {
           startDate: tomorrow.toISOString(),
+          doctorId: user?.doctorId
         });
 
         const pendingRes = await appointmentAPI.list(1, 100, {
           status: "pending",
+          doctorId: user?.doctorId
         });
 
-        const allAppointmentsRes = await appointmentAPI.list(1, 1000, {});
+        const allAppointmentsRes = await appointmentAPI.list(1, 1000, {
+          doctorId: user?.doctorId
+        });
 
         const todayAppts = todayRes.data.appointments || [];
         const upcomingAppts = nextWeekRes.data.appointments || [];
@@ -231,7 +238,7 @@ export default function DoctorDashboard() {
     };
 
     fetchData();
-  }, []);
+  }, [user]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -271,7 +278,7 @@ export default function DoctorDashboard() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Welcome back, Doctor</h1>
@@ -722,7 +729,7 @@ export default function DoctorDashboard() {
                               Total Revenue
                             </p>
                             <p className="text-3xl font-bold">
-                              $
+                              ₹
                               {typeof stats.totalRevenue === "number"
                                 ? stats.totalRevenue.toFixed(2)
                                 : "0.00"}
@@ -746,6 +753,6 @@ export default function DoctorDashboard() {
           </>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import ActionModal from "@/components/UI/ActionModal";
 import {
   Search,
@@ -211,7 +211,7 @@ export default function BloodDonorsPage() {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -804,6 +804,6 @@ export default function BloodDonorsPage() {
           </div>
         )}
       </ActionModal>
-    </DashboardLayout>
+    </>
   );
 }

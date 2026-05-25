@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   Search,
   Download,
@@ -147,7 +147,7 @@ export default function PatientReviewsPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-start md:items-center">
           <div>
@@ -369,6 +369,6 @@ export default function PatientReviewsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   Search,
   Filter,
@@ -106,10 +106,7 @@ export default function AllPrescriptionsPage() {
       diagnosis: prescription.diagnosis || "",
       notesForPharmacist: prescription.notesForPharmacist || "",
       status: prescription.status,
-      medications:
-        typeof prescription.medications === "string"
-          ? JSON.parse(prescription.medications)
-          : prescription.medications,
+      medications: parseMedications(prescription.medications),
     });
     setOpenMenuId(null);
   };
@@ -154,12 +151,55 @@ export default function AllPrescriptionsPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const parseMedications = (med: string): Medication[] => {
-    try {
-      return typeof med === "string" ? JSON.parse(med) : med;
-    } catch {
-      return [];
+  const parseMedications = (med: any): Medication[] => {
+    if (!med) return [];
+    if (Array.isArray(med)) return med;
+    if (typeof med !== "string") {
+      try {
+        return med ? [med] : [];
+      } catch {
+        return [];
+      }
     }
+    const trimmed = med.trim();
+    if (!trimmed) return [];
+    
+    // Check if it's a stringified array
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+    
+    // Check if it's the corrupted string "[object Object]"
+    if (trimmed.includes("[object Object]")) {
+      const parts = trimmed.split(",");
+      return parts.map((_, index) => ({
+        name: `Medication #${index + 1} (details corrupted)`,
+        dosage: "N/A",
+        frequency: "N/A",
+        duration: "N/A",
+        route: "N/A",
+        instructions: "Please re-enter this medication's details",
+        allowRefills: false,
+        refillCount: 0,
+      } as any));
+    }
+    
+    // Legacy simple string format
+    return [
+      {
+        name: trimmed,
+        dosage: "N/A",
+        frequency: "N/A",
+        duration: "N/A",
+        route: "N/A",
+        instructions: "Legacy format",
+        allowRefills: false,
+        refillCount: 0,
+      } as any,
+    ];
   };
 
   const calculateAge = (dob: string | undefined) => {
@@ -178,7 +218,7 @@ export default function AllPrescriptionsPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -574,6 +614,6 @@ export default function AllPrescriptionsPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 }

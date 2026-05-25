@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   Search,
   Plus,
@@ -146,7 +146,7 @@ export default function MedicineListPage() {
   ).length;
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -475,6 +475,6 @@ export default function MedicineListPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+
 import { appointmentAPI, doctorAPI, patientAPI } from '@/lib/api';
 import { Plus, Edit2, Trash2, Search } from 'lucide-react';
 import Modal from '@/components/UI/Modal';
@@ -103,7 +103,7 @@ export default function AppointmentsPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -224,6 +224,6 @@ export default function AppointmentsPage() {
           }}
         />
       </Modal>
-    </DashboardLayout>
+    </>
   );
 }

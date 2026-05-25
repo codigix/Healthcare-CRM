@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { Search, Plus, Mail, Phone, MapPin } from "lucide-react";
 
 interface Contact {
@@ -94,7 +94,7 @@ export default function ContactsPage() {
   const departments = ["all", ...new Set(contacts.map((c) => c.department))];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -191,6 +191,6 @@ export default function ContactsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

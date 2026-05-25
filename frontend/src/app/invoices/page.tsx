@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+
 import { invoiceAPI, patientAPI } from '@/lib/api';
 import { Plus, Edit2, Trash2, Download, Search } from 'lucide-react';
 import Modal from '@/components/UI/Modal';
@@ -109,7 +109,7 @@ export default function InvoicesPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -166,7 +166,7 @@ export default function InvoicesPage() {
                     <tr key={inv.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary transition-colors">
                       <td className="py-3 px-4 font-mono text-sm">{inv.id.substring(0, 8)}</td>
                       <td className="py-3 px-4">{inv.patient.name}</td>
-                      <td className="py-3 px-4 font-semibold">${inv.amount}</td>
+                      <td className="py-3 px-4 font-semibold">₹{inv.amount}</td>
                       <td className="py-3 px-4">{new Date(inv.date).toLocaleDateString()}</td>
                       <td className="py-3 px-4">
                         <span className={`status-badge ${getStatusColor(inv.status)}`}>
@@ -235,6 +235,6 @@ export default function InvoicesPage() {
           }}
         />
       </Modal>
-    </DashboardLayout>
+    </>
   );
 }

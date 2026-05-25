@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   Search,
   Plus,
@@ -31,24 +31,28 @@ export default function AmbulanceListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [ambulances, setAmbulances] = useState<Ambulance[]>([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchAmbulances();
-  }, [searchQuery]);
+  }, [searchQuery, page]);
 
   const fetchAmbulances = async () => {
     try {
       setLoading(true);
-      const response = await ambulanceAPI.list(1, 100, searchQuery);
+      const response = await ambulanceAPI.list(page, 10, searchQuery);
       console.log("Ambulance API response:", response.data);
       const ambulancesList = response.data.ambulances || response.data;
       console.log("Setting ambulances:", ambulancesList);
       setAmbulances(Array.isArray(ambulancesList) ? ambulancesList : []);
+      setTotal(response.data.total || (Array.isArray(ambulancesList) ? ambulancesList.length : 0));
     } catch (error) {
       console.error("Failed to fetch ambulances", error);
       setAmbulances([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -110,7 +114,7 @@ export default function AmbulanceListPage() {
   ).length;
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -368,14 +372,22 @@ export default function AmbulanceListPage() {
           {!loading && filteredAmbulances.length > 0 && (
             <div className="flex justify-between items-center mt-6 pt-4 border-t border-dark-tertiary">
               <p className="text-gray-400 text-sm">
-                Showing 1 to {filteredAmbulances.length} of {ambulances.length}{" "}
-                ambulances
+                Showing {filteredAmbulances.length > 0 ? (page - 1) * 10 + 1 : 0} to{" "}
+                {Math.min(page * 10, total)} of {total} ambulances
               </p>
               <div className="flex gap-2">
-                <button className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 transition-colors">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                  className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
                   Previous
                 </button>
-                <button className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 transition-colors">
+                <button
+                  disabled={page * 10 >= total}
+                  onClick={() => setPage(page + 1)}
+                  className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
                   Next
                 </button>
               </div>
@@ -383,6 +395,6 @@ export default function AmbulanceListPage() {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

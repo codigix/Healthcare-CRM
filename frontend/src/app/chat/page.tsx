@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { Search, Send, Circle } from "lucide-react";
 
 interface Message {
@@ -143,7 +143,7 @@ export default function ChatPage() {
   );
 
   return (
-    <DashboardLayout>
+    <>
       <div className="flex gap-6 h-[calc(100vh-120px)]">
         <div className="w-80 border-r border-dark-tertiary flex flex-col">
           <div className="p-4 space-y-4">
@@ -278,6 +278,6 @@ export default function ChatPage() {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

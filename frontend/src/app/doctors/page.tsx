@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import DashboardLayout from '@/components/Layout/DashboardLayout';
+
 import { doctorAPI, appointmentAPI } from '@/lib/api';
 import { Plus, Search, Filter, Download, MoreVertical, Edit, Trash2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
@@ -34,26 +34,7 @@ export default function DoctorsPage() {
     try {
       setLoading(true);
       const response = await doctorAPI.list(page, 10, search);
-      let doctorsData = response.data.doctors;
-
-      try {
-        const appointmentsResponse = await appointmentAPI.list(1, 500, {});
-        const appointments = appointmentsResponse.data.appointments || [];
-
-        doctorsData = doctorsData.map((doctor: Doctor) => {
-          const doctorAppointments = appointments.filter(
-            (apt: any) => apt.doctorId === doctor.id
-          );
-          return {
-            ...doctor,
-            patients: doctorAppointments.length,
-          };
-        });
-      } catch (error) {
-        console.error('Failed to fetch appointments for patient count', error);
-      }
-
-      setDoctors(doctorsData);
+      setDoctors(response.data.doctors);
       setTotal(response.data.total);
     } catch (error) {
       console.error('Failed to fetch doctors', error);
@@ -74,7 +55,7 @@ export default function DoctorsPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -199,8 +180,33 @@ export default function DoctorsPage() {
               </table>
             </div>
           )}
+
+          {!loading && doctors.length > 0 && (
+            <div className="flex justify-between items-center mt-6 pt-4 border-t border-dark-tertiary">
+              <p className="text-gray-400 text-sm">
+                Showing {doctors.length > 0 ? (page - 1) * 10 + 1 : 0} to{" "}
+                {Math.min(page * 10, total)} of {total} doctors
+              </p>
+              <div className="flex gap-2">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                  className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Previous
+                </button>
+                <button
+                  disabled={page * 10 >= total}
+                  onClick={() => setPage(page + 1)}
+                  className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

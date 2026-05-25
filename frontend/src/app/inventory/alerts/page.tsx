@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { Search, AlertTriangle, PackageX, Clock, Settings } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -227,7 +227,7 @@ export default function StockAlertsPage() {
   );
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -504,6 +504,6 @@ export default function StockAlertsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

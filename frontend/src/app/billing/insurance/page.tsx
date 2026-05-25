@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   Search,
   FileText,
@@ -224,7 +224,7 @@ export default function InsuranceClaimsPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -272,7 +272,7 @@ export default function InsuranceClaimsPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">
-                    ${convertAmount(statistics.approvedAmount).toFixed(2)}
+                    ₹{convertAmount(statistics.approvedAmount).toFixed(2)}
                   </div>
                   <div className="text-mdtext-gray-400">Approved Claims</div>
                   <div className="text-xs text-blue-600">
@@ -498,7 +498,7 @@ export default function InsuranceClaimsPage() {
                           : "Not submitted"}
                       </td>
                       <td className="py-4 px-4 text-white font-medium">
-                        ${convertAmount(claim.amount).toFixed(2)}
+                        ₹{convertAmount(claim.amount).toFixed(2)}
                       </td>
                       <td className="py-4 px-4">
                         <span
@@ -805,6 +805,6 @@ export default function InsuranceClaimsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

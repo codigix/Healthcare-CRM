@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { ambulanceAPI } from "@/lib/api";
@@ -338,7 +338,7 @@ function EditAmbulanceContent() {
 
 export default function EditAmbulancePage() {
   return (
-    <DashboardLayout>
+    <>
       <Suspense
         fallback={
           <div className="flex justify-center items-center py-8">
@@ -348,6 +348,6 @@ export default function EditAmbulancePage() {
       >
         <EditAmbulanceContent />
       </Suspense>
-    </DashboardLayout>
+    </>
   );
 }

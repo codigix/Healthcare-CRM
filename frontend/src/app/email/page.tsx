@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { Mail, Archive, Trash2, Star, Search, Plus } from "lucide-react";
 
 interface EmailMessage {
@@ -92,7 +92,7 @@ export default function EmailPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="flex gap-6 h-full">
         <div className="w-64 border-r border-dark-tertiary">
           <div className="p-4">
@@ -216,6 +216,6 @@ export default function EmailPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

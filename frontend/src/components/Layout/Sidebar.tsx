@@ -1,5 +1,4 @@
 "use client";
-"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -31,6 +30,7 @@ import {
   Mail,
   CheckSquare,
   Users2,
+  Bell,
 } from "lucide-react";
 import { useAuthStore, useUIStore } from "@/lib/store";
 import { useState, useEffect, useRef } from "react";
@@ -164,8 +164,9 @@ const menuItems = [
   },
   {
     icon: ClipboardList,
-    label: "Records",
+    label: "Laboratory",
     href: "/records",
+    moduleId: "laboratory",
     subItems: [
       { label: "Birth Records", href: "/records/birth" },
       { label: "Death Records", href: "/records/death" },
@@ -205,8 +206,6 @@ const menuItems = [
       { label: "Financial Reports", href: "/reports/financial" },
       { label: "Patient Visit Reports", href: "/reports/patient-visit" },
       { label: "Inventory Reports", href: "/reports/inventory" },
-      { label: "Staff Performance", href: "/reports" },
-      { label: "Custom Reports", href: "/reports" },
     ],
   },
   {
@@ -460,9 +459,129 @@ const moduleDatabase: Record<string, ModuleInfo> = {
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { logout } = useAuthStore();
-  const { sidebarOpen, setSidebarOpen } = useUIStore();
+  const { logout, user } = useAuthStore();
+  const { sidebarOpen, setSidebarOpen, setIsNavigating, isNavigating } = useUIStore();
+
+  let userDept = user?.department;
+  if (!userDept && user) {
+    if (user.role === 'admin') userDept = 'Admin';
+    else if (user.role === 'doctor') userDept = 'Doctor';
+    else userDept = 'Admin';
+  }
+  if (!userDept) userDept = 'Admin';
+
+  const dept = userDept.toLowerCase();
+  let filteredMenuItems: any[] = [];
+
+  const getBaseItem = (label: string) => {
+    const item = menuItems.find(i => i.label === label);
+    return item ? { ...item } : null;
+  };
+
+  if (dept === 'admin') {
+    filteredMenuItems = [
+      {
+        icon: LayoutDashboard,
+        label: "Dashboard",
+        href: "/dashboard/admin",
+      },
+      getBaseItem("Doctors"),
+      getBaseItem("Patients"),
+      getBaseItem("Appointments"),
+      getBaseItem("Laboratory"),
+      getBaseItem("Pharmacy"),
+      getBaseItem("Inventory"),
+      getBaseItem("Blood Bank"),
+      getBaseItem("Ambulance"),
+      getBaseItem("Billing"),
+      getBaseItem("Room Allotment"),
+      getBaseItem("Staff"),
+      getBaseItem("Departments"),
+      getBaseItem("Reports"),
+      getBaseItem("Reviews"),
+      {
+        icon: Settings,
+        label: "Settings",
+        href: "/settings",
+      }
+    ].filter(Boolean);
+  } else if (dept === 'doctor') {
+    filteredMenuItems = [
+      {
+        icon: LayoutDashboard,
+        label: "Dashboard",
+        href: "/dashboard/doctor",
+      },
+      getBaseItem("Appointments"),
+      getBaseItem("Patients"),
+      getBaseItem("Prescriptions"),
+      getBaseItem("Reports"),
+      getBaseItem("Reviews"),
+    ].filter(Boolean);
+  } else if (dept === 'receptionist') {
+    filteredMenuItems = [
+      {
+        icon: LayoutDashboard,
+        label: "Dashboard",
+        href: "/dashboard/receptionist",
+      },
+      getBaseItem("Patients"),
+      getBaseItem("Appointments"),
+      getBaseItem("Billing"),
+      getBaseItem("Room Allotment"),
+      getBaseItem("Ambulance"),
+    ].filter(Boolean);
+  } else if (dept === 'laboratory') {
+    filteredMenuItems = [
+      {
+        icon: LayoutDashboard,
+        label: "Dashboard",
+        href: "/dashboard/laboratory",
+      },
+      {
+        icon: ClipboardList,
+        label: "Test Requests",
+        href: "/records",
+      },
+      getBaseItem("Patients"),
+      {
+        icon: FileText,
+        label: "Reports Upload",
+        href: "/records",
+      },
+      getBaseItem("Blood Bank"),
+    ].filter(Boolean);
+  } else if (dept === 'inventory') {
+    filteredMenuItems = [
+      {
+        icon: LayoutDashboard,
+        label: "Dashboard",
+        href: "/dashboard/inventory",
+      },
+      getBaseItem("Pharmacy"),
+      getBaseItem("Inventory"),
+      {
+        icon: Users2,
+        label: "Suppliers",
+        href: "/inventory/suppliers",
+      },
+      {
+        icon: Bell,
+        label: "Stock Alerts",
+        href: "/inventory/alerts",
+      },
+      getBaseItem("Reports"),
+    ].filter(Boolean);
+  } else {
+    filteredMenuItems = menuItems;
+  }
+
+  const filteredSecondaryMenuItems = ['admin', 'doctor', 'receptionist', 'laboratory', 'inventory'].includes(dept)
+    ? []
+    : secondaryMenuItems;
+    
   const [isOpen, setIsOpen] = useState(sidebarOpen);
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [expandedItems, setExpandedItems] = useState<string[]>([
     "Dashboard",
     "Doctors",
@@ -498,6 +617,12 @@ export default function Sidebar() {
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isNavigating) {
+      setPendingPath(null);
+    }
+  }, [isNavigating, pathname]);
 
   const handleScroll = (e: React.UIEvent<HTMLElement>) => {
     const target = e.currentTarget;
@@ -551,9 +676,10 @@ export default function Sidebar() {
           onScroll={handleScroll}
           className="flex-1 p-4 space-y-2 overflow-y-auto"
         >
-          {menuItems.map((item) => {
+          {filteredMenuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const currentPath = pendingPath || pathname;
+            const isActive = currentPath === item.href;
             const isExpanded = expandedItems.includes(item.label);
             const hasSubItems = item.subItems && item.subItems.length > 0;
 
@@ -565,7 +691,7 @@ export default function Sidebar() {
                       onClick={() => toggleExpand(item.label)}
                       suppressHydrationWarning
                       className={`flex items-center justify-between w-full gap-3 px-4 py-3 rounded-lg transition-colors ${
-                        pathname.startsWith(item.href)
+                        currentPath.startsWith(item.href)
                           ? "bg-accent/10 text-accent"
                           : "text-gray-300 hover:bg-dark-tertiary"
                       }`}
@@ -586,7 +712,7 @@ export default function Sidebar() {
                     {isExpanded && (
                       <div className="ml-4 mt-1 space-y-1">
                         {item.subItems.map((subItem) => {
-                          const isSubActive = pathname === subItem.href;
+                          const isSubActive = currentPath === subItem.href;
                           return (
                             <Link
                               key={`${subItem.href}-${subItem.label}`}
@@ -596,7 +722,7 @@ export default function Sidebar() {
                                   ? "bg-accent text-white text-md"
                                   : " hover:bg-dark-tertiary hover:text-gray-300"
                               }`}
-                              onClick={() => setIsOpen(false)}
+                              onClick={() => { setIsOpen(false); setPendingPath(subItem.href); setIsNavigating(true); }}
                             >
                               <span>{subItem.label}</span>
                             </Link>
@@ -613,7 +739,7 @@ export default function Sidebar() {
                         ? "bg-accent text-white"
                         : "text-gray-300 hover:bg-dark-tertiary"
                     }`}
-                    onClick={() => setIsOpen(false)}
+                    onClick={() => { setIsOpen(false); setPendingPath(item.href); setIsNavigating(true); }}
                   >
                     <Icon size={20} />
                     <span>{item.label}</span>
@@ -629,9 +755,10 @@ export default function Sidebar() {
             Others
           </div>
 
-          {secondaryMenuItems.map((item) => {
+          {filteredSecondaryMenuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const currentPath = pendingPath || pathname;
+            const isActive = currentPath === item.href;
 
             return (
               <Link
@@ -643,7 +770,7 @@ export default function Sidebar() {
                     : "text-gray-300 hover:bg-dark-tertiary"
                 }`}
                 data-tour={item.tourId}
-                onClick={() => setIsOpen(false)}
+                onClick={() => { setIsOpen(false); setPendingPath(item.href); setIsNavigating(true); }}
               >
                 <Icon size={20} />
                 <span>{item.label}</span>

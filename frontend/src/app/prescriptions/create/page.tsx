@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+import { useState, useEffect, useRef } from "react";
+
 import {
   ArrowLeft,
   Plus,
@@ -13,6 +13,10 @@ import {
   Save,
   ToggleLeft,
   ToggleRight,
+  Search,
+  UserCheck,
+  ShieldAlert,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -42,6 +46,7 @@ interface Patient {
   gender?: string;
   allergies?: string[];
   conditions?: string[];
+  history?: string;
 }
 
 export default function CreatePrescriptionPage() {
@@ -49,6 +54,11 @@ export default function CreatePrescriptionPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searchPatient, setSearchPatient] = useState("");
+  const [searchDoctor, setSearchDoctor] = useState("");
+  const [showPatientDropdown, setShowPatientDropdown] = useState(false);
+  const [showDoctorDropdown, setShowDoctorDropdown] = useState(false);
+  const patientDropdownRef = useRef<HTMLDivElement>(null);
+  const doctorDropdownRef = useRef<HTMLDivElement>(null);
   const [useTemplate, setUseTemplate] = useState(false);
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
@@ -61,19 +71,19 @@ export default function CreatePrescriptionPage() {
     notesForPharmacist: "",
   });
 
-  const [medications, setMedications] = useState<Medication[]>([
-    {
-      id: "1",
-      name: "",
-      dosage: "",
-      route: "Oral",
-      frequency: "",
-      duration: "30",
-      instructions: "",
-      allowRefills: false,
-      refillCount: 0,
-    },
-  ]);
+  const [medications, setMedications] = useState<Medication[]>([]);
+
+  const [currentMed, setCurrentMed] = useState({
+    name: "",
+    dosage: "",
+    route: "Oral",
+    frequency: "",
+    duration: "30",
+    durationUnit: "days",
+    instructions: "",
+    allowRefills: false,
+    refillCount: 0,
+  });
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [doctors, setDoctors] = useState<any[]>([]);
@@ -81,6 +91,25 @@ export default function CreatePrescriptionPage() {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [templates, setTemplates] = useState<any[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        patientDropdownRef.current &&
+        !patientDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowPatientDropdown(false);
+      }
+      if (
+        doctorDropdownRef.current &&
+        !doctorDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDoctorDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -108,7 +137,7 @@ export default function CreatePrescriptionPage() {
             "",
             "all"
           );
-          setTemplates(response.data.data || []);
+          setTemplates(response.data.templates || response.data.data || []);
         } catch (err) {
           console.error("Failed to fetch templates", err);
         }
@@ -120,26 +149,49 @@ export default function CreatePrescriptionPage() {
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
     const template = templates.find((t) => t.id === templateId);
-    if (template && template.medications) {
-      const templateMeds = Array.isArray(template.medications)
-        ? template.medications
-        : typeof template.medications === "string"
-        ? JSON.parse(template.medications)
-        : [];
+    if (template) {
+      const medsField = template.medications || template.medicines;
+      if (medsField) {
+        let templateMeds: any[] = [];
+        if (Array.isArray(medsField)) {
+          templateMeds = medsField;
+        } else if (typeof medsField === "string") {
+          const trimmed = medsField.trim();
+          if (trimmed) {
+            try {
+              const parsed = JSON.parse(trimmed);
+              if (Array.isArray(parsed)) {
+                templateMeds = parsed;
+              } else if (parsed && typeof parsed === "object") {
+                templateMeds = [parsed];
+              }
+            } catch (e) {
+              templateMeds = [{
+                name: trimmed,
+                dosage: "",
+                route: "Oral",
+                frequency: "",
+                duration: "30",
+                instructions: ""
+              }];
+            }
+          }
+        }
 
-      const newMeds = templateMeds.map((med: any, idx: number) => ({
-        id: Date.now().toString() + idx,
-        name: med.name || "",
-        dosage: med.dosage || "",
-        route: med.route || "Oral",
-        frequency: med.frequency || "",
-        duration: med.duration || "30",
-        instructions: med.instructions || "",
-        allowRefills: false,
-        refillCount: 0,
-      }));
+        const newMeds = templateMeds.map((med: any, idx: number) => ({
+          id: Date.now().toString() + idx,
+          name: med.name || med.medicineName || "",
+          dosage: med.dosage || "",
+          route: med.route || "Oral",
+          frequency: med.frequency || "",
+          duration: med.duration || "30",
+          instructions: med.instructions || "",
+          allowRefills: false,
+          refillCount: 0,
+        }));
 
-      setMedications(newMeds.length > 0 ? newMeds : medications);
+        setMedications(newMeds.length > 0 ? newMeds : medications);
+      }
     }
   };
 
@@ -155,41 +207,122 @@ export default function CreatePrescriptionPage() {
     }));
   };
 
-  const handlePatientSelect = (patientId: string) => {
-    setFormData((prev) => ({ ...prev, patientId }));
-    const patient = patients.find((p) => p.id === patientId);
-    setSelectedPatient(patient || null);
-  };
-
-  const addMedication = () => {
-    setMedications([
-      ...medications,
-      {
-        id: Date.now().toString(),
-        name: "",
-        dosage: "",
-        route: "Oral",
-        frequency: "",
-        duration: "30",
-        instructions: "",
-        allowRefills: false,
-        refillCount: 0,
-      },
-    ]);
-  };
-
-  const removeMedication = (id: string) => {
-    if (medications.length > 1) {
-      setMedications(medications.filter((med) => med.id !== id));
+  const handlePatientSelect = (patient: Patient) => {
+    setFormData((prev) => ({ ...prev, patientId: patient.id }));
+    
+    // Dynamically parse medical history into allergies and conditions
+    const parsedPatient = { ...patient };
+    const historyText = patient.history || (patient as any).medicalHistory || (patient as any).condition || "";
+    
+    if (historyText && historyText.trim()) {
+      const trimmed = historyText.trim();
+      const lower = trimmed.toLowerCase();
+      
+      // Check if history is just a placeholder like "okk", "ok", "none", "no history", "nil", "n/a", "-"
+      const placeholders = ["okk", "ok", "none", "no history", "nil", "n/a", "-"];
+      if (placeholders.includes(lower)) {
+        parsedPatient.allergies = [];
+        parsedPatient.conditions = [];
+      } else if (lower.includes("allergies:") || lower.includes("allergy:") || lower.includes("conditions:") || lower.includes("condition:")) {
+        const allergies: string[] = [];
+        const conditions: string[] = [];
+        
+        // Parse structured list
+        const allergyMatch = trimmed.match(/(?:allergies|allergy):\s*([^;\n\r]+)/i);
+        const conditionMatch = trimmed.match(/(?:conditions|condition):\s*([^;\n\r]+)/i);
+        
+        if (allergyMatch) {
+          const content = allergyMatch[1].split(/conditions|condition/i)[0];
+          allergies.push(
+            ...content
+              .split(",")
+              .map((s) => s.trim())
+              .filter((s) => s && s.toLowerCase() !== "none" && s.toLowerCase() !== "no known allergies" && s.toLowerCase() !== "no known")
+          );
+        }
+        
+        if (conditionMatch) {
+          const content = conditionMatch[1].split(/allergies|allergy/i)[0];
+          conditions.push(
+            ...content
+              .split(",")
+              .map((s) => s.trim())
+              .filter((s) => s && s.toLowerCase() !== "none" && s.toLowerCase() !== "no conditions listed" && s.toLowerCase() !== "no conditions")
+          );
+        }
+        
+        parsedPatient.allergies = allergies;
+        parsedPatient.conditions = conditions;
+      } else {
+        // Fallback: treat the entire text as a condition, or split by commas
+        parsedPatient.conditions = trimmed
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        parsedPatient.allergies = [];
+      }
+    } else {
+      parsedPatient.allergies = [];
+      parsedPatient.conditions = [];
     }
+    
+    setSelectedPatient(parsedPatient);
+    setSearchPatient(patient.name);
+    setShowPatientDropdown(false);
   };
 
-  const updateMedication = (id: string, field: string, value: any) => {
-    setMedications(
-      medications.map((med) =>
-        med.id === id ? { ...med, [field]: value } : med
-      )
-    );
+  const handleDoctorSelect = (doctor: any) => {
+    setSelectedDoctor(doctor);
+    setSearchDoctor(doctor.name);
+    setShowDoctorDropdown(false);
+  };
+
+  const handleAddMedication = () => {
+    if (!currentMed.name.trim()) {
+      setError("Medication Name is required");
+      return;
+    }
+    if (!currentMed.dosage) {
+      setError("Dosage is required");
+      return;
+    }
+    if (!currentMed.frequency) {
+      setError("Frequency is required");
+      return;
+    }
+
+    setError("");
+
+    const durationStr = `${currentMed.duration} ${currentMed.durationUnit}`;
+    const newMed: Medication = {
+      id: Date.now().toString(),
+      name: currentMed.name,
+      dosage: currentMed.dosage,
+      route: currentMed.route,
+      frequency: currentMed.frequency,
+      duration: durationStr,
+      instructions: currentMed.instructions,
+      allowRefills: currentMed.allowRefills,
+      refillCount: currentMed.allowRefills ? currentMed.refillCount : 0,
+    };
+
+    setMedications([...medications, newMed]);
+
+    setCurrentMed({
+      name: "",
+      dosage: "",
+      route: "Oral",
+      frequency: "",
+      duration: "30",
+      durationUnit: "days",
+      instructions: "",
+      allowRefills: false,
+      refillCount: 0,
+    });
+  };
+
+  const handleRemoveMedication = (id: string) => {
+    setMedications(medications.filter((med) => med.id !== id));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -203,12 +336,8 @@ export default function CreatePrescriptionPage() {
       return;
     }
 
-    if (
-      !medications[0].name ||
-      !medications[0].dosage ||
-      !medications[0].frequency
-    ) {
-      setError("Please add at least one medication");
+    if (medications.length === 0) {
+      setError("Please add at least one medication to the prescription");
       setLoading(false);
       return;
     }
@@ -229,7 +358,7 @@ export default function CreatePrescriptionPage() {
         await prescriptionTemplateAPI.create({
           name: templateName,
           category: formData.prescriptionType,
-          medications: medications.map(({ id, ...med }) => med),
+          medicines: medications.map(({ id, ...med }) => med),
           createdBy: selectedDoctor.name || "Unknown",
         });
       }
@@ -246,8 +375,12 @@ export default function CreatePrescriptionPage() {
     p.name.toLowerCase().includes(searchPatient.toLowerCase())
   );
 
+  const filteredDoctors = doctors.filter((d) =>
+    d.name.toLowerCase().includes(searchDoctor.toLowerCase())
+  );
+
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link href="/prescriptions/all">
@@ -263,599 +396,672 @@ export default function CreatePrescriptionPage() {
           </div>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-        >
-          <div className="lg:col-span-2 space-y-6">
-            <div className="card">
-              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                <FileText size={20} className="text-emerald-500" />
+        <form onSubmit={handleSubmit} className="w-full">
+          <div className="card p-6 md:p-8 space-y-8">
+            {/* Section 1: Patient & Doctor Selection */}
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Select Patient */}
+                <div className="relative" ref={patientDropdownRef}>
+                <label className="block text-md font-medium text-gray-300 mb-2 flex items-center gap-2">
+                  <User size={18} className="text-emerald-500" />
+                  Select Patient
+                </label>
+                <div className="relative">
+                  <Search
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={18}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search patients..."
+                    value={searchPatient}
+                    onChange={(e) => {
+                      setSearchPatient(e.target.value);
+                      setShowPatientDropdown(true);
+                      if (formData.patientId) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          patientId: "",
+                        }));
+                        setSelectedPatient(null);
+                      }
+                    }}
+                    onFocus={() => setShowPatientDropdown(true)}
+                    className="input-field w-full !pl-10"
+                    required
+                  />
+                </div>
+
+                {showPatientDropdown && (
+                  <div className="absolute z-20 w-full left-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {filteredPatients.length > 0 ? (
+                      filteredPatients.map((patient) => (
+                        <div
+                          key={patient.id}
+                          onClick={() => handlePatientSelect(patient)}
+                          className={`px-4 py-3 hover:bg-dark-tertiary cursor-pointer border-b border-dark-tertiary last:border-0 transition-colors flex items-center justify-between ${
+                            formData.patientId === patient.id ? "bg-emerald-500/10 text-emerald-400" : ""
+                          }`}
+                        >
+                          <div>
+                            <div className="font-medium text-sm">{patient.name}</div>
+                            {patient.age && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                {patient.age}y • {patient.gender}
+                              </div>
+                            )}
+                          </div>
+                          {formData.patientId === patient.id && (
+                            <div className="text-emerald-500 font-bold text-sm">Selected</div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-3 text-sm text-gray-400 text-center">
+                        No patients found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Select Doctor */}
+              <div className="relative" ref={doctorDropdownRef}>
+                <label className="block text-md font-medium text-gray-300 mb-2 flex items-center gap-2">
+                  <UserCheck size={18} className="text-emerald-500" />
+                  Select Doctor
+                </label>
+                <div className="relative">
+                  <Search
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={18}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search doctors..."
+                    value={searchDoctor}
+                    onChange={(e) => {
+                      setSearchDoctor(e.target.value);
+                      setShowDoctorDropdown(true);
+                      if (selectedDoctor) {
+                        setSelectedDoctor(null);
+                      }
+                    }}
+                    onFocus={() => setShowDoctorDropdown(true)}
+                    className="input-field w-full !pl-10"
+                    required
+                  />
+                </div>
+
+                {showDoctorDropdown && (
+                  <div className="absolute z-20 w-full left-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {filteredDoctors.length > 0 ? (
+                      filteredDoctors.map((doctor) => (
+                        <div
+                          key={doctor.id}
+                          onClick={() => handleDoctorSelect(doctor)}
+                          className={`px-4 py-3 hover:bg-dark-tertiary cursor-pointer border-b border-dark-tertiary last:border-0 transition-colors flex items-center justify-between ${
+                            selectedDoctor?.id === doctor.id ? "bg-emerald-500/10 text-emerald-400" : ""
+                          }`}
+                        >
+                          <div>
+                            <div className="font-medium text-sm">Dr. {doctor.name}</div>
+                            {doctor.specialization && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                {doctor.specialization}
+                              </div>
+                            )}
+                          </div>
+                          {selectedDoctor?.id === doctor.id && (
+                            <div className="text-emerald-500 font-bold text-sm">Selected</div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-3 text-sm text-gray-400 text-center">
+                        No doctors found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+              {/* Selected Patient Health Details (Allergies & Conditions) */}
+              {selectedPatient && (
+                <div className="p-4 bg-dark-secondary rounded-lg border border-dark-tertiary">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-dark-tertiary">
+                    {((selectedPatient.allergies && selectedPatient.allergies.length > 0) || 
+                      (selectedPatient.conditions && selectedPatient.conditions.length > 0)) ? (
+                      <>
+                        <ShieldAlert className="text-red-400 animate-pulse" size={18} />
+                        <span className="text-sm font-semibold text-gray-200">Patient Clinical Safety Alerts</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="text-emerald-400" size={18} />
+                        <span className="text-sm font-semibold text-gray-200">Patient Clinical Safety Cleared</span>
+                      </>
+                    )}
+                  </div>
+
+                  {((!selectedPatient.allergies || selectedPatient.allergies.length === 0) &&
+                    (!selectedPatient.conditions || selectedPatient.conditions.length === 0)) ? (
+                    <div className="text-sm text-emerald-400/90 bg-emerald-500/5 p-2.5 rounded border border-emerald-500/10 flex items-center gap-2">
+                      <span>✓</span> No active allergies or chronic medical conditions are currently recorded for this patient.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
+                          Allergies:
+                        </div>
+                        {selectedPatient.allergies && selectedPatient.allergies.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {selectedPatient.allergies.map((allergy, idx) => (
+                              <span
+                                key={idx}
+                                className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded border border-red-500/20 font-semibold"
+                              >
+                                {allergy}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-500">No known allergies</span>
+                        )}
+                      </div>
+
+                      <div>
+                        <div className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">
+                          Chronic Conditions:
+                        </div>
+                        {selectedPatient.conditions && selectedPatient.conditions.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {selectedPatient.conditions.map((condition, idx) => (
+                              <span
+                                key={idx}
+                                className="px-2 py-1 bg-blue-500/10 text-blue-400 text-xs rounded border border-blue-500/20 font-semibold"
+                              >
+                                {condition}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-500">No pre-existing conditions listed</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <hr className="border-dark-tertiary" />
+
+            {/* Section 2: Prescription Details */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold flex items-center gap-2 text-emerald-400">
+                <FileText size={20} />
                 Prescription Details
-              </h2>
+              </h3>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Prescription Date
-                    </label>
-                    <input
-                      type="date"
-                      name="prescriptionDate"
-                      value={formData.prescriptionDate}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Prescription Type
-                    </label>
-                    <select
-                      name="prescriptionType"
-                      value={formData.prescriptionType}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                    >
-                      <option value="Standard">Standard</option>
-                      <option value="Controlled">Controlled Substance</option>
-                      <option value="Compound">Compound</option>
-                    </select>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-md font-medium text-gray-300 mb-2">
+                    Prescription Date
+                  </label>
+                  <input
+                    type="date"
+                    name="prescriptionDate"
+                    value={formData.prescriptionDate}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    required
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-mdfont-medium text-gray-300 mb-2">
-                    Diagnosis
+                  <label className="block text-md font-medium text-gray-300 mb-2">
+                    Prescription Type
                   </label>
-                  <textarea
-                    name="diagnosis"
-                    value={formData.diagnosis}
+                  <select
+                    name="prescriptionType"
+                    value={formData.prescriptionType}
                     onChange={handleChange}
                     className="input-field w-full"
-                    placeholder="Enter diagnosis or reason for prescription"
-                    rows={3}
-                  />
+                  >
+                    <option value="Standard">Standard</option>
+                    <option value="Controlled">Controlled Substance</option>
+                    <option value="Compound">Compound</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-md font-medium text-gray-300 mb-2">
+                  Diagnosis
+                </label>
+                <textarea
+                  name="diagnosis"
+                  value={formData.diagnosis}
+                  onChange={handleChange}
+                  className="input-field w-full"
+                  placeholder="Enter diagnosis or reason for prescription"
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex items-center gap-3 p-4 bg-dark-secondary rounded-lg border border-dark-tertiary">
+                <input
+                  type="checkbox"
+                  id="useTemplate"
+                  checked={useTemplate}
+                  onChange={(e) => setUseTemplate(e.target.checked)}
+                  className="w-4 h-4 text-emerald-500"
+                />
+                <label
+                  htmlFor="useTemplate"
+                  className="text-sm text-gray-300 cursor-pointer"
+                >
+                  Use Medication Template
+                </label>
+                {useTemplate && (
+                  <select
+                    value={selectedTemplate}
+                    onChange={(e) => handleTemplateSelect(e.target.value)}
+                    className="input-field ml-auto"
+                  >
+                    <option value="">Select a template</option>
+                    {templates.map((template) => (
+                      <option key={template.id} value={template.id}>
+                        {template.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            </div>
+
+            <hr className="border-dark-tertiary" />
+
+            {/* Section 3: Medications */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold flex items-center gap-2 text-emerald-400">
+                <Pill size={20} />
+                Medications
+              </h3>
+
+              {/* Medication Draft Form */}
+              <div className="bg-dark-secondary p-5 rounded-lg border border-dark-tertiary space-y-4">
+                <div className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                  Draft Medication
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Medication Name */}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                      Medication Name *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter medication name..."
+                      value={currentMed.name}
+                      onChange={(e) => setCurrentMed({ ...currentMed, name: e.target.value })}
+                      className="input-field w-full"
+                    />
+                  </div>
+
+                  {/* Dosage */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                      Dosage *
+                    </label>
+                    <select
+                      value={currentMed.dosage}
+                      onChange={(e) => setCurrentMed({ ...currentMed, dosage: e.target.value })}
+                      className="input-field w-full"
+                    >
+                      <option value="">Select dosage</option>
+                      <option value="5mg">5mg</option>
+                      <option value="10mg">10mg</option>
+                      <option value="20mg">20mg</option>
+                      <option value="50mg">50mg</option>
+                      <option value="100mg">100mg</option>
+                      <option value="250mg">250mg</option>
+                      <option value="500mg">500mg</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-4 bg-dark-secondary rounded-lg border border-dark-tertiary">
-                  <input
-                    type="checkbox"
-                    id="useTemplate"
-                    checked={useTemplate}
-                    onChange={(e) => setUseTemplate(e.target.checked)}
-                    className="w-4 h-4 text-emerald-500"
-                  />
-                  <label
-                    htmlFor="useTemplate"
-                    className="text-mdtext-gray-300 cursor-pointer"
-                  >
-                    Use Medication Template
-                  </label>
-                  {useTemplate && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Route */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                      Route
+                    </label>
                     <select
-                      value={selectedTemplate}
-                      onChange={(e) => handleTemplateSelect(e.target.value)}
-                      className="input-field ml-auto"
+                      value={currentMed.route}
+                      onChange={(e) => setCurrentMed({ ...currentMed, route: e.target.value })}
+                      className="input-field w-full"
                     >
-                      <option value="">Select a template</option>
-                      {templates.map((template) => (
-                        <option key={template.id} value={template.id}>
-                          {template.name}
-                        </option>
-                      ))}
+                      <option value="Oral">Oral</option>
+                      <option value="Topical">Topical</option>
+                      <option value="Injection">Injection</option>
+                      <option value="Inhalation">Inhalation</option>
                     </select>
+                  </div>
+
+                  {/* Frequency */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                      Frequency *
+                    </label>
+                    <select
+                      value={currentMed.frequency}
+                      onChange={(e) => setCurrentMed({ ...currentMed, frequency: e.target.value })}
+                      className="input-field w-full"
+                    >
+                      <option value="">Select frequency</option>
+                      <option value="Once daily">Once daily</option>
+                      <option value="Twice daily">Twice daily</option>
+                      <option value="Three times daily">Three times daily</option>
+                      <option value="Four times daily">Four times daily</option>
+                      <option value="As needed">As needed</option>
+                    </select>
+                  </div>
+
+                  {/* Duration */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                      Duration
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={currentMed.duration}
+                        onChange={(e) => setCurrentMed({ ...currentMed, duration: e.target.value })}
+                        className="input-field flex-1"
+                        min="1"
+                      />
+                      <select
+                        value={currentMed.durationUnit}
+                        onChange={(e) => setCurrentMed({ ...currentMed, durationUnit: e.target.value })}
+                        className="input-field"
+                      >
+                        <option value="days">Days</option>
+                        <option value="weeks">Weeks</option>
+                        <option value="months">Months</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Special Instructions */}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                      Special Instructions
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter any special instructions for this medication..."
+                      value={currentMed.instructions}
+                      onChange={(e) => setCurrentMed({ ...currentMed, instructions: e.target.value })}
+                      className="input-field w-full"
+                    />
+                  </div>
+
+                  {/* Allow Refills */}
+                  <div className="flex items-center gap-4 bg-dark-tertiary/20 p-3 rounded-lg border border-dark-tertiary">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCurrentMed({ ...currentMed, allowRefills: !currentMed.allowRefills })}
+                        className="text-emerald-500 animate-[pulse_2s_infinite]"
+                      >
+                        {currentMed.allowRefills ? (
+                          <ToggleRight size={24} />
+                        ) : (
+                          <ToggleLeft size={24} className="text-gray-500" />
+                        )}
+                      </button>
+                      <label className="text-xs text-gray-300 cursor-pointer">
+                        Allow Refills
+                      </label>
+                    </div>
+                    {currentMed.allowRefills && (
+                      <input
+                        type="number"
+                        value={currentMed.refillCount}
+                        onChange={(e) => setCurrentMed({ ...currentMed, refillCount: parseInt(e.target.value) || 0 })}
+                        className="input-field w-16 text-center text-sm"
+                        min="0"
+                        max="12"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="button"
+                    onClick={handleAddMedication}
+                    className="btn-primary flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium shadow-lg hover:shadow-emerald-500/20 transition-all hover:scale-[1.02]"
+                  >
+                    <Plus size={18} />
+                    Add to Prescription
+                  </button>
+                </div>
+              </div>
+
+              {/* Added Medications Table */}
+              <div className="mt-6 border border-dark-tertiary rounded-lg overflow-hidden bg-dark-secondary">
+                <div className="px-4 py-3 bg-dark-tertiary/30 border-b border-dark-tertiary flex items-center justify-between">
+                  <div className="font-semibold text-sm text-gray-200">Added Medications</div>
+                  <div className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">{medications.length} medication(s) added</div>
+                </div>
+
+                {medications.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-dark-tertiary bg-dark-tertiary/10 text-gray-400">
+                          <th className="text-left py-3 px-4 font-medium">Name & Instructions</th>
+                          <th className="text-left py-3 px-4 font-medium">Dosage & Route</th>
+                          <th className="text-left py-3 px-4 font-medium">Frequency</th>
+                          <th className="text-left py-3 px-4 font-medium">Duration</th>
+                          <th className="text-left py-3 px-4 font-medium">Refills</th>
+                          <th className="text-center py-3 px-4 font-medium w-16">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {medications.map((med) => (
+                          <tr
+                            key={med.id}
+                            className="border-b border-dark-tertiary last:border-0 hover:bg-dark-tertiary/10 transition-colors"
+                          >
+                            <td className="py-3 px-4">
+                              <div className="font-semibold text-white">{med.name}</div>
+                              {med.instructions && (
+                                <div className="text-xs text-gray-400 mt-1 italic">
+                                  "{med.instructions}"
+                                </div>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-gray-300">
+                              <div>{med.dosage}</div>
+                              <div className="text-xs text-gray-400 mt-0.5">{med.route}</div>
+                            </td>
+                            <td className="py-3 px-4 text-gray-300">{med.frequency}</td>
+                            <td className="py-3 px-4 text-gray-300">{med.duration}</td>
+                            <td className="py-3 px-4 text-gray-300">
+                              {med.allowRefills ? (
+                                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-xs rounded border border-emerald-500/20">
+                                  {med.refillCount} refills
+                                </span>
+                              ) : (
+                                <span className="text-xs text-gray-500">None</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveMedication(med.id)}
+                                className="p-1.5 hover:bg-red-500/20 rounded text-red-500 transition-colors"
+                                title="Remove Medication"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-400 flex flex-col items-center justify-center gap-2">
+                    <Pill size={32} className="text-gray-500 animate-[pulse_2s_infinite]" />
+                    <div className="font-medium">No medications added to this prescription yet.</div>
+                    <div className="text-xs text-gray-500">
+                      Use the form above to draft a medication and add it here.
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <hr className="border-dark-tertiary" />
+
+            {/* Section 4: Format Options & Notes */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold flex items-center gap-2 text-emerald-400">
+                <Save size={20} />
+                Prescription Options & Notes
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Format Options */}
+                <div className="p-4 bg-dark-secondary rounded-lg border border-dark-tertiary space-y-4">
+                  <h4 className="font-semibold text-sm text-gray-300 border-b border-dark-tertiary pb-2">Prescription Format</h4>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        id="electronic"
+                        name="prescriptionFormat"
+                        defaultChecked
+                        className="w-4 h-4 text-emerald-500"
+                      />
+                      <label htmlFor="electronic" className="text-sm text-gray-300 cursor-pointer">
+                        Electronic Prescription
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        id="print"
+                        name="prescriptionFormat"
+                        className="w-4 h-4 text-emerald-500"
+                      />
+                      <label htmlFor="print" className="text-sm text-gray-300 cursor-pointer">
+                        Print Prescription
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        id="both"
+                        name="prescriptionFormat"
+                        className="w-4 h-4 text-emerald-500"
+                      />
+                      <label htmlFor="both" className="text-sm text-gray-300 cursor-pointer">
+                        Both Electronic and Print
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-dark-tertiary space-y-3">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="notifyPatient"
+                        defaultChecked
+                        className="w-4 h-4 text-emerald-500"
+                      />
+                      <label htmlFor="notifyPatient" className="text-sm text-gray-300 cursor-pointer">
+                        Notify Patient
+                      </label>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        id="markAsUrgent"
+                        className="w-4 h-4 text-emerald-500"
+                      />
+                      <label htmlFor="markAsUrgent" className="text-sm text-gray-300 cursor-pointer">
+                        Mark as Urgent
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes & Template Settings */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Notes for Pharmacist
+                    </label>
+                    <textarea
+                      name="notesForPharmacist"
+                      value={formData.notesForPharmacist}
+                      onChange={handleChange}
+                      className="input-field w-full"
+                      placeholder="Enter any additional notes for the pharmacist"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3 p-4 bg-dark-secondary rounded-lg border border-dark-tertiary">
+                    <input
+                      type="checkbox"
+                      id="saveAsTemplate"
+                      checked={saveAsTemplate}
+                      onChange={(e) => setSaveAsTemplate(e.target.checked)}
+                      className="w-4 h-4 text-emerald-500"
+                    />
+                    <label
+                      htmlFor="saveAsTemplate"
+                      className="text-sm text-gray-300 cursor-pointer flex-1"
+                    >
+                      Save as Prescription Template
+                    </label>
+                  </div>
+
+                  {saveAsTemplate && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Template Name
+                      </label>
+                      <input
+                        type="text"
+                        value={templateName}
+                        onChange={(e) => setTemplateName(e.target.value)}
+                        className="input-field w-full"
+                        placeholder="Enter a name for this template"
+                        required
+                      />
+                    </div>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="card">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <Pill size={20} className="text-emerald-500" />
-                  Medications
-                </h2>
-                <button
-                  type="button"
-                  onClick={addMedication}
-                  className="btn-secondary flex items-center gap-2"
-                >
-                  <Plus size={18} />
-                  Add Medication
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                {medications.map((medication, index) => (
-                  <div
-                    key={medication.id}
-                    className="p-6 bg-dark-secondary rounded-lg border border-dark-tertiary"
-                  >
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="font-semibold">Medication #{index + 1}</h3>
-                      {medications.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeMedication(medication.id)}
-                          className="p-2 hover:bg-red-500/20 rounded transition-colors text-red-500"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-mdfont-medium text-gray-300 mb-2">
-                          Medication Name
-                        </label>
-                        <input
-                          type="text"
-                          value={medication.name}
-                          onChange={(e) =>
-                            updateMedication(
-                              medication.id,
-                              "name",
-                              e.target.value
-                            )
-                          }
-                          className="input-field w-full"
-                          placeholder="Select medication..."
-                          required
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-mdfont-medium text-gray-300 mb-2">
-                            Dosage
-                          </label>
-                          <select
-                            value={medication.dosage}
-                            onChange={(e) =>
-                              updateMedication(
-                                medication.id,
-                                "dosage",
-                                e.target.value
-                              )
-                            }
-                            className="input-field w-full"
-                            required
-                          >
-                            <option value="">Select dosage</option>
-                            <option value="5mg">5mg</option>
-                            <option value="10mg">10mg</option>
-                            <option value="20mg">20mg</option>
-                            <option value="50mg">50mg</option>
-                            <option value="100mg">100mg</option>
-                            <option value="250mg">250mg</option>
-                            <option value="500mg">500mg</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-mdfont-medium text-gray-300 mb-2">
-                            Route
-                          </label>
-                          <select
-                            value={medication.route}
-                            onChange={(e) =>
-                              updateMedication(
-                                medication.id,
-                                "route",
-                                e.target.value
-                              )
-                            }
-                            className="input-field w-full"
-                          >
-                            <option value="Oral">Oral</option>
-                            <option value="Topical">Topical</option>
-                            <option value="Injection">Injection</option>
-                            <option value="Inhalation">Inhalation</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-mdfont-medium text-gray-300 mb-2">
-                            Frequency
-                          </label>
-                          <select
-                            value={medication.frequency}
-                            onChange={(e) =>
-                              updateMedication(
-                                medication.id,
-                                "frequency",
-                                e.target.value
-                              )
-                            }
-                            className="input-field w-full"
-                            required
-                          >
-                            <option value="">Select frequency</option>
-                            <option value="Once daily">Once daily</option>
-                            <option value="Twice daily">Twice daily</option>
-                            <option value="Three times daily">
-                              Three times daily
-                            </option>
-                            <option value="Four times daily">
-                              Four times daily
-                            </option>
-                            <option value="As needed">As needed</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-mdfont-medium text-gray-300 mb-2">
-                            Duration
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="number"
-                              value={medication.duration}
-                              onChange={(e) =>
-                                updateMedication(
-                                  medication.id,
-                                  "duration",
-                                  e.target.value
-                                )
-                              }
-                              className="input-field flex-1"
-                              min="1"
-                              required
-                            />
-                            <select className="input-field">
-                              <option value="days">Days</option>
-                              <option value="weeks">Weeks</option>
-                              <option value="months">Months</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-mdfont-medium text-gray-300 mb-2">
-                          Special Instructions
-                        </label>
-                        <textarea
-                          value={medication.instructions}
-                          onChange={(e) =>
-                            updateMedication(
-                              medication.id,
-                              "instructions",
-                              e.target.value
-                            )
-                          }
-                          className="input-field w-full"
-                          placeholder="Enter any special instructions for this medication"
-                          rows={2}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between p-4 bg-dark-secondary rounded-lg border border-dark-tertiary">
-                        <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateMedication(
-                                medication.id,
-                                "allowRefills",
-                                !medication.allowRefills
-                              )
-                            }
-                            className="text-emerald-500"
-                          >
-                            {medication.allowRefills ? (
-                              <ToggleRight size={24} />
-                            ) : (
-                              <ToggleLeft size={24} className="text-gray-500" />
-                            )}
-                          </button>
-                          <label className="text-mdtext-gray-300">
-                            Allow Refills
-                          </label>
-                        </div>
-                        {medication.allowRefills && (
-                          <div className="flex items-center gap-2">
-                            <label className="text-mdtext-gray-300">
-                              Number of Refills:
-                            </label>
-                            <input
-                              type="number"
-                              value={medication.refillCount}
-                              onChange={(e) =>
-                                updateMedication(
-                                  medication.id,
-                                  "refillCount",
-                                  parseInt(e.target.value)
-                                )
-                              }
-                              className="input-field w-20"
-                              min="0"
-                              max="12"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="card">
-              <h2 className="text-xl font-semibold mb-6">
-                Additional Information
-              </h2>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-mdfont-medium text-gray-300 mb-2">
-                    Notes for Pharmacist
-                  </label>
-                  <textarea
-                    name="notesForPharmacist"
-                    value={formData.notesForPharmacist}
-                    onChange={handleChange}
-                    className="input-field w-full"
-                    placeholder="Enter any additional notes for the pharmacist"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="flex items-center gap-3 p-4 bg-dark-secondary rounded-lg border border-dark-tertiary">
-                  <input
-                    type="checkbox"
-                    id="saveAsTemplate"
-                    checked={saveAsTemplate}
-                    onChange={(e) => setSaveAsTemplate(e.target.checked)}
-                    className="w-4 h-4 text-emerald-500"
-                  />
-                  <label
-                    htmlFor="saveAsTemplate"
-                    className="text-mdtext-gray-300 cursor-pointer flex-1"
-                  >
-                    Save as Template
-                  </label>
-                </div>
-
-                {saveAsTemplate && (
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Template Name
-                    </label>
-                    <input
-                      type="text"
-                      value={templateName}
-                      onChange={(e) => setTemplateName(e.target.value)}
-                      className="input-field w-full"
-                      placeholder="Enter a name for this template"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="card">
-              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                <User size={20} className="text-emerald-500" />
-                Doctor & Patient Information
-              </h2>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-mdfont-medium text-gray-300 mb-2">
-                    Select Doctor
-                  </label>
-                  <select
-                    value={selectedDoctor?.id || ""}
-                    onChange={(e) => {
-                      const doctor = doctors.find(
-                        (d) => d.id === e.target.value
-                      );
-                      setSelectedDoctor(doctor || null);
-                    }}
-                    className="input-field w-full"
-                    required
-                  >
-                    <option value="">Select a doctor</option>
-                    {doctors.map((doctor) => (
-                      <option key={doctor.id} value={doctor.id}>
-                        Dr. {doctor.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="border-t border-dark-tertiary pt-4 mt-4">
-                  <label className="block text-mdfont-medium text-gray-300 mb-2">
-                    Search and select a patient for this prescription.
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Search patients..."
-                    value={searchPatient}
-                    onChange={(e) => setSearchPatient(e.target.value)}
-                    className="input-field w-full"
-                  />
-                </div>
-
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {filteredPatients.map((patient) => (
-                    <label
-                      key={patient.id}
-                      className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                        formData.patientId === patient.id
-                          ? "border-emerald-500 bg-emerald-500/10"
-                          : "border-dark-tertiary hover:border-gray-600"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="patientId"
-                        value={patient.id}
-                        checked={formData.patientId === patient.id}
-                        onChange={() => handlePatientSelect(patient.id)}
-                        className="w-4 h-4 text-emerald-500"
-                      />
-                      <div className="flex-1">
-                        <div className="font-medium">{patient.name}</div>
-                        {patient.age && (
-                          <div className="text-mdtext-gray-400">
-                            {patient.age}y • {patient.gender}
-                          </div>
-                        )}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-
-                {selectedPatient && (
-                  <div className="mt-4 p-4 bg-dark-secondary rounded-lg border border-dark-tertiary space-y-3">
-                    <div>
-                      <div className="text-xs text-gray-300 mb-1">
-                        Allergies:
-                      </div>
-                      {selectedPatient.allergies &&
-                      selectedPatient.allergies.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {selectedPatient.allergies.map((allergy, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded border border-red-500/20"
-                            >
-                              {allergy}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-mdtext-gray-300">
-                          No known allergies
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-300 mb-1">
-                        Conditions:
-                      </div>
-                      {selectedPatient.conditions &&
-                      selectedPatient.conditions.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {selectedPatient.conditions.map((condition, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 bg-blue-500/10 text-blue-400 text-xs rounded border border-blue-500/20"
-                            >
-                              {condition}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-mdtext-gray-300">
-                          No conditions listed
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      className="text-mdtext-emerald-500 hover:text-emerald-400 transition-colors"
-                    >
-                      View patient details →
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="card">
-              <h2 className="text-xl font-semibold mb-6">
-                Prescription Options
-              </h2>
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    id="electronic"
-                    name="prescriptionFormat"
-                    defaultChecked
-                    className="w-4 h-4 text-emerald-500"
-                  />
-                  <label
-                    htmlFor="electronic"
-                    className="text-mdtext-gray-300 cursor-pointer"
-                  >
-                    Electronic Prescription
-                  </label>
-                </div>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    id="print"
-                    name="prescriptionFormat"
-                    className="w-4 h-4 text-emerald-500"
-                  />
-                  <label
-                    htmlFor="print"
-                    className="text-mdtext-gray-300 cursor-pointer"
-                  >
-                    Print Prescription
-                  </label>
-                </div>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    id="both"
-                    name="prescriptionFormat"
-                    className="w-4 h-4 text-emerald-500"
-                  />
-                  <label
-                    htmlFor="both"
-                    className="text-mdtext-gray-300 cursor-pointer"
-                  >
-                    Both Electronic and Print
-                  </label>
-                </div>
-
-                <div className="pt-4 border-t border-dark-tertiary">
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id="notifyPatient"
-                      defaultChecked
-                      className="w-4 h-4 text-emerald-500"
-                    />
-                    <label
-                      htmlFor="notifyPatient"
-                      className="text-mdtext-gray-300 cursor-pointer"
-                    >
-                      Notify Patient
-                    </label>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="markAsUrgent"
-                    className="w-4 h-4 text-emerald-500"
-                  />
-                  <label
-                    htmlFor="markAsUrgent"
-                    className="text-mdtext-gray-300 cursor-pointer"
-                  >
-                    Mark as Urgent
-                  </label>
-                </div>
-              </div>
-            </div>
+            <hr className="border-dark-tertiary" />
 
             {error && (
               <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
@@ -863,28 +1069,31 @@ export default function CreatePrescriptionPage() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={
-                loading ||
-                !formData.patientId ||
-                !selectedDoctor ||
-                medications.some((m) => !m.name || !m.dosage || !m.frequency)
-              }
-              className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save size={20} />
-              {loading ? "Creating..." : "Create Prescription"}
-            </button>
-
-            <Link href="/prescriptions/all">
-              <button type="button" className="btn-secondary w-full">
-                Cancel
+            {/* Footer Buttons */}
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
+              <Link href="/prescriptions/all" className="w-full sm:w-auto">
+                <button type="button" className="btn-secondary w-full">
+                  Cancel
+                </button>
+              </Link>
+              <button
+                type="submit"
+                disabled={
+                  loading ||
+                  !formData.patientId ||
+                  !selectedDoctor ||
+                  medications.length === 0 ||
+                  medications.some((m) => !m.name || !m.dosage || !m.frequency)
+                }
+                className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save size={20} />
+                {loading ? "Creating..." : "Create Prescription"}
               </button>
-            </Link>
+            </div>
           </div>
         </form>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

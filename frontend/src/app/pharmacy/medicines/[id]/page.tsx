@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { ArrowLeft, Loader, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -117,17 +117,17 @@ export default function MedicineViewPage({
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="flex items-center justify-center py-12">
           <Loader className="animate-spin text-emerald-500" size={32} />
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (error || !medicine) {
     return (
-      <DashboardLayout>
+      <>
         <div className="space-y-6">
           <Link href="/pharmacy/medicines">
             <button className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4">
@@ -140,12 +140,12 @@ export default function MedicineViewPage({
             {error || "Medicine not found"}
           </div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <Link href="/pharmacy/medicines">
@@ -451,6 +451,6 @@ export default function MedicineViewPage({
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

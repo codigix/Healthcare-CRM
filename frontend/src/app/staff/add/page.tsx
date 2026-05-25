@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { ArrowLeft, Save, Upload } from "lucide-react";
 import Link from "next/link";
 
@@ -73,7 +73,7 @@ export default function AddStaffPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link
@@ -501,6 +501,6 @@ export default function AddStaffPage() {
           </form>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

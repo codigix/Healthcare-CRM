@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { Search, Filter, MoreVertical, Eye, Edit2, Trash2 } from "lucide-react";
 import Link from "next/link";
 
@@ -212,7 +212,7 @@ export default function RoomsByDepartmentPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Rooms by Department</h1>
@@ -614,6 +614,6 @@ export default function RoomsByDepartmentPage() {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </>
   );
 }

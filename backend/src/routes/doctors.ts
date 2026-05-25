@@ -14,9 +14,12 @@ router.get('/search', authMiddleware, async (req: AuthRequest, res: Response) =>
 
     const connection = await pool.getConnection();
     
-    const query = `SELECT * FROM doctors 
-                   WHERE LOWER(name) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?) OR LOWER(specialization) LIKE LOWER(?)
-                   ORDER BY createdAt DESC
+    const query = `SELECT d.*, COUNT(a.id) as patients 
+                   FROM doctors d
+                   LEFT JOIN appointments a ON d.id = a.doctorId
+                   WHERE LOWER(d.name) LIKE LOWER(?) OR LOWER(d.email) LIKE LOWER(?) OR LOWER(d.specialization) LIKE LOWER(?)
+                   GROUP BY d.id
+                   ORDER BY d.createdAt DESC
                    LIMIT 20`;
     const searchTerm = `%${String(search)}%`;
     
@@ -73,26 +76,29 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const { page = 1, limit = 10, search } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    let query = 'SELECT * FROM doctors WHERE 1=1';
+    let query = `SELECT d.*, COUNT(a.id) as patients 
+                 FROM doctors d
+                 LEFT JOIN appointments a ON d.id = a.doctorId
+                 WHERE 1=1`;
     const params: any[] = [];
 
     if (search) {
-      query += ' AND (name LIKE ? OR email LIKE ? OR specialization LIKE ?)';
+      query += ' AND (d.name LIKE ? OR d.email LIKE ? OR d.specialization LIKE ?)';
       const searchTerm = `%${String(search)}%`;
       params.push(searchTerm, searchTerm, searchTerm);
     }
 
     const countParams = params.slice();
-    query += ' ORDER BY createdAt DESC LIMIT ? OFFSET ?';
+    query += ' GROUP BY d.id ORDER BY d.createdAt DESC LIMIT ? OFFSET ?';
     params.push(Number(limit), skip);
 
     const connection = await pool.getConnection();
     
     const [doctors]: any = await connection.query(query, params);
     
-    let countSql = 'SELECT COUNT(*) as total FROM doctors WHERE 1=1';
+    let countSql = 'SELECT COUNT(DISTINCT d.id) as total FROM doctors d WHERE 1=1';
     if (search) {
-      countSql += ' AND (name LIKE ? OR email LIKE ? OR specialization LIKE ?)';
+      countSql += ' AND (d.name LIKE ? OR d.email LIKE ? OR d.specialization LIKE ?)';
     }
     
     const result: any = await connection.query(countSql, countParams);

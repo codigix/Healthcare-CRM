@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import { dashboardAPI } from "@/lib/api";
 import {
   BarChart,
@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import {
-  DollarSign,
+  IndianRupee,
   Calendar,
   Users,
   UserCheck,
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -147,11 +147,11 @@ export default function AdminDashboard() {
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="text-emerald-500" size={20} />
+                      <IndianRupee className="text-emerald-500" size={20} />
                       <p className="text-gray-400 text-sm">Total Revenue</p>
                     </div>
                     <p className="text-3xl font-bold">
-                      $
+                      ₹
                       {(typeof stats?.totalRevenue === "number"
                         ? stats.totalRevenue.toFixed(2)
                         : "0.00"
@@ -528,6 +528,6 @@ export default function AdminDashboard() {
           </>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

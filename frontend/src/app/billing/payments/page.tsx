@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
-import { Search, DollarSign, CreditCard, MoreVertical } from "lucide-react";
+
+import { Search, IndianRupee, CreditCard, MoreVertical } from "lucide-react";
 
 interface Payment {
   id: string;
@@ -145,7 +145,7 @@ export default function PaymentsHistoryPage() {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -172,11 +172,11 @@ export default function PaymentsHistoryPage() {
           <div className="card">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-emerald-500" size={24} />
+                <IndianRupee className="text-emerald-500" size={24} />
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  ${totalPayments.toFixed(2)}
+                  ₹{totalPayments.toFixed(2)}
                 </div>
                 <div className="text-mdtext-gray-400">Total Payments</div>
                 <div className="text-xs text-emerald-500">
@@ -189,11 +189,11 @@ export default function PaymentsHistoryPage() {
           <div className="card">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-orange-500" size={24} />
+                <IndianRupee className="text-orange-500" size={24} />
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  ${pendingPayments.toFixed(2)}
+                  ₹{pendingPayments.toFixed(2)}
                 </div>
                 <div className="text-mdtext-gray-400">Pending Payments</div>
                 <div className="text-xs text-orange-500">
@@ -206,11 +206,11 @@ export default function PaymentsHistoryPage() {
           <div className="card">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-red-500" size={24} />
+                <IndianRupee className="text-red-500" size={24} />
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  ${failedPayments.toFixed(2)}
+                  ₹{failedPayments.toFixed(2)}
                 </div>
                 <div className="text-mdtext-gray-400">Failed Payments</div>
                 <div className="text-xs text-red-500">Require attention</div>
@@ -399,7 +399,7 @@ export default function PaymentsHistoryPage() {
                     </td>
                     <td className="py-4 px-4 text-gray-300">{payment.date}</td>
                     <td className="py-4 px-4 text-white font-medium">
-                      ${payment.amount.toFixed(2)}
+                      ₹{payment.amount.toFixed(2)}
                     </td>
                     <td className="py-4 px-4 text-gray-300">
                       {payment.method}
@@ -425,6 +425,6 @@ export default function PaymentsHistoryPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

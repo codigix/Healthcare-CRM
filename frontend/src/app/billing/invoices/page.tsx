@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
-import { Search, Plus, DollarSign, FileText, MoreVertical } from "lucide-react";
+
+import { Search, Plus, IndianRupee, FileText, MoreVertical } from "lucide-react";
 import Link from "next/link";
 
 interface Invoice {
@@ -142,7 +142,7 @@ export default function InvoicesPage() {
   const insuranceClaims = 5;
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -167,11 +167,11 @@ export default function InvoicesPage() {
           <div className="card">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-blue-500" size={24} />
+                <IndianRupee className="text-blue-500" size={24} />
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  ${totalOutstanding.toFixed(2)}
+                  ₹{totalOutstanding.toFixed(2)}
                 </div>
                 <div className="text-mdtext-gray-400">Total Outstanding</div>
                 <div className="text-xs text-red-500">Pending payments</div>
@@ -182,11 +182,11 @@ export default function InvoicesPage() {
           <div className="card">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                <DollarSign className="text-emerald-500" size={24} />
+                <IndianRupee className="text-emerald-500" size={24} />
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  ${paidThisMonth.toFixed(2)}
+                  ₹{paidThisMonth.toFixed(2)}
                 </div>
                 <div className="text-mdtext-gray-400">Paid This Month</div>
                 <div className="text-xs text-emerald-500">
@@ -360,10 +360,10 @@ export default function InvoicesPage() {
                       </div>
                     </td>
                     <td className="py-4 px-4 text-white font-medium">
-                      ${invoice.amount.toFixed(2)}
+                      ₹{invoice.amount.toFixed(2)}
                     </td>
                     <td className="py-4 px-4 text-white font-medium">
-                      ${invoice.balance.toFixed(2)}
+                      ₹{invoice.balance.toFixed(2)}
                     </td>
                     <td className="py-4 px-4">
                       <span
@@ -389,6 +389,6 @@ export default function InvoicesPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 }

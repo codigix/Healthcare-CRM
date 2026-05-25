@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/Layout/DashboardLayout";
+
 import {
   ArrowLeft,
   Building2,
@@ -148,7 +148,7 @@ export default function AddDepartmentPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Link
@@ -452,6 +452,6 @@ export default function AddDepartmentPage() {
           </div>
         </form>
       </div>
-    </DashboardLayout>
+    </>
   );
 }
