@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
+import bcrypt from 'bcryptjs';
 import pool from '../db';
 
 const router = Router();
@@ -132,15 +133,28 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, phone, specialization, experience, schedule, avatar } = req.body;
+    const { name, email, phone, specialization, experience, schedule, avatar, departmentId, password } = req.body;
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: 'Password is required and must be at least 6 characters' });
+    }
 
     const connection = await pool.getConnection();
     
     const doctorId = require('uuid').v4();
-    const query = `INSERT INTO doctors (id, name, email, phone, specialization, experience, schedule, avatar, createdAt, updatedAt)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+    const query = `INSERT INTO doctors (id, name, email, phone, specialization, experience, schedule, avatar, departmentId, createdAt, updatedAt)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
     
-    await connection.query(query, [doctorId, name, email, phone, specialization, Number(experience), schedule, avatar]);
+    await connection.query(query, [doctorId, name, email, phone, specialization, Number(experience), schedule, avatar, departmentId || null]);
+
+    // Automatically create corresponding User credentials
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [existingUsers]: any = await connection.query('SELECT id FROM users WHERE email = ?', [email]);
+    if (existingUsers.length === 0) {
+      const userQuery = `INSERT INTO users (id, name, email, password, role, department, createdAt, updatedAt)
+                         VALUES (UUID(), ?, ?, ?, 'doctor', 'Doctor', NOW(), NOW())`;
+      await connection.query(userQuery, [name, email, hashedPassword]);
+    }
 
     const [doctor]: any = await connection.query('SELECT * FROM doctors WHERE id = ?', [doctorId]);
     connection.release();
@@ -154,9 +168,13 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, phone, specialization, experience, schedule, avatar } = req.body;
+    const { name, email, phone, specialization, experience, schedule, avatar, departmentId, password } = req.body;
     const connection = await pool.getConnection();
     
+    // Fetch doctor's old email first to locate user
+    const [oldDoc]: any = await connection.query('SELECT email FROM doctors WHERE id = ?', [req.params.id]);
+    const oldEmail = oldDoc[0]?.email;
+
     const updates: string[] = [];
     const values: any[] = [];
 
@@ -167,6 +185,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     if (experience) { updates.push('experience = ?'); values.push(Number(experience)); }
     if (schedule) { updates.push('schedule = ?'); values.push(schedule); }
     if (avatar) { updates.push('avatar = ?'); values.push(avatar); }
+    if (departmentId !== undefined) { updates.push('departmentId = ?'); values.push(departmentId); }
 
     if (updates.length === 0) {
       connection.release();
@@ -184,6 +203,25 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Doctor not found' });
     }
 
+    // Synchronize User profile details and password
+    if (oldEmail) {
+      const userUpdates: string[] = [];
+      const userValues: any[] = [];
+      
+      if (name) { userUpdates.push('name = ?'); userValues.push(name); }
+      if (email) { userUpdates.push('email = ?'); userValues.push(email); }
+      if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        userUpdates.push('password = ?');
+        userValues.push(hashedPassword);
+      }
+      
+      if (userUpdates.length > 0) {
+        userValues.push(oldEmail);
+        await connection.query(`UPDATE users SET ${userUpdates.join(', ')}, updatedAt = NOW() WHERE email = ? AND role = 'doctor'`, userValues);
+      }
+    }
+
     const [doctor]: any = await connection.query('SELECT * FROM doctors WHERE id = ?', [req.params.id]);
     connection.release();
 
@@ -197,12 +235,24 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
+    
+    // Fetch doctor's email first
+    const [doc]: any = await connection.query('SELECT email FROM doctors WHERE id = ?', [req.params.id]);
+    const email = doc[0]?.email;
+    
     const result = await connection.query('DELETE FROM doctors WHERE id = ?', [req.params.id]);
-    connection.release();
-
+    
     if ((result[0] as any).affectedRows === 0) {
+      connection.release();
       return res.status(404).json({ error: 'Doctor not found' });
     }
+
+    // Delete corresponding user credentials
+    if (email) {
+      await connection.query('DELETE FROM users WHERE email = ? AND role = "doctor"', [email]);
+    }
+    
+    connection.release();
 
     res.json({ message: 'Doctor deleted successfully' });
   } catch (error: any) {

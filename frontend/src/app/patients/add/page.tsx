@@ -7,13 +7,28 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { patientAPI } from "@/lib/api";
 
+import { useAuthStore } from "@/lib/store";
+import { useEffect } from "react";
+
 type TabType = "personal" | "medical";
 
 export default function AddPatientPage() {
   const router = useRouter();
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (user && user.role === "doctor") {
+      router.replace("/patients");
+    }
+  }, [user, router]);
+
   const [activeTab, setActiveTab] = useState<TabType>("personal");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  if (user?.role === "doctor") {
+    return null;
+  }
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -24,6 +39,8 @@ export default function AddPatientPage() {
     phone: "",
     address: "",
     history: "",
+    bloodGroup: "",
+    status: "Active",
   });
 
   const handleChange = (
@@ -55,6 +72,8 @@ export default function AddPatientPage() {
         gender: formData.gender,
         address: formData.address || "",
         history: formData.history || null,
+        bloodGroup: formData.bloodGroup || null,
+        status: formData.status || "Active",
       };
 
       console.log('Creating patient with data:', patientData);
@@ -90,170 +109,186 @@ export default function AddPatientPage() {
         </div>
 
         <div className="card">
-          <div className="border-b border-dark-tertiary mb-6">
-            <div className="flex gap-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-6 py-3 font-medium transition-colors relative ${
-                    activeTab === tab.id
-                      ? "text-white"
-                      : "text-gray-400 hover:text-gray-300"
-                  }`}
-                >
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
-                  )}
-                </button>
-              ))}
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Section 1: Personal Information */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-emerald-400 mb-1">Personal Information</h3>
+                <p className="text-gray-400 text-xs">Enter the patient's basic details.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    First Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    placeholder="Enter first name"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Last Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    placeholder="Enter last name"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Date of Birth *
+                  </label>
+                  <input
+                    type="date"
+                    name="dateOfBirth"
+                    value={formData.dateOfBirth}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Gender *
+                  </label>
+                  <select
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    required
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Blood Group
+                  </label>
+                  <select
+                    name="bloodGroup"
+                    value={formData.bloodGroup}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                  >
+                    <option value="">Select blood group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Status
+                  </label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    placeholder="Enter email address"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    placeholder="Enter phone number"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Address (Optional)
+                </label>
+                <textarea
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="input-field w-full"
+                  placeholder="Enter address"
+                  rows={3}
+                />
+              </div>
             </div>
-          </div>
 
-          <form onSubmit={handleSubmit}>
-            {activeTab === "personal" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Personal Information</h3>
-                  <p className="text-gray-400 text-sm mb-6">Enter the patient's basic details.</p>
-                </div>
+            <hr className="border-dark-tertiary" />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      First Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter first name"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Last Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter last name"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Date of Birth *
-                    </label>
-                    <input
-                      type="date"
-                      name="dateOfBirth"
-                      value={formData.dateOfBirth}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Gender *
-                    </label>
-                    <select
-                      name="gender"
-                      value={formData.gender}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      required
-                    >
-                      <option value="">Select gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter email address"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter phone number"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Address (Optional)
-                  </label>
-                  <textarea
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    className="input-field w-full"
-                    placeholder="Enter address"
-                    rows={3}
-                  />
-                </div>
+            {/* Section 2: Medical History */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-emerald-400 mb-1">Medical Background</h3>
+                <p className="text-gray-400 text-xs">Enter the patient's historical clinical details.</p>
               </div>
-            )}
 
-            {activeTab === "medical" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Medical History</h3>
-                  <p className="text-gray-400 text-sm mb-6">Enter the patient's medical background information.</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Medical History (Optional)
-                  </label>
-                  <textarea
-                    name="history"
-                    value={formData.history}
-                    onChange={handleChange}
-                    className="input-field w-full"
-                    placeholder="Enter medical history, past conditions, surgeries, allergies, etc."
-                    rows={6}
-                  />
-                  <p className="text-xs text-gray-400 mt-2">
-                    Include any relevant medical information such as past illnesses, surgeries, allergies, medications, etc.
-                  </p>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Medical History (Optional)
+                </label>
+                <textarea
+                  name="history"
+                  value={formData.history}
+                  onChange={handleChange}
+                  className="input-field w-full"
+                  placeholder="Enter medical history, past conditions, surgeries, allergies, etc."
+                  rows={5}
+                />
+                <p className="text-xs text-gray-400 mt-2">
+                  Include any relevant medical information such as past illnesses, surgeries, allergies, medications, etc.
+                </p>
               </div>
-            )}
+            </div>
 
             {error && (
               <div className="p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-300 text-sm mt-6">

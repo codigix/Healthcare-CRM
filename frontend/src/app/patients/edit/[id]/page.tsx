@@ -7,12 +7,25 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { patientAPI } from "@/lib/api";
 
+import { useAuthStore } from "@/lib/store";
+
 type TabType = "personal" | "medical";
 
 export default function EditPatientPage() {
   const router = useRouter();
   const params = useParams();
   const patientId = params.id as string;
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (user && user.role === "doctor") {
+      router.replace("/patients");
+    }
+  }, [user, router]);
+
+  if (user?.role === "doctor") {
+    return null;
+  }
 
   const [activeTab, setActiveTab] = useState<TabType>("personal");
   const [loading, setLoading] = useState(true);
@@ -27,6 +40,8 @@ export default function EditPatientPage() {
     gender: "",
     address: "",
     history: "",
+    bloodGroup: "",
+    status: "Active",
   });
 
   useEffect(() => {
@@ -46,6 +61,8 @@ export default function EditPatientPage() {
           gender: patient.gender || "",
           address: patient.address || "",
           history: patient.history || "",
+          bloodGroup: patient.bloodGroup || "",
+          status: patient.status || "Active",
         });
       } catch (err) {
         setError("Failed to load patient details");
@@ -83,6 +100,8 @@ export default function EditPatientPage() {
         gender: formData.gender,
         address: formData.address,
         history: formData.history,
+        bloodGroup: formData.bloodGroup || null,
+        status: formData.status || "Active",
       });
       router.push("/patients");
     } catch (err: any) {
@@ -124,166 +143,168 @@ export default function EditPatientPage() {
         </div>
 
         <div className="card">
-          <div className="border-b border-dark-tertiary mb-6">
-            <div className="flex gap-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-6 py-3 font-medium transition-colors relative ${
-                    activeTab === tab.id
-                      ? "text-white"
-                      : "text-gray-400 hover:text-gray-300"
-                  }`}
-                >
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Section 1: Personal Information */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-emerald-400 mb-1">Personal Information</h3>
+                <p className="text-gray-400 text-xs">Edit the patient's personal details.</p>
+              </div>
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-300">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            {activeTab === "personal" && (
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">
-                    Personal Information
-                  </h3>
-                  <p className="text-mdtext-gray-400 mb-6">
-                    Edit the patient's personal details.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter full name"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Date of Birth
-                    </label>
-                    <input
-                      type="date"
-                      name="dob"
-                      value={formData.dob}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Gender
-                    </label>
-                    <select
-                      name="gender"
-                      value={formData.gender}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      required
-                    >
-                      <option value="">Select gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter email address"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter phone number"
-                      required
-                    />
-                  </div>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    placeholder="Enter full name"
+                    required
+                  />
                 </div>
 
                 <div>
                   <label className="block text-mdfont-medium text-gray-300 mb-2">
-                    Address
+                    Date of Birth
                   </label>
-                  <textarea
-                    name="address"
-                    value={formData.address}
+                  <input
+                    type="date"
+                    name="dob"
+                    value={formData.dob}
                     onChange={handleChange}
                     className="input-field w-full"
-                    placeholder="Enter address"
-                    rows={3}
+                    required
                   />
-                </div>
-              </div>
-            )}
-
-            {activeTab === "medical" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">
-                    Medical Information
-                  </h3>
-                  <p className="text-mdtext-gray-400 mb-6">
-                    Edit the patient's medical history.
-                  </p>
                 </div>
 
                 <div>
                   <label className="block text-mdfont-medium text-gray-300 mb-2">
-                    Medical History / Conditions
+                    Gender
                   </label>
-                  <textarea
-                    name="history"
-                    value={formData.history}
+                  <select
+                    name="gender"
+                    value={formData.gender}
                     onChange={handleChange}
                     className="input-field w-full"
-                    placeholder="Enter medical history, allergies, chronic conditions, etc."
-                    rows={6}
+                    required
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Blood Group
+                  </label>
+                  <select
+                    name="bloodGroup"
+                    value={formData.bloodGroup}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                  >
+                    <option value="">Select blood group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Status
+                  </label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    placeholder="Enter email address"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-mdfont-medium text-gray-300 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    placeholder="Enter phone number"
+                    required
                   />
                 </div>
               </div>
-            )}
+
+              <div>
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
+                  Address
+                </label>
+                <textarea
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="input-field w-full"
+                  placeholder="Enter address"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <hr className="border-dark-tertiary" />
+
+            {/* Section 2: Medical Information */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-emerald-400 mb-1">Medical Background</h3>
+                <p className="text-gray-400 text-xs">Edit the patient's medical history.</p>
+              </div>
+
+              <div>
+                <label className="block text-mdfont-medium text-gray-300 mb-2">
+                  Medical History / Conditions
+                </label>
+                <textarea
+                  name="history"
+                  value={formData.history}
+                  onChange={handleChange}
+                  className="input-field w-full"
+                  placeholder="Enter medical history, allergies, chronic conditions, etc."
+                  rows={5}
+                />
+              </div>
+            </div>
 
             <div className="flex gap-4 mt-8">
               <button

@@ -14,19 +14,24 @@ router.get('/search', authMiddleware, async (req: AuthRequest, res: Response) =>
 
     const connection = await pool.getConnection();
     
-    const query = `SELECT 
+    let query = `SELECT 
                     p.*,
-                    MAX(a.date) as lastVisitDate,
-                    MAX(a.date) as lastAppointmentDate
+                    (SELECT a.date FROM appointments a WHERE a.patientId = p.id ORDER BY a.date DESC, a.time DESC LIMIT 1) as lastVisitDate,
+                    (SELECT d.name FROM appointments a JOIN doctors d ON a.doctorId = d.id WHERE a.patientId = p.id ORDER BY a.date DESC, a.time DESC LIMIT 1) as lastVisitedDoctor,
+                    (SELECT d.specialization FROM appointments a JOIN doctors d ON a.doctorId = d.id WHERE a.patientId = p.id ORDER BY a.date DESC, a.time DESC LIMIT 1) as lastVisitedDepartment
                   FROM patients p
-                  LEFT JOIN appointments a ON p.id = a.patientId
-                  WHERE LOWER(p.name) LIKE LOWER(?)
-                  GROUP BY p.id
-                  ORDER BY p.createdAt DESC
-                  LIMIT 10`;
-    const searchTerm = `%${String(name)}%`;
+                  WHERE LOWER(p.name) LIKE LOWER(?)`;
+    const params: any[] = [`%${String(name)}%`];
+
+    if (req.user?.role === 'doctor') {
+      const docId = req.user.doctorId;
+      query += ` AND (p.doctorId = ? OR p.id IN (SELECT DISTINCT patientId FROM appointments WHERE doctorId = ?) OR p.id IN (SELECT DISTINCT patientId FROM prescriptions WHERE doctorId = ?))`;
+      params.push(docId, docId, docId);
+    }
+
+    query += ` ORDER BY p.createdAt DESC LIMIT 10`;
     
-    const [patients]: any = await connection.query(query, [searchTerm]);
+    const [patients]: any = await connection.query(query, params);
     connection.release();
 
     if (patients.length === 0) {
@@ -57,6 +62,8 @@ router.get('/search', authMiddleware, async (req: AuthRequest, res: Response) =>
       age: calculateAge(patient.dob),
       lastVisit: patient.lastVisitDate ? formatDate(patient.lastVisitDate) : null,
       medicalHistory: patient.history || null,
+      doctor: patient.lastVisitedDoctor || null,
+      doctorSpecialty: patient.lastVisitedDepartment || null,
     }));
 
     res.json({ success: true, patients: enrichedPatients });
@@ -71,30 +78,32 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const { page = 1, limit = 10, search } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    let query = `SELECT 
-                  p.*, 
-                  MAX(a.date) as lastVisitDate,
-                  MAX(d.name) as assignedDoctorName,
-                  MAX(d.specialization) as assignedDoctorSpecialty
-                FROM patients p
-                LEFT JOIN appointments a ON p.id = a.patientId
-                LEFT JOIN doctors d ON p.doctorId = d.id
-                WHERE 1=1`;
     const params: any[] = [];
+    let whereClause = ' WHERE 1=1';
 
     if (search) {
-      query += ' AND (p.name LIKE ? OR p.email LIKE ? OR p.phone LIKE ?)';
+      whereClause += ' AND (p.name LIKE ? OR p.email LIKE ? OR p.phone LIKE ?)';
       const searchTerm = `%${String(search)}%`;
       params.push(searchTerm, searchTerm, searchTerm);
     }
 
-    query += ' GROUP BY p.id';
+    if (req.user?.role === 'doctor') {
+      const docId = req.user.doctorId;
+      whereClause += ` AND (p.doctorId = ? OR p.id IN (SELECT DISTINCT patientId FROM appointments WHERE doctorId = ?) OR p.id IN (SELECT DISTINCT patientId FROM prescriptions WHERE doctorId = ?))`;
+      params.push(docId, docId, docId);
+    }
 
     const countParams = params.slice();
-    const countSql = `SELECT COUNT(DISTINCT p.id) as total FROM patients p
-                     WHERE 1=1`;
     
-    const countQuery = countSql + (search ? ' AND (p.name LIKE ? OR p.email LIKE ? OR p.phone LIKE ?)' : '');
+    let query = `SELECT 
+                  p.*, 
+                  (SELECT a.date FROM appointments a WHERE a.patientId = p.id ORDER BY a.date DESC, a.time DESC LIMIT 1) as lastVisitDate,
+                  (SELECT d.name FROM appointments a JOIN doctors d ON a.doctorId = d.id WHERE a.patientId = p.id ORDER BY a.date DESC, a.time DESC LIMIT 1) as lastVisitedDoctor,
+                  (SELECT d.specialization FROM appointments a JOIN doctors d ON a.doctorId = d.id WHERE a.patientId = p.id ORDER BY a.date DESC, a.time DESC LIMIT 1) as lastVisitedDepartment
+                FROM patients p
+                ${whereClause}`;
+
+    const countQuery = `SELECT COUNT(DISTINCT p.id) as total FROM patients p ${whereClause}`;
     
     query += ' ORDER BY p.createdAt DESC LIMIT ? OFFSET ?';
     params.push(Number(limit), skip);
@@ -131,11 +140,11 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       return {
         ...patient,
         age: calculateAge(patient.dob),
-        status: 'Active',
+        status: patient.status || 'Active',
         lastVisit: patient.lastVisitDate ? formatDate(patient.lastVisitDate) : null,
         condition: patient.history || null,
-        doctor: patient.assignedDoctorName || null,
-        doctorSpecialty: patient.assignedDoctorSpecialty || null,
+        doctor: patient.lastVisitedDoctor || null,
+        doctorSpecialty: patient.lastVisitedDepartment || null,
       };
     });
 
@@ -153,7 +162,25 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     connection.release();
 
     if (patients.length === 0) {
+      connection.release();
       return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    if (req.user?.role === 'doctor') {
+      const docId = req.user.doctorId;
+      const [hasAccess]: any = await connection.query(
+        `SELECT id FROM patients 
+         WHERE id = ? AND (
+           doctorId = ? 
+           OR id IN (SELECT DISTINCT patientId FROM appointments WHERE doctorId = ?) 
+           OR id IN (SELECT DISTINCT patientId FROM prescriptions WHERE doctorId = ?)
+         )`,
+        [req.params.id, docId, docId, docId]
+      );
+      if (hasAccess.length === 0) {
+        connection.release();
+        return res.status(403).json({ error: 'Access denied: You are not authorized to view this patient\'s clinical record.' });
+      }
     }
 
     res.json(patients[0]);
@@ -165,15 +192,19 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, phone, dob, gender, address, history, specialization, doctorId } = req.body;
+    if (req.user?.role === 'doctor') {
+      return res.status(403).json({ error: 'Access denied: Doctors are not permitted to register patients. Patient profiles are created exclusively by the reception staff.' });
+    }
+
+    const { name, email, phone, dob, gender, address, history, bloodGroup, status } = req.body;
 
     const connection = await pool.getConnection();
     
     const patientId = require('uuid').v4();
-    const query = `INSERT INTO patients (id, name, email, phone, dob, gender, address, history, specialization, doctorId, createdAt, updatedAt)
+    const query = `INSERT INTO patients (id, name, email, phone, dob, gender, address, history, bloodGroup, status, createdAt, updatedAt)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
     
-    await connection.query(query, [patientId, name, email, phone, new Date(dob), gender, address, history, specialization, doctorId]);
+    await connection.query(query, [patientId, name, email, phone, new Date(dob), gender, address, history, bloodGroup || null, status || 'Active']);
 
     const [patient]: any = await connection.query('SELECT * FROM patients WHERE id = ?', [patientId]);
     connection.release();
@@ -187,7 +218,11 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, phone, dob, gender, address, history, specialization, doctorId } = req.body;
+    if (req.user?.role === 'doctor') {
+      return res.status(403).json({ error: 'Access denied: Doctors are not permitted to update patient profiles.' });
+    }
+
+    const { name, email, phone, dob, gender, address, history, bloodGroup, status } = req.body;
     const connection = await pool.getConnection();
     
     const updates: string[] = [];
@@ -200,8 +235,8 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     if (gender) { updates.push('gender = ?'); values.push(gender); }
     if (address) { updates.push('address = ?'); values.push(address); }
     if (history !== undefined) { updates.push('history = ?'); values.push(history); }
-    if (specialization !== undefined) { updates.push('specialization = ?'); values.push(specialization); }
-    if (doctorId !== undefined) { updates.push('doctorId = ?'); values.push(doctorId); }
+    if (bloodGroup !== undefined) { updates.push('bloodGroup = ?'); values.push(bloodGroup); }
+    if (status !== undefined) { updates.push('status = ?'); values.push(status); }
 
     if (updates.length === 0) {
       connection.release();
@@ -231,6 +266,10 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
+    if (req.user?.role === 'doctor') {
+      return res.status(403).json({ error: 'Access denied: Doctors are not permitted to delete patient profiles.' });
+    }
+
     const connection = await pool.getConnection();
     const result = await connection.query('DELETE FROM patients WHERE id = ?', [req.params.id]);
     connection.release();

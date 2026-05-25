@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { patientAPI } from '@/lib/api';
 import { Plus, Search, Filter, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { useAuthStore } from '@/lib/store';
 
 interface Patient {
   id: string;
@@ -36,6 +37,9 @@ const calculateAge = (dob: string): number => {
 };
 
 export default function PatientsPage() {
+  const { user } = useAuthStore();
+  const isDoctor = user?.role === 'doctor';
+
   const [patients, setPatients] = useState<Patient[]>([]);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -79,10 +83,12 @@ export default function PatientsPage() {
             <h1 className="text-3xl font-bold mb-2">Patients</h1>
             <p className="text-gray-400">Manage your patients and their medical records.</p>
           </div>
-          <Link href="/patients/add" className="btn-primary flex items-center gap-2">
-            <Plus size={20} />
-            Add Patient
-          </Link>
+          {!isDoctor && (
+            <Link href="/patients/add" className="btn-primary flex items-center gap-2">
+              <Plus size={20} />
+              Add Patient
+            </Link>
+          )}
         </div>
 
         <div className="card">
@@ -121,9 +127,7 @@ export default function PatientsPage() {
                     <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Age/Gender</th>
                     <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Status</th>
                     <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Last Visit</th>
-                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Condition</th>
-                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Doctor</th>
-                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>
+                    {!isDoctor && <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -136,7 +140,9 @@ export default function PatientsPage() {
                           <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 font-semibold">
                             {patient.name.charAt(0).toUpperCase()}
                           </div>
-                          <span className="font-medium">{patient.name}</span>
+                          <Link href={`/patients/${patient.id}`} className="font-medium hover:text-emerald-400 transition-colors">
+                            {patient.name}
+                          </Link>
                         </div>
                       </td>
                       <td className="py-4 px-4 text-gray-300">
@@ -152,52 +158,24 @@ export default function PatientsPage() {
                         </span>
                       </td>
                       <td className="py-4 px-4 text-gray-300">{patient.lastVisit ? patient.lastVisit : '-'}</td>
-                      <td className="py-4 px-4 text-gray-300">{patient.condition ? patient.condition : '-'}</td>
-                      <td className="py-4 px-4">
-                        <div className="text-gray-300">
-                          {patient.doctor ? (
-                            <div>
-                              <div className="font-medium">{patient.doctor}</div>
-                              {patient.doctorSpecialty && (
-                                <div className="text-xs text-gray-400">{patient.doctorSpecialty}</div>
-                              )}
-                            </div>
-                          ) : (
-                            '-'
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 relative">
-                        <div className="flex items-center justify-center">
-                          <button 
-                            onClick={() => setOpenMenuId(openMenuId === patient.id ? null : patient.id)}
-                            className="p-2 hover:bg-dark-tertiary rounded transition-colors"
-                          >
-                            <MoreVertical size={18} className="text-gray-400" />
-                          </button>
-                          
-                          {openMenuId === patient.id && (
-                            <div className="absolute right-0 mt-2 w-40 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-lg z-10 top-full">
-                              <Link href={`/patients/edit/${patient.id}`}>
-                                <button className="w-full text-left px-4 py-2 hover:bg-dark-tertiary transition-colors flex items-center gap-2 text-gray-300 hover:text-white first:rounded-t-lg">
-                                  <Edit size={16} />
-                                  Edit
-                                </button>
-                              </Link>
-                              <button
-                                onClick={() => {
-                                  handleDelete(patient.id);
-                                  setOpenMenuId(null);
-                                }}
-                                className="w-full text-left px-4 py-2 hover:bg-red-500/20 transition-colors flex items-center gap-2 text-red-400 hover:text-red-300 last:rounded-b-lg"
-                              >
-                                <Trash2 size={16} />
-                                Delete
+                      {!isDoctor && (
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2">
+                            <Link href={`/patients/edit/${patient.id}`} title="Edit Patient">
+                              <button className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-colors border border-emerald-500/20 flex items-center justify-center">
+                                <Edit size={15} />
                               </button>
-                            </div>
-                          )}
-                        </div>
-                      </td>
+                            </Link>
+                            <button
+                              onClick={() => handleDelete(patient.id)}
+                              title="Delete Patient"
+                              className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors border border-red-500/20 flex items-center justify-center"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                     );
                   })}

@@ -9,7 +9,7 @@ const router = Router();
 router.post('/register', async (req: AuthRequest, res: Response) => {
   let connection;
   try {
-    const { name, email, password, role, department } = req.body;
+    const { name, email, password, role, department, phone, specialization, experience, avatar } = req.body;
 
     connection = await pool.getConnection();
     
@@ -23,7 +23,27 @@ router.post('/register', async (req: AuthRequest, res: Response) => {
     const query = `INSERT INTO users (id, name, email, password, role, department, createdAt, updatedAt) 
                    VALUES (UUID(), ?, ?, ?, ?, ?, NOW(), NOW())`;
     
-    await connection.query(query, [name, email, hashedPassword, role || 'doctor', department || null]);
+    const resolvedRole = role || 'doctor';
+    await connection.query(query, [name, email, hashedPassword, resolvedRole, department || null]);
+
+    if (resolvedRole === 'doctor') {
+      const [existingDoc]: any = await connection.query('SELECT id FROM doctors WHERE email = ?', [email]);
+      if (existingDoc.length === 0) {
+        const doctorUuid = require('uuid').v4();
+        const docQuery = `INSERT INTO doctors (id, name, email, phone, specialization, experience, schedule, avatar, createdAt, updatedAt)
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+        await connection.query(docQuery, [
+          doctorUuid,
+          name,
+          email,
+          phone || '',
+          specialization || 'General Medicine',
+          Number(experience) || 0,
+          'Monday-Friday, 9:00 AM - 5:00 PM',
+          avatar || null
+        ]);
+      }
+    }
 
     const [user]: any = await connection.query('SELECT id, name, email, role, department FROM users WHERE email = ?', [email]);
     
@@ -35,14 +55,14 @@ router.post('/register', async (req: AuthRequest, res: Response) => {
       }
     }
     
-    const resolvedRole = user[0].department ? user[0].department.toLowerCase() : user[0].role;
+    const resolvedRoleToken = user[0].department ? user[0].department.toLowerCase() : user[0].role;
     const token = jwt.sign(
-      { id: user[0].id, email: user[0].email, role: resolvedRole, department: user[0].department, doctorId },
+      { id: user[0].id, email: user[0].email, role: resolvedRoleToken, department: user[0].department, doctorId },
       process.env.JWT_SECRET || 'secret',
       { expiresIn: '7d' }
     );
 
-    res.status(201).json({ token, user: { id: user[0].id, name: user[0].name, email: user[0].email, role: resolvedRole, department: user[0].department, doctorId } });
+    res.status(201).json({ token, user: { id: user[0].id, name: user[0].name, email: user[0].email, role: resolvedRoleToken, department: user[0].department, doctorId } });
   } catch (error: any) {
     console.error('[AUTH REGISTER] Error:', error);
     res.status(500).json({ error: 'Registration failed', details: error.message });

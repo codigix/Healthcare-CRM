@@ -1,23 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { doctorAPI } from "@/lib/api";
-
-type TabType = "personal" | "professional";
+import { doctorAPI, departmentAPI } from "@/lib/api";
 
 export default function EditDoctorPage() {
   const router = useRouter();
   const params = useParams();
   const doctorId = params.id as string;
 
-  const [activeTab, setActiveTab] = useState<TabType>("personal");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [departments, setDepartments] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -26,7 +23,20 @@ export default function EditDoctorPage() {
     specialization: "",
     experience: "",
     schedule: "",
+    departmentId: "",
   });
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await departmentAPI.list(1, 100);
+        setDepartments(response.data.departments || []);
+      } catch (err) {
+        console.error("Failed to fetch departments", err);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -41,6 +51,7 @@ export default function EditDoctorPage() {
           specialization: doctor.specialization || "",
           experience: doctor.experience?.toString() || "",
           schedule: doctor.schedule || "",
+          departmentId: doctor.departmentId || "",
         });
       } catch (err) {
         setError("Failed to load doctor details");
@@ -77,6 +88,7 @@ export default function EditDoctorPage() {
         specialization: formData.specialization,
         experience: parseInt(formData.experience) || 0,
         schedule: formData.schedule,
+        departmentId: formData.departmentId,
       });
       router.push("/doctors");
     } catch (err: any) {
@@ -85,11 +97,6 @@ export default function EditDoctorPage() {
       setSubmitting(false);
     }
   };
-
-  const tabs = [
-    { id: "personal" as TabType, label: "Personal Information" },
-    { id: "professional" as TabType, label: "Professional Details" },
-  ];
 
   if (loading) {
     return (
@@ -118,155 +125,155 @@ export default function EditDoctorPage() {
         </div>
 
         <div className="card">
-          <div className="border-b border-dark-tertiary mb-6">
-            <div className="flex gap-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-6 py-3 font-medium transition-colors relative ${
-                    activeTab === tab.id
-                      ? "text-white"
-                      : "text-gray-400 hover:text-gray-300"
-                  }`}
-                >
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {error && (
             <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-300">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
-            {activeTab === "personal" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">
-                    Personal Information
-                  </h3>
-                  <p className="text-mdtext-gray-400 mb-6">
-                    Edit the doctor's personal details.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter full name"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter email address"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter phone number"
-                      required
-                    />
-                  </div>
-                </div>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Section 1: Personal & Contact Information */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-bold text-white border-b border-dark-tertiary pb-3">
+                  Personal & Contact Information
+                </h3>
+                <p className="text-sm text-gray-400 mt-2">
+                  Edit the doctor's personal credentials and contact settings.
+                </p>
               </div>
-            )}
 
-            {activeTab === "professional" && (
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">
-                    Professional Details
-                  </h3>
-                  <p className="text-mdtext-gray-400 mb-6">
-                    Edit the doctor's professional information.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Specialization
-                    </label>
-                    <input
-                      type="text"
-                      name="specialization"
-                      value={formData.specialization}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter specialization (e.g., Cardiology)"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-mdfont-medium text-gray-300 mb-2">
-                      Years of Experience
-                    </label>
-                    <input
-                      type="number"
-                      name="experience"
-                      value={formData.experience}
-                      onChange={handleChange}
-                      className="input-field w-full"
-                      placeholder="Enter years of experience"
-                      min="0"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-mdfont-medium text-gray-300 mb-2">
-                    Schedule
+                  <label className="block text-md font-medium text-gray-300 mb-2">
+                    Full Name *
                   </label>
-                  <textarea
-                    name="schedule"
-                    value={formData.schedule}
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
                     className="input-field w-full"
-                    placeholder="Enter schedule (e.g., Monday-Friday, 9:00 AM - 5:00 PM)"
-                    rows={3}
+                    placeholder="Enter full name"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-md font-medium text-gray-300 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    placeholder="Enter email address"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-md font-medium text-gray-300 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    placeholder="Enter phone number"
+                    required
                   />
                 </div>
               </div>
-            )}
+            </div>
 
-            <div className="flex gap-4 mt-8">
+            {/* Section 2: Professional Details */}
+            <div className="space-y-6 pt-4">
+              <div>
+                <h3 className="text-lg font-bold text-white border-b border-dark-tertiary pb-3">
+                  Professional Practice Details
+                </h3>
+                <p className="text-sm text-gray-400 mt-2">
+                  Edit doctor specialization, years of experience, and clinical department assignment.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-md font-medium text-gray-300 mb-2">
+                    Specialization *
+                  </label>
+                  <input
+                    type="text"
+                    name="specialization"
+                    value={formData.specialization}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    placeholder="Enter specialization (e.g., Cardiology)"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-md font-medium text-gray-300 mb-2">
+                    Years of Experience *
+                  </label>
+                  <input
+                    type="number"
+                    name="experience"
+                    value={formData.experience}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    placeholder="Enter years of experience"
+                    min="0"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-md font-medium text-gray-300 mb-2">
+                    Clinical Department *
+                  </label>
+                  <select
+                    name="departmentId"
+                    value={formData.departmentId}
+                    onChange={handleChange}
+                    className="input-field w-full"
+                    required
+                  >
+                    <option value="">Select clinical department</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-md font-medium text-gray-300 mb-2">
+                  Doctor Schedule
+                </label>
+                <textarea
+                  name="schedule"
+                  value={formData.schedule}
+                  onChange={handleChange}
+                  className="input-field w-full"
+                  placeholder="Enter schedule (e.g., Monday-Friday, 9:00 AM - 5:00 PM)"
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-dark-tertiary">
+              <Link href="/doctors" className="btn-secondary">
+                Cancel
+              </Link>
               <button
                 type="submit"
                 disabled={submitting}
@@ -274,9 +281,6 @@ export default function EditDoctorPage() {
               >
                 {submitting ? "Saving..." : "Save Changes"}
               </button>
-              <Link href="/doctors" className="btn-secondary">
-                Cancel
-              </Link>
             </div>
           </form>
         </div>

@@ -138,7 +138,7 @@ export default function LoginPage() {
 
     try {
       const deptDetails = DEPARTMENTS.find(d => d.id === selectedDept);
-      const payload = {
+      const payload: any = {
         name: regName,
         email: regEmail,
         password: regPassword,

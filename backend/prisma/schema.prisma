@@ -45,6 +45,7 @@ model Doctor {
   experience     Int
   schedule       String?
   avatar         String?
+  departmentId   String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -65,6 +66,8 @@ model Patient {
   history        String?
   specialization String?
   doctorId       String?
+  bloodGroup     String?
+  status         String   @default("Active")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -86,6 +89,8 @@ model Appointment {
   tokenNumber String?
   status      String   @default("pending")
   notes       String?
+  department  String?
+  visitType   String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -214,7 +219,7 @@ model Department {
   id          String   @id @default(cuid())
   name        String   @unique
   head        String
-  location    String
+  location    String?
   staffCount  Int      @default(0)
   services    Int      @default(0)
   status      String   @default("Active")

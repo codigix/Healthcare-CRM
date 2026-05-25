@@ -6,6 +6,8 @@ export interface AuthRequest extends Request {
     id: string;
     email: string;
     role: string;
+    doctorId?: string;
+    department?: string;
   };
 }
 

@@ -6,11 +6,21 @@ const router = Router();
 
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { page = 1, limit = 10, search } = req.query;
+    const { page = 1, limit = 10, search, patientId } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
     let whereClause = '1=1';
     const params: any[] = [];
+
+    if (req.user?.role === 'doctor') {
+      whereClause += ' AND pr.doctorId = ?';
+      params.push(req.user.doctorId);
+    }
+
+    if (patientId) {
+      whereClause += ' AND pr.patientId = ?';
+      params.push(String(patientId));
+    }
 
     if (search) {
       whereClause += ' AND (pr.medications LIKE ? OR pr.diagnosis LIKE ? OR pr.status LIKE ?)';
@@ -93,13 +103,18 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       LEFT JOIN doctors d ON pr.doctorId = d.id
       WHERE pr.id = ?
     `, [req.params.id]);
-    connection.release();
-    
     if (!prescriptions[0]) {
-      return res.json({ error: 'Not found' });
+      connection.release();
+      return res.status(404).json({ error: 'Not found' });
+    }
+    
+    if (req.user?.role === 'doctor' && prescriptions[0].doctorId !== req.user.doctorId) {
+      connection.release();
+      return res.status(403).json({ error: 'Access denied: You are not authorized to view this prescription.' });
     }
     
     const p = prescriptions[0];
+    connection.release();
     const formatted = {
       id: p.id,
       patientId: p.patientId,
@@ -133,11 +148,17 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { patientId, doctorId, prescriptionType, diagnosis, medications, notesForPharmacist } = req.body;
+
+    let targetDoctorId = doctorId;
+    if (req.user?.role === 'doctor') {
+      targetDoctorId = req.user.doctorId;
+    }
+
     const connection = await pool.getConnection();
     const medicationsStr = typeof medications === 'object' ? JSON.stringify(medications) : medications;
     const query = `INSERT INTO prescriptions (id, patientId, doctorId, prescriptionType, diagnosis, medications, notesForPharmacist, prescriptionDate, status, createdAt, updatedAt)
                    VALUES (UUID(), ?, ?, ?, ?, ?, ?, NOW(), ?, NOW(), NOW())`;
-    await connection.query(query, [patientId, doctorId, prescriptionType || 'Standard', diagnosis, medicationsStr, notesForPharmacist, 'Active']);
+    await connection.query(query, [patientId, targetDoctorId, prescriptionType || 'Standard', diagnosis, medicationsStr, notesForPharmacist, 'Active']);
     const [prescription]: any = await connection.query(`
       SELECT 
         pr.*,
@@ -197,6 +218,17 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { medications, diagnosis, notesForPharmacist, status } = req.body;
     const connection = await pool.getConnection();
+
+    const [existing]: any = await connection.query('SELECT doctorId FROM prescriptions WHERE id = ?', [req.params.id]);
+    if (existing.length === 0) {
+      connection.release();
+      return res.status(404).json({ error: 'Prescription not found' });
+    }
+    if (req.user?.role === 'doctor' && existing[0].doctorId !== req.user.doctorId) {
+      connection.release();
+      return res.status(403).json({ error: 'Access denied: You cannot edit another doctor\'s prescription.' });
+    }
+
     const updates: string[] = ['updatedAt = NOW()'];
     const values: any[] = [];
     if (medications) { 
@@ -265,6 +297,17 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
+
+    const [existing]: any = await connection.query('SELECT doctorId FROM prescriptions WHERE id = ?', [req.params.id]);
+    if (existing.length === 0) {
+      connection.release();
+      return res.status(404).json({ error: 'Prescription not found' });
+    }
+    if (req.user?.role === 'doctor' && existing[0].doctorId !== req.user.doctorId) {
+      connection.release();
+      return res.status(403).json({ error: 'Access denied: You cannot delete another doctor\'s prescription.' });
+    }
+
     await connection.query('DELETE FROM prescriptions WHERE id = ?', [req.params.id]);
     connection.release();
     res.json({ message: 'Prescription deleted' });

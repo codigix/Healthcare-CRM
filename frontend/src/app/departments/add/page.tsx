@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
   Building2,
   User,
-  MapPin,
-  Phone,
-  Mail,
   FileText,
   Users,
-  Stethoscope,
+  Search,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -28,51 +25,19 @@ export default function AddDepartmentPage() {
   const [formData, setFormData] = useState({
     departmentName: "",
     headOfDepartment: "",
-    location: "",
-    contactEmail: "",
-    contactPhone: "",
     status: "Active",
     description: "",
-    assignedStaff: [] as string[],
-    availableServices: [] as string[],
+    assignedDoctors: [] as string[],
   });
 
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const services = [
-    {
-      id: "1",
-      name: "General Consultation",
-      description: "Initial patient assessment and diagnosis",
-    },
-    {
-      id: "2",
-      name: "Specialized Treatment",
-      description: "Advanced procedures specific to department",
-    },
-    {
-      id: "3",
-      name: "Emergency Care",
-      description: "Urgent medical attention",
-    },
-    {
-      id: "4",
-      name: "Follow-up Visits",
-      description: "Post-treatment monitoring and care",
-    },
-    {
-      id: "5",
-      name: "Diagnostic Testing",
-      description: "Comprehensive tests and screenings",
-    },
-    {
-      id: "6",
-      name: "Preventive Care",
-      description: "Routine maintenance and disease prevention",
-    },
-  ];
+  // Search selector state
+  const [doctorSearch, setDoctorSearch] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -99,6 +64,17 @@ export default function AddDepartmentPage() {
     fetchDoctors();
   }, []);
 
+  // Close search dropdown on outside clicks
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -108,21 +84,21 @@ export default function AddDepartmentPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleStaffToggle = (staffId: string) => {
+  const selectDoctor = (docId: string) => {
     setFormData((prev) => ({
       ...prev,
-      assignedStaff: prev.assignedStaff.includes(staffId)
-        ? prev.assignedStaff.filter((id) => id !== staffId)
-        : [...prev.assignedStaff, staffId],
+      assignedDoctors: prev.assignedDoctors.includes(docId)
+        ? prev.assignedDoctors
+        : [...prev.assignedDoctors, docId],
     }));
+    setDoctorSearch("");
+    setShowDropdown(false);
   };
 
-  const handleServiceToggle = (serviceId: string) => {
+  const removeDoctor = (docId: string) => {
     setFormData((prev) => ({
       ...prev,
-      availableServices: prev.availableServices.includes(serviceId)
-        ? prev.availableServices.filter((id) => id !== serviceId)
-        : [...prev.availableServices, serviceId],
+      assignedDoctors: prev.assignedDoctors.filter((id) => id !== docId),
     }));
   };
 
@@ -132,20 +108,42 @@ export default function AddDepartmentPage() {
       const payload = {
         name: formData.departmentName,
         head: formData.headOfDepartment,
-        location: formData.location,
+        location: "Main Block",
         status: formData.status,
         description: formData.description,
-        staffCount: formData.assignedStaff.length,
-        services: formData.availableServices.length,
+        assignedDoctors: formData.assignedDoctors,
       };
-      const { departmentAPI } = await import("@/lib/api");
-      await departmentAPI.create(payload);
+      
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/departments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create department");
+      }
+
       window.location.href = "/departments";
-    } catch (err) {
-      console.error("Failed to create department", err);
-      setError("Failed to create department");
+    } catch (err: any) {
+      console.error("Failed to create department:", err);
+      setError(err.message || "Failed to create department");
     }
   };
+
+  // Filter dropdown doctors based on search & exclude already assigned
+  const availableDropdownDoctors = doctors.filter((doc) => {
+    const matchesSearch =
+      doc.name.toLowerCase().includes(doctorSearch.toLowerCase()) ||
+      doc.specialization.toLowerCase().includes(doctorSearch.toLowerCase());
+    const isAlreadyAssigned = formData.assignedDoctors.includes(doc.id);
+    return matchesSearch && !isAlreadyAssigned;
+  });
 
   return (
     <>
@@ -158,25 +156,31 @@ export default function AddDepartmentPage() {
             <ArrowLeft size={24} />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold mb-2">Add Department</h1>
+            <h1 className="text-3xl font-bold mb-2 text-white">Add Department</h1>
             <p className="text-gray-400">
-              Create a new department in your clinic
+              Create a new clinical department and assign medical staff
             </p>
           </div>
         </div>
 
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-400 font-medium">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-6">
-              Department Information
+          <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded-lg">
+            <h2 className="text-xl font-semibold mb-2 text-white">
+              Clinical Department Information
             </h2>
-            <p className="text-gray-400 text-mdmb-6">
-              Enter the details for the new department
+            <p className="text-gray-400 text-sm mb-6">
+              Enter the central details for the hospital department
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-mdfont-medium mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Department Name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -190,18 +194,19 @@ export default function AddDepartmentPage() {
                     value={formData.departmentName}
                     onChange={handleInputChange}
                     placeholder="e.g. Cardiology"
-                    className="input-field pl-10"
+                    className="input-field w-full"
+                    style={{ paddingLeft: "2.75rem" }}
                     required
                   />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  The official name of the department
+                  The clinical name of the department (e.g., Pediatrics, Orthopedics)
                 </p>
               </div>
 
               <div>
-                <label className="block text-mdfont-medium mb-2">
-                  Head of Department <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Department Head <span className="text-gray-500">(Optional)</span>
                 </label>
                 <div className="relative">
                   <User
@@ -212,14 +217,13 @@ export default function AddDepartmentPage() {
                     name="headOfDepartment"
                     value={formData.headOfDepartment}
                     onChange={handleInputChange}
-                    className="input-field pl-10"
-                    required
+                    className="input-field w-full"
+                    style={{ paddingLeft: "2.75rem" }}
                     disabled={loading}
                   >
                     <option value="">
-                      {loading ? "Loading doctors..." : "Select a doctor"}
+                      {loading ? "Loading doctors..." : "Select Department Head (Optional)"}
                     </option>
-                    {error && <option disabled>{error}</option>}
                     {doctors.map((doctor) => (
                       <option key={doctor.id} value={doctor.name}>
                         {doctor.name} - {doctor.specialization}
@@ -228,104 +232,32 @@ export default function AddDepartmentPage() {
                   </select>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  The doctor who will lead this department
+                  The clinical head leading this department
                 </p>
               </div>
 
               <div>
-                <label className="block text-mdfont-medium mb-2">
-                  Location <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <MapPin
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    size={20}
-                  />
-                  <input
-                    type="text"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    placeholder="e.g. Building A, Floor 3"
-                    className="input-field pl-10"
-                    required
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Physical location of the department
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-mdfont-medium mb-2">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                   Status <span className="text-red-500">*</span>
                 </label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="input-field"
+                  className="input-field w-full"
                   required
                 >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
-                  Current operational status
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-mdfont-medium mb-2">
-                  Contact Email <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Mail
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    size={20}
-                  />
-                  <input
-                    type="email"
-                    name="contactEmail"
-                    value={formData.contactEmail}
-                    onChange={handleInputChange}
-                    placeholder="department@clinic.com"
-                    className="input-field pl-10"
-                    required
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Department contact email
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-mdfont-medium mb-2">
-                  Contact Phone <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Phone
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    size={20}
-                  />
-                  <input
-                    type="tel"
-                    name="contactPhone"
-                    value={formData.contactPhone}
-                    onChange={handleInputChange}
-                    placeholder="(555) 123-4567"
-                    className="input-field pl-10"
-                    required
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Department contact phone
+                  Current operational status of this clinic department
                 </p>
               </div>
             </div>
 
             <div className="mt-6">
-              <label className="block text-mdfont-medium mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Description
               </label>
               <div className="relative">
@@ -337,116 +269,131 @@ export default function AddDepartmentPage() {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  placeholder="Provide a description of the department's purpose, specialties, and functions..."
-                  className="input-field pl-10 min-h-[120px]"
-                  rows={5}
+                  placeholder="Provide a detailed description of the department's medical specialty, services, and core clinical functions..."
+                  className="input-field min-h-[120px] w-full"
+                  style={{ paddingLeft: "2.75rem", paddingTop: "0.75rem" }}
+                  rows={4}
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Detailed description of the department
+                A brief description of this department's clinical scope
               </p>
             </div>
           </div>
 
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-              <Users size={24} />
-              Assign Staff
+          <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded-lg">
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2 text-white">
+              <Users size={24} className="text-emerald-500" />
+              Assign Doctors
             </h2>
-            <p className="text-gray-400 text-mdmb-6">
-              Select staff members (doctors) to assign to this department.
-              Count: {formData.assignedStaff.length}
+            <p className="text-gray-400 text-sm mb-6">
+              Select medical doctors to assign to this clinical department.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {loading ? (
-                <div className="col-span-3 text-center text-gray-400">
-                  Loading doctors...
+            <div className="space-y-6">
+              {/* Search input field */}
+              <div ref={containerRef} className="relative max-w-xl">
+                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  Search & Assign Doctor
+                </label>
+                <div className="relative">
+                  <Search
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={18}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search doctor by name or specialty..."
+                    value={doctorSearch}
+                    onChange={(e) => {
+                      setDoctorSearch(e.target.value);
+                      setShowDropdown(true);
+                    }}
+                    onFocus={() => setShowDropdown(true)}
+                    className="input-field w-full"
+                    style={{ paddingLeft: "2.75rem" }}
+                    disabled={loading}
+                  />
                 </div>
-              ) : doctors.length === 0 ? (
-                <div className="col-span-3 text-center text-gray-400">
-                  No doctors available
-                </div>
-              ) : (
-                doctors.map((doctor) => (
-                  <div
-                    key={doctor.id}
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      formData.assignedStaff.includes(doctor.id)
-                        ? "border-emerald-500 bg-emerald-500/10"
-                        : "border-dark-tertiary hover:border-gray-500"
-                    }`}
-                    onClick={() => handleStaffToggle(doctor.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={formData.assignedStaff.includes(doctor.id)}
-                        onChange={() => handleStaffToggle(doctor.id)}
-                        className="w-4 h-4"
-                      />
-                      <div>
-                        <div className="font-medium text-white">
-                          {doctor.name}
-                        </div>
-                        <div className="text-mdtext-gray-400">
-                          {doctor.specialization}
-                        </div>
+
+                {/* Dropdown Options */}
+                {showDropdown && (
+                  <div className="absolute left-0 right-0 mt-1 max-h-[240px] overflow-y-auto bg-dark-secondary border border-dark-tertiary rounded-lg shadow-2xl z-20">
+                    {loading ? (
+                      <div className="p-3 text-center text-sm text-gray-500">
+                        Loading clinical doctors...
                       </div>
-                    </div>
+                    ) : availableDropdownDoctors.length === 0 ? (
+                      <div className="p-3 text-center text-sm text-gray-500">
+                        {doctorSearch ? "No matching available doctors" : "All registered doctors already assigned"}
+                      </div>
+                    ) : (
+                      availableDropdownDoctors.map((doctor) => (
+                        <div
+                          key={doctor.id}
+                          onClick={() => selectDoctor(doctor.id)}
+                          className="p-3 hover:bg-emerald-500/10 cursor-pointer transition-colors border-b border-dark-tertiary/20 last:border-0 text-gray-300 flex justify-between items-center text-sm"
+                        >
+                          <div>
+                            <span className="font-semibold text-white">{doctor.name}</span>
+                            <span className="text-gray-400 text-xs ml-2">({doctor.specialization})</span>
+                          </div>
+                          <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded">
+                            + Assign Specialist
+                          </span>
+                        </div>
+                      ))
+                    )}
                   </div>
-                ))
-              )}
+                )}
+              </div>
+
+              {/* List of assigned doctors */}
+              <div>
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  Assigned Specialists ({formData.assignedDoctors.length})
+                </h3>
+                {formData.assignedDoctors.length === 0 ? (
+                  <div className="text-center py-8 border-2 border-dashed border-dark-tertiary rounded-lg text-gray-500 text-sm">
+                    No doctors assigned to this department yet. Search and select above to assign specialists.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {doctors
+                      .filter((doc) => formData.assignedDoctors.includes(doc.id))
+                      .map((doc) => (
+                        <div
+                          key={doc.id}
+                          className="flex items-center justify-between p-3.5 bg-dark-tertiary/30 border border-emerald-500/20 hover:border-emerald-500/40 rounded-lg transition-all group"
+                        >
+                          <div className="min-w-0">
+                            <div className="font-semibold text-white text-sm truncate">{doc.name}</div>
+                            <div className="text-xs text-gray-400 truncate">{doc.specialization}</div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeDoctor(doc.id)}
+                            className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all flex items-center justify-center"
+                            title="Remove assignment"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-              <Stethoscope size={24} />
-              Available Services
-            </h2>
-            <p className="text-gray-400 text-mdmb-6">
-              Select services that will be offered by this department. Count:{" "}
-              {formData.availableServices.length}
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {services.map((service) => (
-                <div
-                  key={service.id}
-                  className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    formData.availableServices.includes(service.id)
-                      ? "border-emerald-500 bg-emerald-500/10"
-                      : "border-dark-tertiary hover:border-gray-500"
-                  }`}
-                  onClick={() => handleServiceToggle(service.id)}
-                >
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={formData.availableServices.includes(service.id)}
-                      onChange={() => handleServiceToggle(service.id)}
-                      className="w-4 h-4 mt-1"
-                    />
-                    <div>
-                      <div className="font-medium text-white">
-                        {service.name}
-                      </div>
-                      <div className="text-mdtext-gray-400">
-                        {service.description}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-3 justify-end">
-            <Link href="/departments" className="btn-secondary">
+          <div className="flex gap-4 justify-end">
+            <Link href="/departments" className="btn-secondary px-6 py-2.5 rounded-lg font-medium transition-all">
               Cancel
             </Link>
-            <button type="submit" className="btn-primary">
+            <button
+              type="submit"
+              className="btn-primary px-6 py-2.5 rounded-lg font-medium transition-all shadow-lg hover:shadow-emerald-500/15"
+            >
               Create Department
             </button>
           </div>

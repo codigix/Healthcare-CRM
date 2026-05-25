@@ -475,7 +475,18 @@ export default function Sidebar() {
 
   const getBaseItem = (label: string) => {
     const item = menuItems.find(i => i.label === label);
-    return item ? { ...item } : null;
+    if (!item) return null;
+
+    const cloned = {
+      ...item,
+      subItems: item.subItems ? [...item.subItems] : undefined
+    };
+
+    if (cloned.label === "Patients" && dept === "doctor") {
+      cloned.subItems = cloned.subItems?.filter(s => s.label !== "Add Patient");
+    }
+
+    return cloned;
   };
 
   if (dept === 'admin') {

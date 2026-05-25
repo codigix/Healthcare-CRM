@@ -26,13 +26,24 @@ router.get('/available', authMiddleware, async (req: AuthRequest, res: Response)
 
 router.get('/allotments', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
+    const { patientId } = req.query;
     const connection = await pool.getConnection();
-    const [allotments]: any = await connection.query(`
+    
+    let query = `
       SELECT ra.*, r.roomNumber, r.roomType, r.department 
       FROM room_allotments ra
       LEFT JOIN rooms r ON ra.roomId = r.id
-      ORDER BY ra.createdAt DESC LIMIT 100
-    `);
+    `;
+    const params: any[] = [];
+    
+    if (patientId) {
+      query += ' WHERE ra.patientId = ?';
+      params.push(String(patientId));
+    }
+    
+    query += ' ORDER BY ra.createdAt DESC LIMIT 100';
+    
+    const [allotments]: any = await connection.query(query, params);
     connection.release();
     res.json({ 
       allotments: allotments.map((a: any) => ({

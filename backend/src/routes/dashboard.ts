@@ -6,6 +6,9 @@ const router = Router();
 
 router.get('/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
+    const docId = req.user?.doctorId;
+    const isDoctor = req.user?.role === 'doctor';
+
     const [
       [[{ totalDoctors }]],
       [[{ totalPatients }]],
@@ -14,10 +17,24 @@ router.get('/stats', authMiddleware, async (req: AuthRequest, res: Response) => 
       [[{ totalRevenue }]]
     ]: any = await Promise.all([
       pool.query('SELECT COUNT(*) as totalDoctors FROM doctors'),
-      pool.query('SELECT COUNT(*) as totalPatients FROM patients'),
-      pool.query('SELECT COUNT(*) as totalAppointments FROM appointments'),
-      pool.query('SELECT COUNT(*) as pendingAppointments FROM appointments WHERE status = "pending"'),
-      pool.query('SELECT COALESCE(SUM(amount), 0) as totalRevenue FROM invoices WHERE status = "paid"')
+      isDoctor 
+        ? pool.query(
+            `SELECT COUNT(DISTINCT p.id) as totalPatients FROM patients p 
+             WHERE p.doctorId = ? 
+             OR p.id IN (SELECT DISTINCT patientId FROM appointments WHERE doctorId = ?) 
+             OR p.id IN (SELECT DISTINCT patientId FROM prescriptions WHERE doctorId = ?)`,
+            [docId, docId, docId]
+          )
+        : pool.query('SELECT COUNT(*) as totalPatients FROM patients'),
+      isDoctor
+        ? pool.query('SELECT COUNT(*) as totalAppointments FROM appointments WHERE doctorId = ?', [docId])
+        : pool.query('SELECT COUNT(*) as totalAppointments FROM appointments'),
+      isDoctor
+        ? pool.query('SELECT COUNT(*) as pendingAppointments FROM appointments WHERE doctorId = ? AND status = "pending"', [docId])
+        : pool.query('SELECT COUNT(*) as pendingAppointments FROM appointments WHERE status = "pending"'),
+      isDoctor
+        ? pool.query('SELECT COALESCE(SUM(amount), 0) as totalRevenue FROM invoices WHERE status = "paid" AND patientId IN (SELECT DISTINCT patientId FROM appointments WHERE doctorId = ?)', [docId])
+        : pool.query('SELECT COALESCE(SUM(amount), 0) as totalRevenue FROM invoices WHERE status = "paid"')
     ]);
 
     res.json({
@@ -37,7 +54,7 @@ router.get('/recent-appointments', authMiddleware, async (req: AuthRequest, res:
   let connection;
   try {
     connection = await pool.getConnection();
-    const [appointments]: any = await connection.query(`
+    let query = `
       SELECT 
         a.id,
         a.date,
@@ -48,8 +65,15 @@ router.get('/recent-appointments', authMiddleware, async (req: AuthRequest, res:
       FROM appointments a
       LEFT JOIN doctors d ON a.doctorId = d.id
       LEFT JOIN patients p ON a.patientId = p.id
-      ORDER BY a.date DESC LIMIT 10
-    `);
+    `;
+    const params: any[] = [];
+    if (req.user?.role === 'doctor') {
+      query += ' WHERE a.doctorId = ?';
+      params.push(req.user.doctorId);
+    }
+    query += ' ORDER BY a.date DESC LIMIT 10';
+    
+    const [appointments]: any = await connection.query(query, params);
 
     res.json(appointments);
   } catch (error: any) {
@@ -64,12 +88,20 @@ router.get('/revenue-chart', authMiddleware, async (req: AuthRequest, res: Respo
   let connection;
   try {
     connection = await pool.getConnection();
-    const [results]: any = await connection.query(`
+    let query = `
       SELECT DATE_FORMAT(createdAt, '%b') as name, SUM(amount) as value 
-      FROM invoices 
+      FROM invoices
+    `;
+    const params: any[] = [];
+    if (req.user?.role === 'doctor') {
+      query += ' WHERE patientId IN (SELECT DISTINCT patientId FROM appointments WHERE doctorId = ?)';
+      params.push(req.user.doctorId);
+    }
+    query += `
       GROUP BY DATE_FORMAT(createdAt, '%Y-%m'), DATE_FORMAT(createdAt, '%b')
       ORDER BY DATE_FORMAT(createdAt, '%Y-%m') ASC
-    `);
+    `;
+    const [results]: any = await connection.query(query, params);
 
     const chartData = results.map((row: any) => ({ name: row.name, value: Number(row.value) }));
 
@@ -86,12 +118,23 @@ router.get('/patient-growth', authMiddleware, async (req: AuthRequest, res: Resp
   let connection;
   try {
     connection = await pool.getConnection();
-    const [results]: any = await connection.query(`
-      SELECT DATE_FORMAT(createdAt, '%b') as name, COUNT(*) as newPatients
-      FROM patients 
-      GROUP BY DATE_FORMAT(createdAt, '%Y-%m'), DATE_FORMAT(createdAt, '%b')
-      ORDER BY DATE_FORMAT(createdAt, '%Y-%m') ASC
-    `);
+    let query = `
+      SELECT DATE_FORMAT(p.createdAt, '%b') as name, COUNT(*) as newPatients
+      FROM patients p
+    `;
+    const params: any[] = [];
+    if (req.user?.role === 'doctor') {
+      const docId = req.user.doctorId;
+      query += ` WHERE p.doctorId = ? 
+                 OR p.id IN (SELECT DISTINCT patientId FROM appointments WHERE doctorId = ?) 
+                 OR p.id IN (SELECT DISTINCT patientId FROM prescriptions WHERE doctorId = ?)`;
+      params.push(docId, docId, docId);
+    }
+    query += `
+      GROUP BY DATE_FORMAT(p.createdAt, '%Y-%m'), DATE_FORMAT(p.createdAt, '%b')
+      ORDER BY DATE_FORMAT(p.createdAt, '%Y-%m') ASC
+    `;
+    const [results]: any = await connection.query(query, params);
 
     let cumulative = 0;
     const chartData = results.map((row: any) => {
