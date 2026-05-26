@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { appointmentAPI, doctorAPI, patientAPI } from "@/lib/api";
-import { Plus, Edit2, Trash2, Search, Filter, Calendar } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Filter, Calendar, Loader2, Check, Activity, Send } from "lucide-react";
 import Modal from "@/components/UI/Modal";
 import AppointmentForm from "@/components/Forms/AppointmentForm";
 import Link from "next/link";
+import { useAuthStore } from "@/lib/store";
 
 interface Appointment {
   id: string;
@@ -35,6 +36,9 @@ interface Patient {
 }
 
 export default function AppointmentsPage() {
+  const { user } = useAuthStore();
+  const isDoctor = user?.role === "doctor" || user?.department?.toLowerCase() === "doctor";
+
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -47,6 +51,33 @@ export default function AppointmentsPage() {
     useState<Appointment | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const handleSendLabRequest = async (id: string) => {
+    try {
+      setActionLoading(`${id}-lab`);
+      await appointmentAPI.sendLabRequest(id);
+      await fetchData();
+    } catch (error: any) {
+      console.error("Failed to send lab request:", error);
+      alert(error.response?.data?.error || "Failed to send laboratory request.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSendAdmissionRequest = async (id: string) => {
+    try {
+      setActionLoading(`${id}-admission`);
+      await appointmentAPI.sendAdmissionRequest(id);
+      await fetchData();
+    } catch (error: any) {
+      console.error("Failed to send admission request:", error);
+      alert(error.response?.data?.error || "Failed to send admission request.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -73,7 +104,7 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     fetchData();
-  }, [page, statusFilter]);
+  }, [page, statusFilter, user, isDoctor]);
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this appointment?")) {
@@ -114,6 +145,17 @@ export default function AppointmentsPage() {
   };
 
   const filteredAppointments = appointments.filter((apt) => {
+    if (isDoctor && user) {
+      const aptDocId = apt.doctorId || apt.doctor?.id;
+      const matchesDoctor = 
+        (user.doctorId && aptDocId === user.doctorId) || 
+        (apt.doctor?.name && user.name && (
+          apt.doctor.name.toLowerCase().includes(user.name.toLowerCase()) || 
+          user.name.toLowerCase().includes(apt.doctor.name.toLowerCase())
+        ));
+      if (!matchesDoctor) return false;
+    }
+
     const matchesSearch =
       (apt.patient?.name && apt.patient.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (apt.doctor?.name && apt.doctor.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -141,10 +183,12 @@ export default function AppointmentsPage() {
                 Calendar View
               </button>
             </Link>
-            <button onClick={handleAdd} className="btn-primary flex items-center gap-2 shadow-lg hover:shadow-emerald-500/10">
-              <Plus size={20} />
-              New Appointment
-            </button>
+            {!isDoctor && (
+              <button onClick={handleAdd} className="btn-primary flex items-center gap-2 shadow-lg hover:shadow-emerald-500/10">
+                <Plus size={20} />
+                New Appointment
+              </button>
+            )}
           </div>
         </div>
 
@@ -277,21 +321,117 @@ export default function AppointmentsPage() {
                           </span>
                         </td>
                         <td className="py-4 px-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleEdit(apt)}
-                              className="p-1.5 bg-dark-tertiary/30 hover:bg-blue-500/20 text-gray-400 hover:text-blue-400 rounded transition-all"
-                              title="Edit"
-                            >
-                              <Edit2 size={15} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(apt.id)}
-                              className="p-1.5 bg-dark-tertiary/30 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded transition-all"
-                              title="Delete"
-                            >
-                              <Trash2 size={15} />
-                            </button>
+                          <div className="flex items-center justify-end gap-2.5">
+                            {isDoctor && apt.status?.toLowerCase() !== "completed" ? (
+                              <Link href={`/appointments/consultation/${apt.id}`}>
+                                <button
+                                  className="px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg transition-all shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/25 flex items-center gap-2 border border-emerald-500/20 active:scale-95"
+                                  title="Start Consultation"
+                                >
+                                  <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                                  </span>
+                                  Start Consultation
+                                </button>
+                              </Link>
+                            ) : apt.status?.toLowerCase() === "completed" ? (
+                              (() => {
+                                let parsedNotes: any = null;
+                                if (apt.notes) {
+                                  try {
+                                    parsedNotes = JSON.parse(apt.notes);
+                                  } catch (e) {}
+                                }
+
+                                const hasLabAction = parsedNotes?.labTestsActive === true;
+                                const hasAdmissionAction = parsedNotes?.admissionRecommended === true;
+
+                                if (hasLabAction || hasAdmissionAction) {
+                                  return (
+                                    <div className="flex flex-wrap items-center justify-end gap-2">
+                                      {hasLabAction && (
+                                        parsedNotes.labRequestSent ? (
+                                          <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                            <Check size={13} className="text-emerald-400" />
+                                            Test Request Sent
+                                          </span>
+                                        ) : isDoctor ? (
+                                          <button
+                                            onClick={() => handleSendLabRequest(apt.id)}
+                                            disabled={actionLoading === `${apt.id}-lab`}
+                                            className="px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg transition-all shadow-md shadow-blue-500/10 hover:shadow-blue-500/25 flex items-center gap-1.5 border border-blue-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                          >
+                                            {actionLoading === `${apt.id}-lab` ? (
+                                              <Loader2 size={13} className="animate-spin" />
+                                            ) : (
+                                              <Activity size={13} />
+                                            )}
+                                            Send Test Request
+                                          </button>
+                                        ) : (
+                                          <span className="text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                            <Loader2 size={13} className="animate-pulse" />
+                                            Lab Request Pending
+                                          </span>
+                                        )
+                                      )}
+
+                                      {hasAdmissionAction && (
+                                        parsedNotes.admissionRequestSent ? (
+                                          <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                            <Check size={13} className="text-emerald-400" />
+                                            Admission Request Sent
+                                          </span>
+                                        ) : isDoctor ? (
+                                          <button
+                                            onClick={() => handleSendAdmissionRequest(apt.id)}
+                                            disabled={actionLoading === `${apt.id}-admission`}
+                                            className="px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white rounded-lg transition-all shadow-md shadow-purple-500/10 hover:shadow-purple-500/25 flex items-center gap-1.5 border border-purple-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                          >
+                                            {actionLoading === `${apt.id}-admission` ? (
+                                              <Loader2 size={13} className="animate-spin" />
+                                            ) : (
+                                              <Send size={13} />
+                                            )}
+                                            Send Admission Request
+                                          </button>
+                                        ) : (
+                                          <span className="text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                            <Loader2 size={13} className="animate-pulse" />
+                                            Admission Pending
+                                          </span>
+                                        )
+                                      )}
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                                    ✓ Consultation Completed
+                                  </span>
+                                );
+                              })()
+                            ) : null}
+                            {!isDoctor && (
+                              <>
+                                <button
+                                  onClick={() => handleEdit(apt)}
+                                  className="p-1.5 bg-dark-tertiary/30 hover:bg-blue-500/20 text-gray-400 hover:text-blue-400 rounded transition-all"
+                                  title="Edit"
+                                >
+                                  <Edit2 size={15} />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(apt.id)}
+                                  className="p-1.5 bg-dark-tertiary/30 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded transition-all"
+                                  title="Delete"
+                                >
+                                  <Trash2 size={15} />
+                                </button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -304,8 +444,8 @@ export default function AppointmentsPage() {
 
           <div className="flex justify-between items-center mt-6 pt-4 border-t border-dark-tertiary">
             <p className="text-gray-400 text-sm">
-              Showing {appointments.length > 0 ? (page - 1) * 10 + 1 : 0} to{" "}
-              {Math.min(page * 10, total)} of {total} appointments
+              Showing {filteredAppointments.length > 0 ? (page - 1) * 10 + 1 : 0} to{" "}
+              {Math.min(page * 10, isDoctor ? filteredAppointments.length : total)} of {isDoctor ? filteredAppointments.length : total} appointments
             </p>
             <div className="flex gap-2">
               <button

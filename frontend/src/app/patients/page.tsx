@@ -22,6 +22,7 @@ interface Patient {
   doctorSpecialty?: string;
   address?: string;
   history?: string;
+  doctorId?: string;
 }
 
 const calculateAge = (dob: string): number => {
@@ -38,7 +39,7 @@ const calculateAge = (dob: string): number => {
 
 export default function PatientsPage() {
   const { user } = useAuthStore();
-  const isDoctor = user?.role === 'doctor';
+  const isDoctor = user?.role === 'doctor' || user?.department?.toLowerCase() === 'doctor';
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [search, setSearch] = useState('');
@@ -49,14 +50,27 @@ export default function PatientsPage() {
 
   useEffect(() => {
     fetchPatients();
-  }, [page, search]);
+  }, [page, search, user, isDoctor]);
 
   const fetchPatients = async () => {
     try {
       setLoading(true);
       const response = await patientAPI.list(page, 10, search);
-      setPatients(response.data.patients);
-      setTotal(response.data.total);
+      const fetchedPatients = response.data.patients || [];
+      setPatients(fetchedPatients);
+
+      if (isDoctor && user) {
+        const filtered = fetchedPatients.filter((patient: any) => {
+          return (user.doctorId && patient.doctorId === user.doctorId) || 
+                 (patient.doctor && user.name && (
+                   patient.doctor.toLowerCase().includes(user.name.toLowerCase()) || 
+                   user.name.toLowerCase().includes(patient.doctor.toLowerCase())
+                 ));
+        });
+        setTotal(filtered.length);
+      } else {
+        setTotal(response.data.total || 0);
+      }
     } catch (error) {
       console.error('Failed to fetch patients', error);
     } finally {
@@ -74,6 +88,19 @@ export default function PatientsPage() {
       }
     }
   };
+
+  const displayedPatients = patients.filter((patient) => {
+    if (isDoctor && user) {
+      const matchesDoctor = 
+        (user.doctorId && patient.doctorId === user.doctorId) || 
+        (patient.doctor && user.name && (
+          patient.doctor.toLowerCase().includes(user.name.toLowerCase()) || 
+          user.name.toLowerCase().includes(patient.doctor.toLowerCase())
+        ));
+      if (!matchesDoctor) return false;
+    }
+    return true;
+  });
 
   return (
     <>
@@ -131,7 +158,7 @@ export default function PatientsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {patients.map((patient) => {
+                  {displayedPatients.map((patient) => {
                     const displayAge = patient.age && patient.age > 0 ? patient.age : calculateAge(patient.dob);
                     return (
                     <tr key={patient.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
@@ -184,11 +211,11 @@ export default function PatientsPage() {
             </div>
           )}
 
-          {!loading && patients.length > 0 && (
+          {!loading && displayedPatients.length > 0 && (
             <div className="flex justify-between items-center mt-6 pt-4 border-t border-dark-tertiary">
               <p className="text-gray-400 text-sm">
-                Showing {patients.length > 0 ? (page - 1) * 10 + 1 : 0} to{" "}
-                {Math.min(page * 10, total)} of {total} patients
+                Showing {displayedPatients.length > 0 ? (page - 1) * 10 + 1 : 0} to{" "}
+                {Math.min(page * 10, isDoctor ? displayedPatients.length : total)} of {isDoctor ? displayedPatients.length : total} patients
               </p>
               <div className="flex gap-2">
                 <button

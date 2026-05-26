@@ -168,6 +168,7 @@ const menuItems = [
     href: "/records",
     moduleId: "laboratory",
     subItems: [
+      { label: "Lab Test Requests", href: "/records/lab-tests" },
       { label: "Birth Records", href: "/records/birth" },
       { label: "Death Records", href: "/records/death" },
     ],
@@ -179,6 +180,7 @@ const menuItems = [
     moduleId: "room-allotment",
     subItems: [
       { label: "Alloted Rooms", href: "/room-allotment/alloted" },
+      { label: "Admission Requests", href: "/room-allotment/requests" },
       { label: "New Allotment", href: "/room-allotment/new" },
       { label: "Rooms by Department", href: "/room-allotment/by-department" },
       { label: "Add New Room", href: "/room-allotment/add-room" },
@@ -486,6 +488,12 @@ export default function Sidebar() {
       cloned.subItems = cloned.subItems?.filter(s => s.label !== "Add Patient");
     }
 
+    if (cloned.label === "Appointments" && dept === "doctor") {
+      cloned.subItems = cloned.subItems?.filter(
+        (s) => s.label !== "Add Appointment" && s.label !== "Appointment Requests"
+      );
+    }
+
     return cloned;
   };
 
@@ -552,7 +560,7 @@ export default function Sidebar() {
       {
         icon: ClipboardList,
         label: "Test Requests",
-        href: "/records",
+        href: "/records/lab-tests",
       },
       getBaseItem("Patients"),
       {

@@ -4,13 +4,16 @@ import { useState, useEffect, useRef } from "react";
 
 import { ChevronLeft, Check, Search } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { patientAPI, doctorAPI } from "@/lib/api";
+import { Suspense } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-export default function NewAllotmentPage() {
+function NewAllotmentPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [prefillRecordId, setPrefillRecordId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     patientId: "",
     patientName: "",
@@ -59,6 +62,27 @@ export default function NewAllotmentPage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const prefillPatientId = searchParams.get("patientId");
+    const prefillPatientName = searchParams.get("patientName");
+    const prefillNotes = searchParams.get("notes");
+    const recordIdParam = searchParams.get("recordId");
+
+    if (prefillPatientName) {
+      setFormData(prev => ({
+        ...prev,
+        patientId: prefillPatientId || "",
+        patientName: prefillPatientName,
+        additionalNotes: prefillNotes ? `Clinical Referral Instructions: ${prefillNotes}` : "",
+        allotmentDate: new Date().toISOString().split('T')[0]
+      }));
+      setPatientSearchTerm(prefillPatientName);
+    }
+    if (recordIdParam) {
+      setPrefillRecordId(recordIdParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const searchPatients = async () => {
@@ -182,6 +206,22 @@ export default function NewAllotmentPage() {
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || "Failed to create allotment");
+      }
+
+      // If pre-filled from an admission request, mark that request as completed
+      if (prefillRecordId) {
+        try {
+          await fetch(`${API_URL}/records/${prefillRecordId}/status`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ status: "Completed" }),
+          });
+        } catch (statusErr) {
+          console.error("Failed to update admission request status:", statusErr);
+        }
       }
 
       alert("Room allotment created successfully!");
@@ -577,5 +617,13 @@ export default function NewAllotmentPage() {
         </form>
       </div>
     </>
+  );
+}
+
+export default function NewAllotmentPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-12 text-gray-400">Loading Allotment Panel...</div>}>
+      <NewAllotmentPageContent />
+    </Suspense>
   );
 }

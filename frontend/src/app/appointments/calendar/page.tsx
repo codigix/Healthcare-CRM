@@ -11,6 +11,7 @@ import {
   List,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuthStore } from "@/lib/store";
 
 interface Appointment {
   id: string;
@@ -28,6 +29,9 @@ interface Doctor {
 }
 
 export default function CalendarViewPage() {
+  const { user } = useAuthStore();
+  const isDoctor = user?.role === "doctor" || user?.department?.toLowerCase() === "doctor";
+
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -46,7 +50,20 @@ export default function CalendarViewPage() {
         appointmentAPI.list(1, 100),
         doctorAPI.list(1, 100),
       ]);
-      setAppointments(appointmentsRes.data.appointments);
+      
+      let fetchedAppointments = appointmentsRes.data.appointments || [];
+      if (isDoctor && user) {
+        fetchedAppointments = fetchedAppointments.filter((apt: any) => {
+          const aptDocId = apt.doctorId || apt.doctor?.id;
+          return (user.doctorId && aptDocId === user.doctorId) || 
+                 (apt.doctor?.name && user.name && (
+                   apt.doctor.name.toLowerCase().includes(user.name.toLowerCase()) || 
+                   user.name.toLowerCase().includes(apt.doctor.name.toLowerCase())
+                 ));
+        });
+      }
+      
+      setAppointments(fetchedAppointments);
       setDoctors(doctorsRes.data.doctors);
     } catch (error) {
       console.error("Failed to fetch data", error);
@@ -97,11 +114,22 @@ export default function CalendarViewPage() {
     "17:00",
   ];
 
+  const getLocalDateString = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const getAppointmentsForTimeSlot = (time: string) => {
-    const currentDateStr = currentDate.toISOString().split("T")[0];
+    const currentDateStr = getLocalDateString(currentDate);
+    const [hour] = time.split(":");
+    
     return appointments.filter((apt) => {
-      const aptDate = new Date(apt.date).toISOString().split("T")[0];
-      return aptDate === currentDateStr && apt.time.startsWith(time);
+      const aptDate = new Date(apt.date);
+      const aptDateStr = getLocalDateString(aptDate);
+      const [aptHour] = apt.time.split(":");
+      return aptDateStr === currentDateStr && aptHour === hour;
     });
   };
 
@@ -135,12 +163,14 @@ export default function CalendarViewPage() {
                 List View
               </button>
             </Link>
-            <Link href="/appointments/add">
-              <button className="btn-primary flex items-center gap-2">
-                <Plus size={20} />
-                New
-              </button>
-            </Link>
+            {!isDoctor && (
+              <Link href="/appointments/add">
+                <button className="btn-primary flex items-center gap-2">
+                  <Plus size={20} />
+                  New
+                </button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -172,18 +202,20 @@ export default function CalendarViewPage() {
             </div>
 
             <div className="flex gap-3">
-              <select
-                value={selectedDoctor}
-                onChange={(e) => setSelectedDoctor(e.target.value)}
-                className="input-field"
-              >
-                <option value="all">All Doctors</option>
-                {doctors.map((doctor) => (
-                  <option key={doctor.id} value={doctor.id}>
-                    Dr. {doctor.name}
-                  </option>
-                ))}
-              </select>
+              {!isDoctor && (
+                <select
+                  value={selectedDoctor}
+                  onChange={(e) => setSelectedDoctor(e.target.value)}
+                  className="input-field"
+                >
+                  <option value="all">All Doctors</option>
+                  {doctors.map((doctor) => (
+                    <option key={doctor.id} value={doctor.id}>
+                      Dr. {doctor.name}
+                    </option>
+                  ))}
+                </select>
+              )}
 
               <div className="flex bg-dark-tertiary rounded-lg p-1">
                 <button

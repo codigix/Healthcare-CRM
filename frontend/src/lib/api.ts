@@ -70,6 +70,9 @@ export const appointmentAPI = {
   create: (data: any) => apiClient.post('/appointments', data),
   update: (id: string, data: any) => apiClient.put(`/appointments/${id}`, data),
   delete: (id: string) => apiClient.delete(`/appointments/${id}`),
+  complete: (id: string, data: any) => apiClient.post(`/appointments/${id}/complete`, data),
+  sendLabRequest: (id: string) => apiClient.post(`/appointments/${id}/send-lab-request`, {}),
+  sendAdmissionRequest: (id: string) => apiClient.post(`/appointments/${id}/send-admission-request`, {}),
 };
 
 export const roomAllotmentAPI = {

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/store";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -39,6 +40,17 @@ interface Department {
 
 export default function AddAppointmentPage() {
   const router = useRouter();
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (
+      user &&
+      (user.role === "doctor" || user.department?.toLowerCase() === "doctor")
+    ) {
+      router.push("/appointments/all");
+    }
+  }, [user, router]);
+
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);

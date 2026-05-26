@@ -23,7 +23,7 @@ router.get('/search', authMiddleware, async (req: AuthRequest, res: Response) =>
                   WHERE LOWER(p.name) LIKE LOWER(?)`;
     const params: any[] = [`%${String(name)}%`];
 
-    if (req.user?.role === 'doctor') {
+    if (req.user?.role === 'doctor' || req.user?.doctorId) {
       const docId = req.user.doctorId;
       query += ` AND (p.doctorId = ? OR p.id IN (SELECT DISTINCT patientId FROM appointments WHERE doctorId = ?) OR p.id IN (SELECT DISTINCT patientId FROM prescriptions WHERE doctorId = ?))`;
       params.push(docId, docId, docId);
@@ -87,7 +87,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       params.push(searchTerm, searchTerm, searchTerm);
     }
 
-    if (req.user?.role === 'doctor') {
+    if (req.user?.role === 'doctor' || req.user?.doctorId) {
       const docId = req.user.doctorId;
       whereClause += ` AND (p.doctorId = ? OR p.id IN (SELECT DISTINCT patientId FROM appointments WHERE doctorId = ?) OR p.id IN (SELECT DISTINCT patientId FROM prescriptions WHERE doctorId = ?))`;
       params.push(docId, docId, docId);
@@ -159,14 +159,13 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
     const [patients]: any = await connection.query('SELECT * FROM patients WHERE id = ?', [req.params.id]);
-    connection.release();
 
     if (patients.length === 0) {
       connection.release();
       return res.status(404).json({ error: 'Patient not found' });
     }
 
-    if (req.user?.role === 'doctor') {
+    if (req.user?.role === 'doctor' || req.user?.doctorId) {
       const docId = req.user.doctorId;
       const [hasAccess]: any = await connection.query(
         `SELECT id FROM patients 
@@ -183,6 +182,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       }
     }
 
+    connection.release();
     res.json(patients[0]);
   } catch (error: any) {
     console.error('[PATIENTS GET BY ID] Error:', error);
@@ -192,7 +192,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    if (req.user?.role === 'doctor') {
+    if (req.user?.role === 'doctor' || req.user?.doctorId) {
       return res.status(403).json({ error: 'Access denied: Doctors are not permitted to register patients. Patient profiles are created exclusively by the reception staff.' });
     }
 
@@ -218,7 +218,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    if (req.user?.role === 'doctor') {
+    if (req.user?.role === 'doctor' || req.user?.doctorId) {
       return res.status(403).json({ error: 'Access denied: Doctors are not permitted to update patient profiles.' });
     }
 
@@ -266,7 +266,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    if (req.user?.role === 'doctor') {
+    if (req.user?.role === 'doctor' || req.user?.doctorId) {
       return res.status(403).json({ error: 'Access denied: Doctors are not permitted to delete patient profiles.' });
     }
 
