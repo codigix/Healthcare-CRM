@@ -215,3 +215,12 @@ export const bloodBankAPI = {
   update: (id: string, data: any) => apiClient.put(`/blood-bank/${id}`, data),
   delete: (id: string) => apiClient.delete(`/blood-bank/${id}`),
 };
+
+export const notificationAPI = {
+  list: () => apiClient.get('/notifications'),
+  create: (data: any) => apiClient.post('/notifications', data),
+  markAsRead: (id: string) => apiClient.patch(`/notifications/${id}/read`),
+  markAllAsRead: () => apiClient.post('/notifications/mark-all-read'),
+  delete: (id: string) => apiClient.delete(`/notifications/${id}`),
+};
+

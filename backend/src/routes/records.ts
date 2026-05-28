@@ -9,16 +9,16 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const { page = 1, limit = 10, type, search } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    let query = 'SELECT * FROM records WHERE 1=1';
+    let query = 'SELECT records.*, doctors.name as doctorName FROM records LEFT JOIN doctors ON records.doctorId = doctors.id WHERE 1=1';
     const params: any[] = [];
 
     if (type && String(type).trim() !== '') {
-      query += ' AND type = ?';
+      query += ' AND records.type = ?';
       params.push(String(type));
     }
 
     if (search && String(search).trim() !== '') {
-      query += ' AND (patientName LIKE ? OR details LIKE ?)';
+      query += ' AND (records.patientName LIKE ? OR records.details LIKE ?)';
       const searchTerm = `%${String(search)}%`;
       params.push(searchTerm, searchTerm);
     }

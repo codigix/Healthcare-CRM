@@ -27,6 +27,7 @@ interface AllotedRoom {
   additionalNotes?: string;
   status: string;
   room: RoomData;
+  bed?: string | null;
 }
 
 export default function AllotedRoomsPage() {
@@ -328,6 +329,9 @@ export default function AllotedRoomsPage() {
                     Room
                   </th>
                   <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
+                    Bed Slot
+                  </th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
                     Room Type
                   </th>
                   <th className="text-left px-4 py-3 text-gray-400 font-semibold text-sm">
@@ -348,7 +352,7 @@ export default function AllotedRoomsPage() {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="px-4 py-3 text-center text-gray-400"
                     >
                       Loading...
@@ -357,7 +361,7 @@ export default function AllotedRoomsPage() {
                 ) : error ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="px-4 py-3 text-center text-red-400"
                     >
                       {error}
@@ -366,7 +370,7 @@ export default function AllotedRoomsPage() {
                 ) : filteredRooms.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="px-4 py-3 text-center text-gray-400"
                     >
                       No allotments found
@@ -378,21 +382,30 @@ export default function AllotedRoomsPage() {
                       key={room.id}
                       className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors"
                     >
-                      <td className="px-4 py-3 text-white text-mdfont-medium">
-                        {room.id}
+                      <td className="px-4 py-3 text-white text-xs font-mono font-bold">
+                        #{room.id.slice(0, 8).toUpperCase()}
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <div>
                           <p className="text-white font-medium">
                             {room.patientName}
                           </p>
-                          <p className="text-gray-400 text-xs">
-                            {room.patientId}
+                          <p className="text-gray-400 text-[10px] font-mono mt-0.5 block uppercase">
+                            UHID: {room.patientId.slice(0, 8)}
                           </p>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-white font-medium text-sm">
                         {room.room.roomNumber}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {room.bed ? (
+                          <span className="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-xs font-bold font-sans">
+                            {room.bed}
+                          </span>
+                        ) : (
+                          <span className="text-gray-500 italic text-xs">Unspecified</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <span
@@ -475,20 +488,24 @@ export default function AllotedRoomsPage() {
           if (!room) return null;
           return (
             <div className="space-y-4 text-gray-300">
+              <div className="flex justify-between items-center pb-2 border-b border-dark-tertiary/40">
+                <span className="text-xs text-emerald-400 font-bold font-mono">Allotment: #{room.id.slice(0, 8).toUpperCase()}</span>
+                <span className="text-[9px] text-gray-500 font-mono select-all" title="Click to copy full database ID">UUID: {room.id}</span>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-400">Patient</p>
                   <p className="font-medium text-white">{room.patientName}</p>
-                  <p className="text-xs">{room.patientId}</p>
+                  <p className="text-xs font-mono">UHID: {room.patientId.slice(0, 8).toUpperCase()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">Doctor</p>
                   <p className="font-medium text-white">{room.attendingDoctor}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">Room</p>
-                  <p className="font-medium text-white">{room.room.roomNumber} ({room.room.roomType})</p>
-                  <p className="text-xs">{room.room.department}</p>
+                  <p className="text-sm text-gray-400">Room & Bed Slot</p>
+                  <p className="font-medium text-white">Room {room.room.roomNumber} • Bed {room.bed || "N/A"}</p>
+                  <p className="text-xs">{room.room.department} • {room.room.roomType}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">Status</p>

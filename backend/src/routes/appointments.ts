@@ -368,7 +368,12 @@ router.post('/:id/complete', authMiddleware, async (req: AuthRequest, res: Respo
       labRequestSent: false,
       admissionRecommended: !!admissionRecommended,
       admissionNotes: admissionNotes || '',
-      admissionRequestSent: false
+      admissionRequestSent: false,
+      priority: req.body.priority || 'Routine',
+      requestedDepartment: req.body.requestedDepartment || '',
+      recommendedRoomType: req.body.recommendedRoomType || 'General',
+      admissionReason: req.body.admissionReason || '',
+      clinicalNotes: req.body.clinicalNotes || req.body.admissionNotes || ''
     };
 
     // Save notes as JSON so we can easily parse it in the consultation view
@@ -468,6 +473,18 @@ router.post('/:id/send-lab-request', authMiddleware, async (req: AuthRequest, re
       [appointment.patientName || 'Unknown Patient', detailsStr, appointmentId, appointment.patientId, doctorId]
     );
 
+    // Fetch doctor's name to personalize the notification
+    const [doctors]: any = await connection.query('SELECT name FROM doctors WHERE id = ?', [doctorId]);
+    const doctorName = doctors[0]?.name || 'Attending Doctor';
+
+    // Dispatch notification to Laboratory department
+    const notifMsg = `A new laboratory test request has been submitted for patient ${appointment.patientName || 'Unknown Patient'} by Dr. ${doctorName}.`;
+    await connection.query(
+      `INSERT INTO notifications (id, title, message, type, senderId, senderName, department, isRead, createdAt, updatedAt)
+       VALUES (UUID(), 'New Laboratory Request', ?, 'info', ?, ?, 'laboratory', 0, NOW(3), NOW(3))`,
+      [notifMsg, req.user?.id || null, `Dr. ${doctorName}`]
+    );
+
     // Update notes JSON
     notesObj.labRequestSent = true;
     const updatedNotesJson = JSON.stringify(notesObj);
@@ -530,17 +547,44 @@ router.post('/:id/send-admission-request', authMiddleware, async (req: AuthReque
       return res.status(400).json({ error: 'Admission request has already been sent.' });
     }
 
-    const admissionNotes = notesObj.admissionNotes || "";
-
     // Begin Transaction
     await connection.beginTransaction();
 
-    // Create record
-    const detailsStr = `Admission Recommended.\nJustification/Instructions: ${admissionNotes || 'Attending Doctor advised immediate admission.'}`;
+    // Fetch doctor's name to personalize the notification
+    const [doctors]: any = await connection.query('SELECT name FROM doctors WHERE id = ?', [doctorId]);
+    const doctorName = doctors[0]?.name || 'Attending Doctor';
+
+    const priority = notesObj.priority || 'Routine';
+    const requestedDepartment = notesObj.requestedDepartment || '';
+    const recommendedRoomType = notesObj.recommendedRoomType || 'General';
+    const admissionReason = notesObj.admissionReason || '';
+    const clinicalNotes = notesObj.clinicalNotes || notesObj.admissionNotes || '';
+
+    // Create record JSON details
+    const detailsJson = JSON.stringify({
+      priority,
+      requestedDepartment,
+      recommendedRoomType,
+      admissionReason,
+      clinicalNotes,
+      attendingDoctorName: doctorName,
+      attendingDoctorId: doctorId,
+      appointmentId
+    });
+
+    // Create record with 'Pending Review' status
     await connection.query(
       `INSERT INTO records (id, type, patientName, date, details, status, appointmentId, patientId, doctorId, createdAt, updatedAt)
-       VALUES (UUID(), 'Admission Request', ?, NOW(), ?, 'Pending', ?, ?, ?, NOW(), NOW())`,
-      [appointment.patientName || 'Unknown Patient', detailsStr, appointmentId, appointment.patientId, doctorId]
+       VALUES (UUID(), 'Admission Request', ?, NOW(), ?, 'Pending Review', ?, ?, ?, NOW(), NOW())`,
+      [appointment.patientName || 'Unknown Patient', detailsJson, appointmentId, appointment.patientId, doctorId]
+    );
+
+    // Dispatch notification to Receptionist department
+    const notifMsg = `Emergency Admission Request submitted for patient ${appointment.patientName || 'Unknown Patient'} by Dr. ${doctorName}.`;
+    await connection.query(
+      `INSERT INTO notifications (id, title, message, type, senderId, senderName, department, isRead, createdAt, updatedAt)
+       VALUES (UUID(), 'Emergency Admission Request', ?, 'warning', ?, ?, 'receptionist', 0, NOW(3), NOW(3))`,
+      [notifMsg, req.user?.id || null, `Dr. ${doctorName}`]
     );
 
     // Update notes JSON

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-import { dashboardAPI } from "@/lib/api";
+import { dashboardAPI, notificationAPI } from "@/lib/api";
 import {
   BarChart,
   Bar,
@@ -47,6 +47,52 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
+
+  // Notification Console test state
+  const [liveNotifications, setLiveNotifications] = useState<any[]>([]);
+  const [testNotifTitle, setTestNotifTitle] = useState("");
+  const [testNotifMsg, setTestNotifMsg] = useState("");
+  const [testNotifType, setTestNotifType] = useState("info");
+  const [testNotifDept, setTestNotifDept] = useState("");
+  const [dispatchingNotif, setDispatchingNotif] = useState(false);
+
+  const fetchLiveNotifications = async () => {
+    try {
+      const res = await notificationAPI.list();
+      setLiveNotifications(res.data.notifications || []);
+    } catch (e) {
+      console.error("Failed to fetch live notifications", e);
+    }
+  };
+
+  const handleSendTestNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testNotifTitle.trim() || !testNotifMsg.trim()) return;
+
+    try {
+      setDispatchingNotif(true);
+      await notificationAPI.create({
+        title: testNotifTitle.trim(),
+        message: testNotifMsg.trim(),
+        type: testNotifType,
+        department: testNotifDept || null,
+        senderName: "Admin Console"
+      });
+      setTestNotifTitle("");
+      setTestNotifMsg("");
+      fetchLiveNotifications();
+    } catch (error) {
+      console.error("Failed to send test notification:", error);
+    } finally {
+      setDispatchingNotif(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "notifications") {
+      fetchLiveNotifications();
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -459,67 +505,181 @@ export default function AdminDashboard() {
               )}
 
               {activeTab === "notifications" && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold mb-4">
-                    Recent Notifications
-                  </h3>
-                  <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                    <div className="flex items-start gap-4 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="font-medium text-blue-400">
-                          New Appointment Scheduled
-                        </p>
-                        <p className="text-mdtext-gray-400 mt-1">
-                          Dr. Smith has a new appointment with John Doe
-                          scheduled for Nov 15, 2025
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          2 hours ago
-                        </p>
-                      </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Left: Dispatch Notification Form */}
+                  <div className="lg:col-span-1 bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
+                    <div className="border-b border-dark-tertiary pb-3">
+                      <h3 className="text-md font-bold text-white">Dispatch Notification</h3>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Send a real-time notification to a targeted department or system-wide.
+                      </p>
                     </div>
-                    <div className="flex items-start gap-4 p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="font-medium text-emerald-400">
-                          Appointment Completed
-                        </p>
-                        <p className="text-mdtext-gray-400 mt-1">
-                          Appointment with patient Sarah Johnson has been marked
-                          as completed
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          4 hours ago
+                    
+                    <form onSubmit={handleSendTestNotification} className="space-y-4">
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">
+                          Target Department
+                        </label>
+                        <select
+                          value={testNotifDept}
+                          onChange={(e) => setTestNotifDept(e.target.value)}
+                          className="w-full text-xs bg-dark-tertiary border border-dark-tertiary/60 rounded px-2.5 py-2 outline-none text-gray-300 transition-colors focus:border-emerald-500/50"
+                        >
+                          <option value="">Global System (Everyone)</option>
+                          <option value="doctor">Doctors</option>
+                          <option value="admin">Administrators</option>
+                          <option value="cardiology">Cardiology Department</option>
+                          <option value="laboratory">Laboratory Department</option>
+                          <option value="pharmacy">Pharmacy Department</option>
+                          <option value="reception">Reception / Desk Staff</option>
+                          <option value="room-allotment">Room Allotment Department</option>
+                          <option value="billing">Billing Department</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">
+                          Severity Level
+                        </label>
+                        <div className="grid grid-cols-4 gap-2">
+                          {[
+                            { value: 'info', label: 'Info', color: 'border-blue-500/30 text-blue-400 bg-blue-500/5' },
+                            { value: 'success', label: 'Success', color: 'border-emerald-500/30 text-emerald-400 bg-emerald-500/5' },
+                            { value: 'warning', label: 'Warning', color: 'border-amber-500/30 text-amber-400 bg-amber-500/5' },
+                            { value: 'danger', label: 'Danger', color: 'border-red-500/30 text-red-400 bg-red-500/5' }
+                          ].map(t => (
+                            <button
+                              key={t.value}
+                              type="button"
+                              onClick={() => setTestNotifType(t.value)}
+                              className={`py-1.5 px-1 text-[11px] font-bold rounded border text-center transition-all ${
+                                testNotifType === t.value 
+                                  ? 'border-emerald-500 bg-emerald-500/20 text-white scale-105 shadow-sm font-bold'
+                                  : t.color + ' opacity-75 hover:opacity-100'
+                              }`}
+                            >
+                              {t.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">
+                          Notification Title
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={testNotifTitle}
+                          onChange={(e) => setTestNotifTitle(e.target.value)}
+                          placeholder="e.g., Critical Stock Alert"
+                          className="w-full text-xs bg-dark-tertiary border border-dark-tertiary/60 rounded px-2.5 py-2 outline-none text-gray-300 transition-colors focus:border-emerald-500/50"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-1.5">
+                          Message Body
+                        </label>
+                        <textarea
+                          required
+                          rows={3}
+                          value={testNotifMsg}
+                          onChange={(e) => setTestNotifMsg(e.target.value)}
+                          placeholder="State the core notification summary details here..."
+                          className="w-full text-xs bg-dark-tertiary border border-dark-tertiary/60 rounded px-2.5 py-2 outline-none text-gray-300 transition-colors focus:border-emerald-500/50"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={dispatchingNotif}
+                        className="w-full py-2.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 border border-emerald-500/20 hover:shadow-emerald-500/20"
+                      >
+                        {dispatchingNotif ? (
+                          <>
+                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin animate-faster"></div>
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <TrendingUp size={13} />
+                            Dispatch Notification
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Right: Live Notification Log */}
+                  <div className="lg:col-span-2 bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
+                    <div className="flex items-center justify-between border-b border-dark-tertiary pb-3">
+                      <div>
+                        <h3 className="text-md font-bold text-white">Live Dispatched Log</h3>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Monitor notifications dispatched in the system database.
                         </p>
                       </div>
+                      <button 
+                        onClick={fetchLiveNotifications}
+                        className="text-xs bg-dark-tertiary border border-dark-tertiary/60 hover:bg-dark-tertiary text-gray-300 rounded px-3 py-1.5 transition-colors font-semibold"
+                      >
+                        Refresh Log
+                      </button>
                     </div>
-                    <div className="flex items-start gap-4 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="font-medium text-yellow-400">
-                          Pending Appointment
-                        </p>
-                        <p className="text-mdtext-gray-400 mt-1">
-                          There is 1 pending appointment awaiting confirmation
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          6 hours ago
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-4 p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="font-medium text-purple-400">
-                          System Update
-                        </p>
-                        <p className="text-mdtext-gray-400 mt-1">
-                          System maintenance scheduled for Nov 20, 2025 from
-                          2:00 AM to 4:00 AM
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">1 day ago</p>
-                      </div>
+
+                    <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+                      {liveNotifications.length === 0 ? (
+                        <div className="text-center py-12 text-xs text-gray-500 italic border border-dashed border-dark-tertiary/40 rounded-lg">
+                          No notifications found in the database. Create one to test!
+                        </div>
+                      ) : (
+                        liveNotifications.map((notif: any) => (
+                          <div 
+                            key={notif.id} 
+                            className={`flex items-start gap-4 p-3.5 rounded-lg border transition-colors ${
+                              notif.type === 'danger' || notif.type === 'error' ? 'bg-red-500/5 border-red-500/10' :
+                              notif.type === 'success' ? 'bg-emerald-500/5 border-emerald-500/10' :
+                              notif.type === 'warning' ? 'bg-amber-500/5 border-amber-500/10' :
+                              'bg-blue-500/5 border-blue-500/10'
+                            }`}
+                          >
+                            <div className="flex-1">
+                              <div className="flex justify-between items-center gap-2">
+                                <p className={`font-bold text-xs ${
+                                  notif.type === 'danger' || notif.type === 'error' ? 'text-red-400' :
+                                  notif.type === 'success' ? 'text-emerald-400' :
+                                  notif.type === 'warning' ? 'text-amber-400' :
+                                  'text-blue-400'
+                                }`}>
+                                  {notif.title}
+                                </p>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[9px] bg-dark-tertiary border border-dark-tertiary/80 text-gray-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider font-mono">
+                                    {notif.department || "GLOBAL"}
+                                  </span>
+                                  {notif.isRead ? (
+                                    <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/15 px-1.5 py-0.5 rounded font-semibold">
+                                      Read
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9px] bg-red-500/10 text-red-400 border border-red-500/15 px-1.5 py-0.5 rounded font-semibold animate-pulse">
+                                      Unread
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <p className="text-[11px] text-gray-300 mt-1.5 leading-relaxed">{notif.message}</p>
+                              <div className="flex items-center gap-2 mt-2.5 text-[9px] text-gray-500 font-semibold">
+                                <span>Sender: {notif.senderName || 'System'}</span>
+                                <span>•</span>
+                                <span>{new Date(notif.createdAt).toLocaleString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>

@@ -10,8 +10,8 @@ console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
 const app: Express = express();
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 import authRoutes from './routes/auth';
 import doctorRoutes from './routes/doctors';
@@ -38,6 +38,7 @@ import reportsRoutes from './routes/reports';
 import reviewsRoutes from './routes/reviews';
 import feedbackRoutes from './routes/feedback';
 import servicesRoutes from './routes/services';
+import notificationRoutes from './routes/notifications';
 
 console.log('Registering routes...');
 app.use('/api/auth', authRoutes);
@@ -66,6 +67,7 @@ app.use('/api/records', recordsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/notifications', notificationRoutes);
 console.log('✓ All routes registered');
 
 app.get('/api/health', (req, res) => {

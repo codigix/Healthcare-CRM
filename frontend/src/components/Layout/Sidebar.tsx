@@ -179,8 +179,8 @@ const menuItems = [
     href: "/room-allotment",
     moduleId: "room-allotment",
     subItems: [
-      { label: "Alloted Rooms", href: "/room-allotment/alloted" },
       { label: "Admission Requests", href: "/room-allotment/requests" },
+      { label: "Alloted Rooms", href: "/room-allotment/alloted" },
       { label: "New Allotment", href: "/room-allotment/new" },
       { label: "Rooms by Department", href: "/room-allotment/by-department" },
       { label: "Add New Room", href: "/room-allotment/add-room" },

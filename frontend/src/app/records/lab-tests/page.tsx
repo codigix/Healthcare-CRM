@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { recordsAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
-import { ClipboardList, Search, FileText, CheckCircle2, AlertCircle, Clock, Check, Plus, Clipboard, ExternalLink } from "lucide-react";
+import { ClipboardList, Search, FileText, CheckCircle2, AlertCircle, Clock, Check, Plus, Clipboard, ExternalLink, Eye, Upload, Download } from "lucide-react";
 import Modal from "@/components/UI/Modal";
 
 interface LabRecord {
@@ -31,6 +31,16 @@ export default function LabTestsPage() {
   const [reportText, setReportText] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Upload report file state variables
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileBase64, setFileBase64] = useState<string>("");
+  const [fileName, setFileName] = useState<string>("");
+  const [fileType, setFileType] = useState<string>("");
+
+  // Preview Modal State
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewRecord, setPreviewRecord] = useState<LabRecord | null>(null);
+
   const fetchLabRecords = async () => {
     try {
       setLoading(true);
@@ -52,7 +62,65 @@ export default function LabTestsPage() {
   const handleOpenReportModal = (record: LabRecord) => {
     setSelectedRecord(record);
     setReportText("");
+    setSelectedFile(null);
+    setFileBase64("");
+    setFileName("");
+    setFileType("");
     setShowModal(true);
+  };
+
+  const handleOpenPreviewModal = (record: LabRecord) => {
+    setPreviewRecord(record);
+    setShowPreviewModal(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File is too large. Please select a file under 5MB.");
+      return;
+    }
+
+    setSelectedFile(file);
+    setFileName(file.name);
+    setFileType(file.type);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFileBase64(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const parseLabDetails = (detailsStr: string) => {
+    try {
+      if (detailsStr && detailsStr.startsWith("{")) {
+        const parsed = JSON.parse(detailsStr);
+        return {
+          request: parsed.request || "N/A",
+          observations: parsed.observations || "",
+          fileName: parsed.fileName || null,
+          fileType: parsed.fileType || null,
+          fileData: parsed.fileData || null,
+          reportedAt: parsed.reportedAt || null
+        };
+      }
+    } catch (e) {}
+
+    // Fallback for legacy format
+    const parts = detailsStr ? detailsStr.split("\n\n") : [];
+    const request = parts[0] || "N/A";
+    const observations = parts[1] ? parts[1].replace(/\[LABORATORY REPORT - .*\]:\n/, "") : "";
+    return {
+      request,
+      observations,
+      fileName: null,
+      fileType: null,
+      fileData: null,
+      reportedAt: null
+    };
   };
 
   const handleSubmitReport = async (e: React.FormEvent) => {
@@ -62,22 +130,26 @@ export default function LabTestsPage() {
     try {
       setSubmitting(true);
       
-      // Append the lab findings to the details column to retain history
       const originalDetails = selectedRecord.details || "";
-      const updatedDetails = `${originalDetails}\n\n[LABORATORY REPORT - ${new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      })}]:\n${reportText.trim()}`;
+      const reportPayload = {
+        request: originalDetails,
+        observations: reportText.trim(),
+        fileName: fileName || null,
+        fileType: fileType || null,
+        fileData: fileBase64 || null,
+        reportedAt: new Date().toISOString()
+      };
 
       await recordsAPI.update(selectedRecord.id, {
         status: "Completed",
-        details: updatedDetails
+        details: JSON.stringify(reportPayload)
       });
 
       setShowModal(false);
+      setSelectedFile(null);
+      setFileBase64("");
+      setFileName("");
+      setFileType("");
       fetchLabRecords();
     } catch (err) {
       console.error("Failed to submit laboratory report:", err);
@@ -176,7 +248,7 @@ export default function LabTestsPage() {
                         <span className="text-white font-semibold text-sm">{record.patientName}</span>
                       </td>
                       <td className="py-4 px-4 text-gray-300 text-sm font-medium">
-                        {record.details ? record.details.split("\n\n")[0].replace("Recommended Laboratory Tests: ", "") : "N/A"}
+                        {parseLabDetails(record.details).request.replace("Recommended Laboratory Tests: ", "")}
                       </td>
                       <td className="py-4 px-4">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusStyle(record.status)}`}>
@@ -193,7 +265,13 @@ export default function LabTestsPage() {
                             Upload Report
                           </button>
                         ) : (
-                          <span className="text-xs text-gray-500 font-bold italic pr-2">Reported</span>
+                          <button
+                            onClick={() => handleOpenPreviewModal(record)}
+                            className="px-3 py-1.5 text-xs font-bold bg-dark-tertiary hover:bg-dark-tertiary/70 text-gray-300 rounded-lg transition-all flex items-center gap-1.5 ml-auto border border-dark-tertiary/50"
+                          >
+                            <Eye size={13} />
+                            View Findings
+                          </button>
                         )}
                       </td>
                     </tr>
@@ -244,8 +322,29 @@ export default function LabTestsPage() {
             <div>
               <p className="text-xs text-gray-500 uppercase font-bold">Doctor's Requested Tests</p>
               <p className="text-xs text-emerald-400 font-semibold mt-0.5 bg-emerald-500/5 border border-emerald-500/10 p-2.5 rounded-lg">
-                {selectedRecord.details ? selectedRecord.details.split("\n\n")[0].replace("Recommended Laboratory Tests: ", "") : "N/A"}
+                {selectedRecord.details ? parseLabDetails(selectedRecord.details).request.replace("Recommended Laboratory Tests: ", "") : "N/A"}
               </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-300 mb-1.5">
+                Upload Diagnostic Report Attachment (PDF, Image)
+              </label>
+              <div className="relative border-2 border-dashed border-dark-tertiary/80 hover:border-emerald-500/40 rounded-lg p-4 transition-colors bg-dark-secondary/30 flex flex-col items-center justify-center text-center cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <Upload className="text-emerald-400 mb-2" size={24} />
+                <span className="text-xs font-semibold text-white">
+                  {selectedFile ? selectedFile.name : "Choose PDF or Image file..."}
+                </span>
+                <span className="text-[10px] text-gray-500 mt-1">
+                  {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : "Max file size: 5MB"}
+                </span>
+              </div>
             </div>
 
             <div>
@@ -280,6 +379,134 @@ export default function LabTestsPage() {
             </div>
           </form>
         )}
+      </Modal>
+
+      {/* Modal for viewing clinical diagnostic report findings */}
+      <Modal
+        isOpen={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
+        title="Laboratory Test Findings"
+      >
+        {previewRecord && (() => {
+          const parsed = parseLabDetails(previewRecord.details);
+          return (
+            <div className="space-y-4 text-gray-300">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold">Patient Name</p>
+                  <p className="text-sm text-white font-bold mt-0.5">{previewRecord.patientName}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold">Reported Date</p>
+                  <p className="text-xs text-white font-semibold mt-0.5">
+                    {parsed.reportedAt ? new Date(parsed.reportedAt).toLocaleString() : new Date(previewRecord.date).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">Doctor's Requested Tests</p>
+                <p className="text-xs text-white font-semibold mt-0.5 bg-dark-tertiary/40 p-2.5 rounded-lg border border-dark-tertiary/20">
+                  {parsed.request.replace("Recommended Laboratory Tests: ", "")}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">Clinical Observations / Readings</p>
+                <div className="text-xs text-gray-300 leading-relaxed bg-dark-tertiary/20 p-4 rounded-lg border border-dark-tertiary/20 min-h-[100px] whitespace-pre-line">
+                  {parsed.observations || "No clinical observations entered."}
+                </div>
+              </div>
+
+              {parsed.fileData && (
+                <div className="bg-emerald-500/[0.02] border border-emerald-500/20 p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <FileText size={20} className="text-emerald-400" />
+                    <div>
+                      <p className="text-xs font-bold text-white max-w-[200px] truncate" title={parsed.fileName}>{parsed.fileName || "report-attachment"}</p>
+                      <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mt-0.5">{parsed.fileType?.split("/")[1] || "File"}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newTab = window.open();
+                        if (newTab) {
+                          try {
+                            const rawBase64 = parsed.fileData.split(',')[1] || parsed.fileData;
+                            const contentType = parsed.fileType || 'application/pdf';
+                            const byteCharacters = atob(rawBase64);
+                            const byteNumbers = new Array(byteCharacters.length);
+                            for (let i = 0; i < byteCharacters.length; i++) {
+                              byteNumbers[i] = byteCharacters.charCodeAt(i);
+                            }
+                            const byteArray = new Uint8Array(byteNumbers);
+                            const blob = new Blob([byteArray], { type: contentType });
+                            const blobUrl = URL.createObjectURL(blob);
+
+                            newTab.document.write(`
+                              <!DOCTYPE html>
+                              <html>
+                              <head>
+                                <title>Laboratory Report - ${previewRecord?.patientName || 'Attachment'}</title>
+                                <style>
+                                  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #121214; }
+                                  iframe { border: none; width: 100%; height: 100%; }
+                                </style>
+                              </head>
+                              <body>
+                                <iframe src="${blobUrl}" allowfullscreen></iframe>
+                              </body>
+                              </html>
+                            `);
+                            newTab.document.close();
+                          } catch (err) {
+                            console.error("Failed to parse base64 to blob:", err);
+                            newTab.close();
+                            alert("Failed to render PDF report.");
+                          }
+                        }
+                      }}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow shadow-emerald-500/10"
+                    >
+                      <ExternalLink size={13} />
+                      View Attachment
+                    </button>
+                    <a
+                      href={parsed.fileData}
+                      download={parsed.fileName || "lab-report"}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-dark-tertiary/50"
+                    >
+                      <Download size={13} />
+                      Download
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {parsed.fileData && parsed.fileType?.startsWith("image/") && (
+                <div className="border border-dark-tertiary rounded-lg p-2 bg-dark-secondary/30 flex items-center justify-center max-h-[220px] overflow-hidden">
+                  <img
+                    src={parsed.fileData}
+                    alt={parsed.fileName || "attachment"}
+                    className="max-h-[200px] object-contain rounded"
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPreviewModal(false)}
+                  className="px-5 py-2 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded-lg text-xs font-bold transition-colors"
+                >
+                  Close Findings
+                </button>
+              </div>
+            </div>
+          );
+        })()}
       </Modal>
     </div>
   );

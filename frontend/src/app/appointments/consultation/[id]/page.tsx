@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store";
-import { appointmentAPI, patientAPI, medicineAPI } from "@/lib/api";
+import { appointmentAPI, patientAPI, medicineAPI, recordsAPI } from "@/lib/api";
 import Link from "next/link";
+import Modal from "@/components/UI/Modal";
 import {
   ArrowLeft,
   Activity,
@@ -20,7 +21,11 @@ import {
   Search,
   CheckSquare,
   Square,
-  PlusCircle
+  PlusCircle,
+  Eye,
+  Download,
+  ExternalLink,
+  ClipboardList
 } from "lucide-react";
 
 interface MedicineItem {
@@ -54,6 +59,9 @@ export default function ConsultationPage() {
   const [appointment, setAppointment] = useState<any>(null);
   const [patient, setPatient] = useState<any>(null);
   const [pastVisits, setPastVisits] = useState<PastAppointment[]>([]);
+  const [labs, setLabs] = useState<any[]>([]);
+  const [selectedLabReport, setSelectedLabReport] = useState<any | null>(null);
+  const [showLabReportModal, setShowLabReportModal] = useState(false);
 
   // Clinical inputs
   const [symptoms, setSymptoms] = useState("");
@@ -154,6 +162,16 @@ export default function ConsultationPage() {
               tokenNumber: a.tokenNumber
             }));
           setPastVisits(pastList);
+
+          // Fetch patient's lab reports
+          if (patData.name) {
+            try {
+              const labsRes = await recordsAPI.list(1, 50, "Lab Test", patData.name);
+              setLabs(labsRes.data.records || []);
+            } catch (err) {
+              console.error("Failed to load patient lab reports in consultation:", err);
+            }
+          }
         }
 
         // 4. Pre-fetch medicine database for autocompletion
@@ -282,6 +300,35 @@ export default function ConsultationPage() {
     } catch (e) {
       return <p className="text-xs text-gray-400 font-medium italic">{notesJsonStr}</p>;
     }
+  };
+
+  const parseLabDetails = (detailsStr: string) => {
+    try {
+      if (detailsStr && detailsStr.startsWith("{")) {
+        const parsed = JSON.parse(detailsStr);
+        return {
+          request: parsed.request || "N/A",
+          observations: parsed.observations || "",
+          fileName: parsed.fileName || null,
+          fileType: parsed.fileType || null,
+          fileData: parsed.fileData || null,
+          reportedAt: parsed.reportedAt || null
+        };
+      }
+    } catch (e) {}
+
+    // Fallback for legacy format
+    const parts = detailsStr ? detailsStr.split("\n\n") : [];
+    const request = parts[0] || "N/A";
+    const observations = parts[1] ? parts[1].replace(/\[LABORATORY REPORT - .*\]:\n/, "") : "";
+    return {
+      request,
+      observations,
+      fileName: null,
+      fileType: null,
+      fileData: null,
+      reportedAt: null
+    };
   };
 
   if (loading) {
@@ -463,7 +510,7 @@ export default function ConsultationPage() {
             </div>
           </div>
 
-          {/* Section 3: Previous Visits Timeline */}
+          {/* Section 3: Previous Encounters */}
           <div className="card bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
             <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
               <Clock size={18} className="text-emerald-400" />
@@ -492,6 +539,62 @@ export default function ConsultationPage() {
                     {renderPreviousNotes(visit.notes)}
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Section 4: Patient Diagnostic Lab Reports */}
+          <div className="card bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
+            <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
+              <ClipboardList size={18} className="text-emerald-400" />
+              <h2 className="text-base font-bold text-white font-outfit">Diagnostic & Lab Reports</h2>
+            </div>
+
+            {labs.length === 0 ? (
+              <p className="text-xs text-gray-500 text-center py-4">No laboratory test requests or completed reports found.</p>
+            ) : (
+              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
+                {labs.map((lab) => {
+                  const parsed = parseLabDetails(lab.details);
+                  const isCompleted = lab.status?.toLowerCase() === "completed";
+                  return (
+                    <div
+                      key={lab.id}
+                      className="p-3 bg-dark-tertiary/20 border border-dark-tertiary/50 rounded-lg hover:border-emerald-500/20 transition-all space-y-2 text-xs"
+                    >
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="font-bold text-white leading-tight">
+                          {parsed.request.replace("Recommended Laboratory Tests: ", "")}
+                        </span>
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-bold shrink-0 border uppercase tracking-wider ${
+                            isCompleted
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                              : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                          }`}
+                        >
+                          {lab.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-gray-400 pt-1 border-t border-dark-tertiary/30">
+                        <span>Ordered: {new Date(lab.date).toLocaleDateString()}</span>
+                        {isCompleted && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedLabReport(lab);
+                              setShowLabReportModal(true);
+                            }}
+                            className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 active:scale-95 transition-all"
+                          >
+                            <Eye size={11} />
+                            View Findings
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -891,6 +994,123 @@ export default function ConsultationPage() {
         </div>
 
       </div>
+
+      {/* Modal for viewing patient's diagnostic lab reports */}
+      <Modal
+        isOpen={showLabReportModal}
+        onClose={() => {
+          setShowLabReportModal(false);
+          setSelectedLabReport(null);
+        }}
+        title="Laboratory Test Findings"
+      >
+        {selectedLabReport && (() => {
+          const parsed = parseLabDetails(selectedLabReport.details);
+          return (
+            <div className="space-y-4 text-gray-300">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold">Patient Name</p>
+                  <p className="text-sm text-white font-bold mt-0.5">{selectedLabReport.patientName}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold">Reported Date</p>
+                  <p className="text-xs text-white font-semibold mt-0.5">
+                    {parsed.reportedAt ? new Date(parsed.reportedAt).toLocaleString() : new Date(selectedLabReport.date).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">Requested Tests</p>
+                <p className="text-xs text-white font-semibold mt-0.5 bg-dark-tertiary/40 p-2.5 rounded-lg border border-dark-tertiary/20">
+                  {parsed.request.replace("Recommended Laboratory Tests: ", "")}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">Clinical Observations / Findings</p>
+                <div className="text-xs text-gray-300 leading-relaxed bg-dark-tertiary/20 p-4 rounded-lg border border-dark-tertiary/20 min-h-[100px] whitespace-pre-line">
+                  {parsed.observations || "No clinical observations entered."}
+                </div>
+              </div>
+
+              {parsed.fileData && (
+                <div className="bg-emerald-500/[0.02] border border-emerald-500/20 p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <FileText size={20} className="text-emerald-400" />
+                    <div>
+                      <p className="text-xs font-bold text-white max-w-[200px] truncate" title={parsed.fileName}>{parsed.fileName || "report-attachment"}</p>
+                      <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mt-0.5">{parsed.fileType?.split("/")[1] || "File"}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newTab = window.open();
+                        if (newTab) {
+                          newTab.document.write(`
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                              <title>Laboratory Report - ${selectedLabReport?.patientName || 'Attachment'}</title>
+                              <style>
+                                body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #121214; }
+                                iframe { border: none; width: 100%; height: 100%; }
+                              </style>
+                            </head>
+                            <body>
+                              <iframe src="${parsed.fileData}" allowfullscreen></iframe>
+                            </body>
+                            </html>
+                          `);
+                          newTab.document.close();
+                        }
+                      }}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow shadow-emerald-500/10"
+                    >
+                      <ExternalLink size={13} />
+                      View Attachment
+                    </button>
+                    <a
+                      href={parsed.fileData}
+                      download={parsed.fileName || "lab-report"}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-dark-tertiary/50"
+                    >
+                      <Download size={13} />
+                      Download
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {parsed.fileData && parsed.fileType?.startsWith("image/") && (
+                <div className="border border-dark-tertiary rounded-lg p-2 bg-dark-secondary/30 flex items-center justify-center max-h-[220px] overflow-hidden">
+                  <img
+                    src={parsed.fileData}
+                    alt={parsed.fileName || "attachment"}
+                    className="max-h-[200px] object-contain rounded"
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLabReportModal(false);
+                    setSelectedLabReport(null);
+                  }}
+                  className="px-5 py-2 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded-lg text-xs font-bold transition-colors"
+                >
+                  Close Findings
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
     </div>
   );
 }

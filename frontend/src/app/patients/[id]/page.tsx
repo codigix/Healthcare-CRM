@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import apiClient, { patientAPI, appointmentAPI, invoiceAPI, recordsAPI } from "@/lib/api";
 import {
   ArrowLeft,
   Calendar,
@@ -20,8 +21,10 @@ import {
   Plus,
   Edit,
   ClipboardList,
+  ExternalLink,
+  Download,
+  Eye,
 } from "lucide-react";
-import apiClient, { patientAPI, appointmentAPI, invoiceAPI, recordsAPI } from "@/lib/api";
 
 type TabType = "details" | "appointments" | "prescriptions" | "labs" | "billing" | "admissions";
 
@@ -111,9 +114,9 @@ export default function PatientProfilePage() {
       });
       setAdmissions(admissionsResponse.data.allotments || []);
 
-      // 6. Fetch Labs (from records filtered by Lab Report and patient name)
+      // 6. Fetch Labs (from records filtered by Lab Test and patient name)
       if (patientData.name) {
-        const labsResponse = await recordsAPI.list(1, 100, "Lab Report", patientData.name);
+        const labsResponse = await recordsAPI.list(1, 100, "Lab Test", patientData.name);
         setLabs(labsResponse.data.records || []);
       }
 
@@ -123,6 +126,35 @@ export default function PatientProfilePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const parseLabDetails = (detailsStr: string) => {
+    try {
+      if (detailsStr && detailsStr.startsWith("{")) {
+        const parsed = JSON.parse(detailsStr);
+        return {
+          request: parsed.request || "N/A",
+          observations: parsed.observations || "",
+          fileName: parsed.fileName || null,
+          fileType: parsed.fileType || null,
+          fileData: parsed.fileData || null,
+          reportedAt: parsed.reportedAt || null
+        };
+      }
+    } catch (e) {}
+
+    // Fallback for legacy format
+    const parts = detailsStr ? detailsStr.split("\n\n") : [];
+    const request = parts[0] || "N/A";
+    const observations = parts[1] ? parts[1].replace(/\[LABORATORY REPORT - .*\]:\n/, "") : "";
+    return {
+      request,
+      observations,
+      fileName: null,
+      fileType: null,
+      fileData: null,
+      reportedAt: null
+    };
   };
 
   if (loading) {
@@ -425,7 +457,10 @@ export default function PatientProfilePage() {
             {/* TAB 4: LAB REPORTS */}
             {activeTab === "labs" && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-emerald-400">Diagnostic & Lab Reports</h3>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-emerald-400">Diagnostic & Lab Reports</h3>
+                  <span className="text-xs text-gray-400">{labs.length} diagnostic records</span>
+                </div>
 
                 {labs.length === 0 ? (
                   <div className="text-center py-12 text-gray-500 card bg-transparent border-dashed">
@@ -434,21 +469,105 @@ export default function PatientProfilePage() {
                     <p className="text-xs text-gray-500 mt-1">No diagnostic lab sheets have been registered under this patient's exact name.</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {labs.map((lab) => (
-                      <div key={lab.id} className="p-5 bg-dark-secondary/50 border border-dark-tertiary/50 rounded-xl flex justify-between items-start gap-4">
-                        <div className="space-y-1">
-                          <p className="font-semibold text-white">{lab.type || "Diagnostic Test"}</p>
-                          <p className="text-xs text-gray-400">Tested Date: {formatDate(lab.date)}</p>
-                          {lab.details && <p className="text-sm text-gray-300 mt-2 bg-dark-tertiary/30 p-3 rounded-lg border border-dark-tertiary/20">{lab.details}</p>}
+                  <div className="space-y-6">
+                    {labs.map((lab) => {
+                      const parsed = parseLabDetails(lab.details);
+                      const isCompleted = lab.status?.toLowerCase() === "completed";
+                      
+                      return (
+                        <div key={lab.id} className="p-6 bg-dark-secondary/50 border border-dark-tertiary rounded-xl space-y-4">
+                          <div className="flex justify-between items-start gap-4 border-b border-dark-tertiary/40 pb-3">
+                            <div>
+                              <p className="font-bold text-white text-sm">
+                                {parsed.request.replace("Recommended Laboratory Tests: ", "")}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                Ordered: {formatDate(lab.date)}
+                                {parsed.reportedAt && ` • Reported: ${new Date(parsed.reportedAt).toLocaleDateString()}`}
+                              </p>
+                            </div>
+                            <span className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                              isCompleted 
+                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                                : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                            }`}>
+                              {lab.status}
+                            </span>
+                          </div>
+
+                          {isCompleted && (
+                            <div className="space-y-3">
+                              <div>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Clinical Observations & Findings</span>
+                                <p className="text-xs text-gray-300 bg-dark-tertiary/20 p-3 rounded-lg border border-dark-tertiary/20 mt-1 leading-relaxed whitespace-pre-line">
+                                  {parsed.observations || "No clinical observations entered."}
+                                </p>
+                              </div>
+
+                              {parsed.fileData && (
+                                <div className="bg-emerald-500/[0.02] border border-emerald-500/20 p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                                  <div className="flex items-center gap-2">
+                                    <FileText size={20} className="text-emerald-400" />
+                                    <div>
+                                      <p className="text-xs font-bold text-white max-w-[200px] truncate" title={parsed.fileName}>{parsed.fileName || "report-attachment"}</p>
+                                      <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mt-0.5">{parsed.fileType?.split("/")[1] || "File"}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-2 w-full sm:w-auto">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newTab = window.open();
+                                        if (newTab) {
+                                          newTab.document.write(`
+                                            <!DOCTYPE html>
+                                            <html>
+                                            <head>
+                                              <title>Laboratory Report - ${patient?.name || 'Attachment'}</title>
+                                              <style>
+                                                body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #121214; }
+                                                iframe { border: none; width: 100%; height: 100%; }
+                                              </style>
+                                            </head>
+                                            <body>
+                                              <iframe src="${parsed.fileData}" allowfullscreen></iframe>
+                                            </body>
+                                            </html>
+                                          `);
+                                          newTab.document.close();
+                                        }
+                                      }}
+                                      className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow shadow-emerald-500/10"
+                                    >
+                                      <ExternalLink size={13} />
+                                      View Report File
+                                    </button>
+                                    <a
+                                      href={parsed.fileData}
+                                      download={parsed.fileName || "lab-report"}
+                                      className="px-4 py-2 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-dark-tertiary/50"
+                                    >
+                                      <Download size={13} />
+                                      Download
+                                    </a>
+                                  </div>
+                                </div>
+                              )}
+
+                              {parsed.fileData && parsed.fileType?.startsWith("image/") && (
+                                <div className="border border-dark-tertiary rounded-lg p-2 bg-dark-secondary/30 flex items-center justify-center max-h-[220px] overflow-hidden w-full sm:w-60">
+                                  <img
+                                    src={parsed.fileData}
+                                    alt={parsed.fileName || "attachment"}
+                                    className="max-h-[200px] object-contain rounded"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-lg ${
-                          lab.status === "Completed" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                        }`}>
-                          {lab.status}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

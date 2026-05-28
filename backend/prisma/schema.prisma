@@ -327,7 +327,7 @@ model Attendance {
 
 model Room {
   id                String   @id @default(cuid())
-  roomNumber        String   @unique
+  roomNumber        String
   roomType          String
   department        String
   floor             String
@@ -343,12 +343,15 @@ model Room {
   oxygenSupply      Boolean  @default(false)
   telephone         Boolean  @default(false)
   nursecallButton   Boolean  @default(false)
+  ventilator        Boolean  @default(false)
+  patientMonitor    Boolean  @default(false)
   additionalNotes   String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   roomAllotments RoomAllotment[] @relation("RoomAllotments")
 
+  @@unique([roomNumber, floor])
   @@map("rooms")
 }
 
@@ -367,6 +370,7 @@ model RoomAllotment {
   paymentMethod         String?
   insuranceDetails      String?
   additionalNotes       String?
+  bed                   String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
@@ -523,3 +527,20 @@ model Record {
   @@index([date])
   @@map("records")
 }
+
+model Notification {
+  id         String   @id @default(cuid())
+  title      String
+  message    String   @db.Text
+  type       String   @default("info") // info, success, warning, danger
+  senderId   String?
+  senderName String?
+  receiverId String?
+  department String?
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("notifications")
+}
+

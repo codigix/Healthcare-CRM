@@ -62,30 +62,49 @@ router.get('/allotments', authMiddleware, async (req: AuthRequest, res: Response
 });
 
 router.post('/allotments', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { 
       patientId, patientName, patientPhone, roomId, attendingDoctor, 
       emergencyContact, specialRequirements, allotmentDate, 
-      expectedDischargeDate, paymentMethod, insuranceDetails, additionalNotes, status 
+      expectedDischargeDate, paymentMethod, insuranceDetails, additionalNotes, status,
+      bed, recordId
     } = req.body;
 
     if (!patientId || !patientName || !roomId || !attendingDoctor || !allotmentDate) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
     const query = `INSERT INTO room_allotments (
       id, patientId, patientName, patientPhone, roomId, attendingDoctor, 
       emergencyContact, specialRequirements, allotmentDate, 
-      expectedDischargeDate, status, paymentMethod, insuranceDetails, additionalNotes, createdAt, updatedAt
-    ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+      expectedDischargeDate, status, paymentMethod, insuranceDetails, additionalNotes, bed, createdAt, updatedAt
+    ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
 
     await connection.query(query, [
       patientId, patientName, patientPhone, roomId, attendingDoctor,
       emergencyContact, specialRequirements, new Date(allotmentDate),
       expectedDischargeDate ? new Date(expectedDischargeDate) : null,
-      status || 'Occupied', paymentMethod, insuranceDetails, additionalNotes
+      status || 'Occupied', paymentMethod, insuranceDetails, additionalNotes, bed || null
     ]);
+
+    // Update the room status to 'Occupied'
+    await connection.query('UPDATE rooms SET status = "Occupied", updatedAt = NOW() WHERE id = ?', [roomId]);
+
+    // Update patient status to 'Admitted'
+    await connection.query('UPDATE patients SET status = "Admitted", updatedAt = NOW() WHERE id = ?', [patientId]);
+
+    // If there is a recordId (Admission Request ID), update its status to 'Admitted'
+    if (recordId) {
+      await connection.query('UPDATE records SET status = "Admitted", updatedAt = NOW() WHERE id = ?', [recordId]);
+    } else {
+      await connection.query('UPDATE records SET status = "Admitted", updatedAt = NOW() WHERE patientName = ? AND type = "Admission Request" AND status = "Pending Review"', [patientName]);
+    }
+
+    await connection.commit();
 
     const [allotment]: any = await connection.query(
       `SELECT ra.*, r.roomNumber, r.roomType, r.department FROM room_allotments ra
@@ -95,15 +114,30 @@ router.post('/allotments', authMiddleware, async (req: AuthRequest, res: Respons
     connection.release();
     res.status(201).json(allotment[0]);
   } catch (error) {
+    if (connection) {
+      await connection.rollback();
+      connection.release();
+    }
     console.error('Error creating allotment:', error);
     res.status(500).json({ error: 'Failed to create room allotment' });
   }
 });
 
 router.put('/allotments/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
     const { status, expectedDischargeDate, additionalNotes } = req.body;
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
+    
+    // Fetch allotment first
+    const [allotments]: any = await connection.query('SELECT * FROM room_allotments WHERE id = ?', [req.params.id]);
+    if (allotments.length === 0) {
+      connection.release();
+      return res.status(404).json({ error: 'Room allotment not found' });
+    }
+    const allotment = allotments[0];
+
+    await connection.beginTransaction();
     
     let updateQuery = 'UPDATE room_allotments SET updatedAt = NOW()';
     const params: any[] = [];
@@ -125,25 +159,78 @@ router.put('/allotments/:id', authMiddleware, async (req: AuthRequest, res: Resp
     params.push(req.params.id);
 
     await connection.query(updateQuery, params);
-    const [allotment]: any = await connection.query(
+
+    // If status is updated to Discharged
+    if (status === 'Discharged') {
+      // 1. Update patient status back to Active
+      await connection.query('UPDATE patients SET status = "Active", updatedAt = NOW() WHERE id = ?', [allotment.patientId]);
+      
+      // 2. Update related Admission Request status to Discharged
+      await connection.query('UPDATE records SET status = "Discharged", updatedAt = NOW() WHERE patientName = ? AND type = "Admission Request" AND status = "Admitted"', [allotment.patientName]);
+
+      // 3. Set the room status to Available if all active allotments for that room are discharged
+      const [remainingActive]: any = await connection.query('SELECT COUNT(*) as count FROM room_allotments WHERE roomId = ? AND status = "Occupied"', [allotment.roomId]);
+      if (remainingActive[0].count === 0) {
+        await connection.query('UPDATE rooms SET status = "Available", updatedAt = NOW() WHERE id = ?', [allotment.roomId]);
+      }
+    }
+
+    await connection.commit();
+
+    const [updatedAllotment]: any = await connection.query(
       `SELECT ra.*, r.roomNumber, r.roomType, r.department FROM room_allotments ra
        LEFT JOIN rooms r ON ra.roomId = r.id WHERE ra.id = ?`,
       [req.params.id]
     );
     connection.release();
-    res.json(allotment[0]);
+    res.json(updatedAllotment[0]);
   } catch (error) {
+    if (connection) {
+      await connection.rollback();
+      connection.release();
+    }
+    console.error('Error updating allotment:', error);
     res.status(500).json({ error: 'Failed to update room allotment' });
   }
 });
 
 router.delete('/allotments/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  let connection;
   try {
-    const connection = await pool.getConnection();
+    connection = await pool.getConnection();
+    
+    // Fetch allotment first
+    const [allotments]: any = await connection.query('SELECT * FROM room_allotments WHERE id = ?', [req.params.id]);
+    if (allotments.length === 0) {
+      connection.release();
+      return res.status(404).json({ error: 'Room allotment not found' });
+    }
+    const allotment = allotments[0];
+
+    await connection.beginTransaction();
+
     await connection.query('DELETE FROM room_allotments WHERE id = ?', [req.params.id]);
+
+    // Update patient status back to Active
+    await connection.query('UPDATE patients SET status = "Active", updatedAt = NOW() WHERE id = ?', [allotment.patientId]);
+    
+    // Update related Admission Request status to Discharged
+    await connection.query('UPDATE records SET status = "Discharged", updatedAt = NOW() WHERE patientName = ? AND type = "Admission Request" AND status = "Admitted"', [allotment.patientName]);
+
+    // Set the room status to Available if no other active allotments exist
+    const [remainingActive]: any = await connection.query('SELECT COUNT(*) as count FROM room_allotments WHERE roomId = ? AND status = "Occupied"', [allotment.roomId]);
+    if (remainingActive[0].count === 0) {
+      await connection.query('UPDATE rooms SET status = "Available", updatedAt = NOW() WHERE id = ?', [allotment.roomId]);
+    }
+
+    await connection.commit();
     connection.release();
     res.json({ message: 'Room allotment deleted' });
   } catch (error) {
+    if (connection) {
+      await connection.rollback();
+      connection.release();
+    }
     res.status(500).json({ error: 'Failed to delete room allotment' });
   }
 });
@@ -164,7 +251,8 @@ router.post('/rooms', authMiddleware, async (req: AuthRequest, res: Response) =>
     const {
       roomNumber, roomType, department, floor, capacity, pricePerDay,
       status, description, television, attachedBathroom, airConditioning,
-      wheelchairAccessible, wifi, oxygenSupply, telephone, nursecallButton, additionalNotes
+      wheelchairAccessible, wifi, oxygenSupply, telephone, nursecallButton,
+      ventilator, patientMonitor, additionalNotes
     } = req.body;
 
     if (!roomNumber || !roomType || !department || !floor || !capacity || !pricePerDay) {
@@ -175,21 +263,27 @@ router.post('/rooms', authMiddleware, async (req: AuthRequest, res: Response) =>
     const query = `INSERT INTO rooms (
       id, roomNumber, roomType, department, floor, capacity, pricePerDay,
       status, description, television, attachedBathroom, airConditioning,
-      wheelchairAccessible, wifi, oxygenSupply, telephone, nursecallButton, additionalNotes, createdAt, updatedAt
-    ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+      wheelchairAccessible, wifi, oxygenSupply, telephone, nursecallButton,
+      ventilator, patientMonitor, additionalNotes, createdAt, updatedAt
+    ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
 
     await connection.query(query, [
       roomNumber, roomType, department, floor, capacity, parseFloat(pricePerDay),
       status || 'Available', description, television || false, attachedBathroom || false,
       airConditioning || false, wheelchairAccessible || false, wifi || false,
-      oxygenSupply || false, telephone || false, nursecallButton || false, additionalNotes
+      oxygenSupply || false, telephone || false, nursecallButton || false,
+      ventilator || false, patientMonitor || false, additionalNotes
     ]);
 
     const [room]: any = await connection.query('SELECT * FROM rooms WHERE roomNumber = ?', [roomNumber]);
     connection.release();
     res.status(201).json(room[0]);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating room:', error);
+    if (error.code === 'ER_DUP_ENTRY') {
+      const { roomNumber, floor } = req.body;
+      return res.status(400).json({ error: `Room ${roomNumber} already exists on ${floor} floor.` });
+    }
     res.status(500).json({ error: 'Failed to create room' });
   }
 });
@@ -231,7 +325,7 @@ router.get('/by-department/:dept', authMiddleware, async (req: AuthRequest, res:
       `SELECT r.*, GROUP_CONCAT(
         JSON_OBJECT(
           'id', ra.id, 'patientId', ra.patientId, 'patientName', ra.patientName,
-          'attendingDoctor', ra.attendingDoctor, 'status', ra.status
+          'attendingDoctor', ra.attendingDoctor, 'status', ra.status, 'bed', ra.bed
         )
       ) as roomAllotments FROM rooms r
        LEFT JOIN room_allotments ra ON r.id = ra.roomId
