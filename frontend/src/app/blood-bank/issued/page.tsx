@@ -11,9 +11,12 @@ import {
   Eye,
   Edit,
   Trash2,
+  X,
+  ClipboardList,
 } from "lucide-react";
 import Link from "next/link";
-import { bloodBankAPI } from "@/lib/api";
+import { bloodBankAPI, patientAPI } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
 
 interface IssuedBlood {
   id: string;
@@ -30,6 +33,7 @@ interface IssuedBlood {
 }
 
 export default function IssuedBloodPage() {
+  const { user } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [bloodTypeFilter, setBloodTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -38,8 +42,23 @@ export default function IssuedBloodPage() {
   const [issuedBlood, setIssuedBlood] = useState<IssuedBlood[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Modal / Issue Request states
+  const [patientsList, setPatientsList] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    patient: "",
+    bloodType: "",
+    numberOfUnits: "1",
+    department: "Surgery",
+    purpose: "Surgery",
+    emergencyRequest: false,
+    additionalNotes: "",
+  });
+
   useEffect(() => {
     fetchIssuedBlood();
+    fetchPatients();
   }, []);
 
   const fetchIssuedBlood = async () => {
@@ -60,10 +79,76 @@ export default function IssuedBloodPage() {
     }
   };
 
+  const fetchPatients = async () => {
+    try {
+      const res = await patientAPI.list(1, 200);
+      setPatientsList(res.data.patients || []);
+    } catch (error) {
+      console.error("Error fetching patients list:", error);
+    }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value, type } = e.target;
+    if (type === "checkbox") {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData((prev) => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSubmitting(true);
+      const selectedPatient = patientsList.find(p => p.id === formData.patient);
+      const submitData = {
+        bloodType: formData.bloodType,
+        units: parseInt(formData.numberOfUnits),
+        recipient: selectedPatient ? selectedPatient.name : "Unknown Recipient",
+        recipientId: formData.patient || null,
+        requestingDoctor: user?.name ? `Dr. ${user.name}` : "Unknown Doctor",
+        purpose: formData.purpose || "Surgery",
+        department: formData.department || "Surgery",
+      };
+
+      const response = await bloodBankAPI.createIssue(submitData);
+
+      if (response.data.success) {
+        alert("Blood issue request submitted successfully!");
+        setFormData({
+          patient: "",
+          bloodType: "",
+          numberOfUnits: "1",
+          department: "Surgery",
+          purpose: "Surgery",
+          emergencyRequest: false,
+          additionalNotes: "",
+        });
+        setIsModalOpen(false);
+        fetchIssuedBlood(); // Refresh the list dynamically!
+      } else {
+        alert("Error: " + (response.data.error || "Failed to submit request"));
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Error issuing blood");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Approved":
         return "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+      case "Fulfilled":
+        return "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
       case "Pending":
         return "bg-orange-500/10 text-orange-500 border border-orange-500/20";
       case "Completed":
@@ -165,12 +250,13 @@ export default function IssuedBloodPage() {
               Manage issued blood units and track transfusions
             </p>
           </div>
-          <Link href="/blood-bank/issue">
-            <button className="btn-primary flex items-center gap-2">
-              <Plus size={20} />
-              Issue Blood
-            </button>
-          </Link>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Plus size={20} />
+            Issue Blood
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -233,63 +319,7 @@ export default function IssuedBloodPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-6">Issues by Blood Type</h2>
 
-            <div className="space-y-3">
-              {issuesByBloodType.map((item) => (
-                <div
-                  key={item.type}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3 flex-1">
-                    <span className="font-semibold w-12">{item.type}</span>
-                    <div className="flex-1 bg-dark-tertiary rounded-full h-2">
-                      <div
-                        className={`h-full ${
-                          item.type.includes("+") ? "bg-blue-500" : "bg-red-500"
-                        } rounded-full`}
-                        style={{ width: `${(item.units / 8) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  <span className="text-white font-medium ml-3">
-                    {item.units} units
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-6">Issues by Department</h2>
-
-            <div className="space-y-3">
-              {issuesByDepartment.map((item) => (
-                <div
-                  key={item.department}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3 flex-1">
-                    <span className="text-mdtext-gray-300 w-32">
-                      {item.department}
-                    </span>
-                    <div className="flex-1 bg-dark-tertiary rounded-full h-2">
-                      <div
-                        className={`h-full ${item.color} rounded-full`}
-                        style={{ width: `${(item.units / 6) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  <span className="text-white font-medium ml-3">
-                    {item.units} units
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
         <div className="card">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-dark-tertiary">
@@ -402,7 +432,7 @@ export default function IssuedBloodPage() {
                       Issue ID
                     </th>
                     <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
-                      Recipient
+                      Patient
                     </th>
                     <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
                       Blood Type
@@ -422,6 +452,9 @@ export default function IssuedBloodPage() {
                     <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
                       Status
                     </th>
+                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -437,9 +470,6 @@ export default function IssuedBloodPage() {
                         <div className="font-medium text-white">
                           {issue.recipient}
                         </div>
-                        <div className="text-mdtext-gray-400">
-                          {issue.recipientId || "N/A"}
-                        </div>
                       </td>
                       <td className="py-4 px-4">
                         <span
@@ -452,7 +482,7 @@ export default function IssuedBloodPage() {
                         </span>
                       </td>
                       <td className="py-4 px-4 text-gray-300">
-                        {new Date(issue.issueDate).toLocaleString()}
+                        {new Date(issue.issueDate).toLocaleDateString("en-GB")}
                       </td>
                       <td className="py-4 px-4 text-gray-300">
                         {issue.requestingDoctor}
@@ -472,6 +502,41 @@ export default function IssuedBloodPage() {
                           {issue.status}
                         </span>
                       </td>
+                      <td className="py-4 px-4">
+                        {(issue.status === "Pending" || issue.status === "Approved") &&
+                        (user?.role?.toLowerCase() === "inventory" || user?.role === "INVENTORY") ? (
+                          <button
+                            onClick={async () => {
+                              if (
+                                confirm(
+                                  `Fulfill blood request ${issue.issueId}?\n\nThis will deduct ${issue.units} unit(s) of ${issue.bloodType} from stock.`
+                                )
+                              ) {
+                                try {
+                                  const res = await bloodBankAPI.fulfillIssue(issue.id);
+                                  if (res.data && res.data.success) {
+                                    alert(res.data.message || "Request fulfilled and stock updated!");
+                                    fetchIssuedBlood();
+                                  } else {
+                                    alert("Error: " + (res.data?.error || "Failed to fulfill"));
+                                  }
+                                } catch (e: any) {
+                                  console.error(e);
+                                  const errMsg = e?.response?.data?.error || "Error fulfilling request";
+                                  alert(errMsg);
+                                }
+                              }
+                            }}
+                            className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded text-xs font-semibold transition-colors flex items-center gap-1"
+                          >
+                            ✓ Fulfill & Deduct Stock
+                          </button>
+                        ) : issue.status === "Fulfilled" ? (
+                          <span className="text-emerald-400 text-xs font-medium">✓ Fulfilled</span>
+                        ) : (
+                          <span className="text-gray-500 text-xs italic">{issue.status}</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -480,6 +545,171 @@ export default function IssuedBloodPage() {
           )}
         </div>
       </div>
+
+      {/* Modal Form Dialog for Issuing/Requesting Blood */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4 overflow-y-auto">
+          <div className="bg-dark-secondary border border-dark-tertiary rounded-xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative">
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute right-4 top-4 p-1.5 bg-dark-tertiary hover:bg-dark-tertiary/80 text-gray-400 rounded-lg transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="mb-6">
+              <h2 className="text-xl font-bold flex items-center gap-2 text-white">
+                <Droplet className="text-red-500 animate-pulse" size={20} />
+                Issue Blood & Request Transfusion
+              </h2>
+              <p className="text-gray-400 text-xs mt-1">
+                Complete this form to submit a new blood request. Once sent, it will instantly notify the Inventory Department.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                  Patient <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="patient"
+                  value={formData.patient}
+                  onChange={handleInputChange}
+                  className="input-field w-full text-sm"
+                  required
+                >
+                  <option value="">Select patient</option>
+                  {patientsList.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                    Blood Type <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="bloodType"
+                    value={formData.bloodType}
+                    onChange={handleInputChange}
+                    className="input-field w-full text-sm"
+                    required
+                  >
+                    <option value="">Select blood type</option>
+                    {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                    Number of Units <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="numberOfUnits"
+                    value={formData.numberOfUnits}
+                    onChange={handleInputChange}
+                    min="1"
+                    className="input-field w-full text-sm"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                    Department
+                  </label>
+                  <select
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    className="input-field w-full text-sm"
+                  >
+                    <option value="Surgery">Surgery</option>
+                    <option value="Emergency">Emergency</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Internal Medicine">Internal Medicine</option>
+                    <option value="Obstetrics">Obstetrics</option>
+                    <option value="Oncology">Oncology</option>
+                    <option value="Nephrology">Nephrology</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                    Purpose of Transfusion
+                  </label>
+                  <select
+                    name="purpose"
+                    value={formData.purpose}
+                    onChange={handleInputChange}
+                    className="input-field w-full text-sm"
+                  >
+                    <option value="Surgery">Surgery</option>
+                    <option value="Trauma">Trauma</option>
+                    <option value="Anemia">Anemia Treatment</option>
+                    <option value="Cancer">Cancer Treatment</option>
+                    <option value="Childbirth">Childbirth</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 py-1">
+                <input
+                  type="checkbox"
+                  name="emergencyRequest"
+                  id="modalEmergency"
+                  checked={formData.emergencyRequest}
+                  onChange={handleInputChange}
+                  className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 rounded focus:ring-emerald-500 cursor-pointer"
+                />
+                <label htmlFor="modalEmergency" className="text-sm font-semibold text-red-400 cursor-pointer select-none">
+                  Mark as High-Priority Emergency
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                  Clinical Notes / Special Instructions
+                </label>
+                <textarea
+                  name="additionalNotes"
+                  value={formData.additionalNotes}
+                  onChange={handleInputChange}
+                  placeholder="Enter any medical background or transfusion notes..."
+                  rows={3}
+                  className="input-field w-full text-sm resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-dark-tertiary">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="btn-secondary text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="btn-primary text-sm px-6"
+                >
+                  {submitting ? "Submitting..." : "Issue Blood"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

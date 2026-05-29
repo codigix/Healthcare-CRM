@@ -275,6 +275,87 @@ router.put('/blood-issues/:id', authMiddleware, async (req: AuthRequest, res: Re
   }
 });
 
+router.post('/blood-issues/:id/fulfill', authMiddleware, async (req: AuthRequest, res: Response) => {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Fetch the issue record
+    const [issues]: any = await connection.query(
+      'SELECT * FROM blood_issues WHERE id = ?',
+      [req.params.id]
+    );
+    if (!issues || issues.length === 0) {
+      await connection.rollback();
+      connection.release();
+      return res.status(404).json({ success: false, error: 'Blood issue record not found' });
+    }
+
+    const issue = issues[0];
+
+    if (issue.status === 'Fulfilled') {
+      await connection.rollback();
+      connection.release();
+      return res.status(400).json({ success: false, error: 'This request has already been fulfilled' });
+    }
+
+    // Check total available stock for the requested blood type
+    const [stockRows]: any = await connection.query(
+      `SELECT id, quantity FROM blood_units
+       WHERE bloodType = ? AND status = 'available' AND quantity > 0
+       ORDER BY expiryDate ASC`,
+      [issue.bloodType]
+    );
+
+    const totalAvailable = stockRows.reduce((sum: number, row: any) => sum + row.quantity, 0);
+    if (totalAvailable < issue.units) {
+      await connection.rollback();
+      connection.release();
+      return res.status(400).json({
+        success: false,
+        error: `Insufficient stock. Requested: ${issue.units} units of ${issue.bloodType}, Available: ${totalAvailable} units`
+      });
+    }
+
+    // Deduct units FIFO (oldest/soonest-to-expire first)
+    let remaining = issue.units;
+    for (const row of stockRows) {
+      if (remaining <= 0) break;
+      if (row.quantity <= remaining) {
+        // Consume entire unit record and mark as used
+        await connection.query(
+          `UPDATE blood_units SET quantity = 0, status = 'used', updatedAt = NOW() WHERE id = ?`,
+          [row.id]
+        );
+        remaining -= row.quantity;
+      } else {
+        // Partially deduct
+        await connection.query(
+          `UPDATE blood_units SET quantity = quantity - ?, updatedAt = NOW() WHERE id = ?`,
+          [remaining, row.id]
+        );
+        remaining = 0;
+      }
+    }
+
+    // Mark the issue as Fulfilled
+    await connection.query(
+      `UPDATE blood_issues SET status = 'Fulfilled', updatedAt = NOW() WHERE id = ?`,
+      [req.params.id]
+    );
+
+    await connection.commit();
+    connection.release();
+
+    res.json({ success: true, message: `Blood issue fulfilled. ${issue.units} unit(s) of ${issue.bloodType} deducted from stock.` });
+  } catch (error) {
+    await connection.rollback();
+    connection.release();
+    console.error('Error fulfilling blood issue:', error);
+    res.status(500).json({ success: false, error: 'Failed to fulfill blood issue' });
+  }
+});
+
 router.delete('/blood-issues/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/lib/store";
 
-import { appointmentAPI, dashboardAPI } from "@/lib/api";
+import { appointmentAPI, dashboardAPI, bloodBankAPI, patientAPI } from "@/lib/api";
 import {
   Calendar,
   FileText,
@@ -97,6 +97,18 @@ export default function DoctorDashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [allPatients, setAllPatients] = useState<any[]>([]);
+  const [bloodFormData, setBloodFormData] = useState({
+    patient: "",
+    bloodType: "",
+    numberOfUnits: "1",
+    department: "Surgery",
+    purpose: "Surgery",
+    emergencyRequest: false,
+    additionalNotes: ""
+  });
+  const [submittingBloodRequest, setSubmittingBloodRequest] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -239,6 +251,18 @@ export default function DoctorDashboard() {
 
     fetchData();
   }, [user]);
+
+  useEffect(() => {
+    const fetchPatientsList = async () => {
+      try {
+        const res = await patientAPI.list(1, 200);
+        setAllPatients(res.data.patients || []);
+      } catch (e) {
+        console.error("Failed to load patients for blood issuance dropdown", e);
+      }
+    };
+    fetchPatientsList();
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -411,18 +435,18 @@ export default function DoctorDashboard() {
             </div>
 
             <div className="card">
-              <div className="flex gap-4 border-b border-dark-tertiary mb-6">
-                {["schedule", "patients", "tasks", "stats"].map((tab) => (
+              <div className="flex gap-4 border-b border-dark-tertiary mb-6 overflow-x-auto">
+                {["schedule", "patients", "tasks", "stats", "issue blood"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-3 text-mdfont-medium capitalize transition-colors relative ${
+                    className={`px-4 py-3 text-mdfont-medium capitalize transition-colors relative whitespace-nowrap ${
                       activeTab === tab
                         ? "text-white"
                         : "text-gray-400 hover:text-gray-300"
                     }`}
                   >
-                    {tab}
+                    {tab === "issue blood" ? "Issue Blood" : tab}
                     {activeTab === tab && (
                       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
                     )}
@@ -645,6 +669,206 @@ export default function DoctorDashboard() {
                       ))}
                     </div>
                   )}
+                </div>
+              )}
+
+              {activeTab === "issue blood" && (
+                <div className="space-y-6 max-w-3xl">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-1">
+                      Issue Blood & Request Transfusion
+                    </h3>
+                    <p className="text-gray-400 text-sm">
+                      Submit a request to issue blood units for a patient. Once submitted, this request will be immediately logged and visible to the Inventory Department.
+                    </p>
+                  </div>
+
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!bloodFormData.patient || !bloodFormData.bloodType || !bloodFormData.numberOfUnits) {
+                        alert("Please fill in all required fields.");
+                        return;
+                      }
+
+                      try {
+                        setSubmittingBloodRequest(true);
+                        const selectedPatient = allPatients.find(p => p.id === bloodFormData.patient);
+                        const submitData = {
+                          bloodType: bloodFormData.bloodType,
+                          units: parseInt(bloodFormData.numberOfUnits),
+                          recipient: selectedPatient ? selectedPatient.name : "Unknown Recipient",
+                          recipientId: bloodFormData.patient,
+                          requestingDoctor: `Dr. ${user?.name || "Doctor"}`,
+                          purpose: bloodFormData.purpose || "Medical",
+                          department: bloodFormData.department || "General",
+                        };
+
+                        const response = await bloodBankAPI.createIssue(submitData);
+                        if (response.data && response.data.success) {
+                          alert("Blood issue request submitted successfully!");
+                          setBloodFormData({
+                            patient: "",
+                            bloodType: "",
+                            numberOfUnits: "1",
+                            department: "Surgery",
+                            purpose: "Surgery",
+                            emergencyRequest: false,
+                            additionalNotes: ""
+                          });
+                          setActiveTab("schedule");
+                        } else {
+                          alert("Error submitting request: " + (response.data.error || "Failed to issue blood"));
+                        }
+                      } catch (error) {
+                        console.error("Error submitting blood issue request:", error);
+                        alert("Error submitting blood issue request");
+                      } finally {
+                        setSubmittingBloodRequest(false);
+                      }
+                    }}
+                    className="space-y-4"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                          Recipient Patient <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={bloodFormData.patient}
+                          onChange={(e) => setBloodFormData(prev => ({ ...prev, patient: e.target.value }))}
+                          className="input-field w-full"
+                          required
+                        >
+                          <option value="">Select recipient patient</option>
+                          {allPatients.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} ({p.id})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                          Blood Type <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={bloodFormData.bloodType}
+                          onChange={(e) => setBloodFormData(prev => ({ ...prev, bloodType: e.target.value }))}
+                          className="input-field w-full"
+                          required
+                        >
+                          <option value="">Select blood type</option>
+                          {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                          Number of Units <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          value={bloodFormData.numberOfUnits}
+                          onChange={(e) => setBloodFormData(prev => ({ ...prev, numberOfUnits: e.target.value }))}
+                          placeholder="Enter number of units"
+                          min="1"
+                          className="input-field w-full"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                          Requesting Doctor
+                        </label>
+                        <input
+                          type="text"
+                          value={`Dr. ${user?.name || "Doctor"}`}
+                          disabled
+                          className="input-field w-full opacity-60 cursor-not-allowed"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                          Department
+                        </label>
+                        <select
+                          value={bloodFormData.department}
+                          onChange={(e) => setBloodFormData(prev => ({ ...prev, department: e.target.value }))}
+                          className="input-field w-full"
+                        >
+                          <option value="Emergency">Emergency</option>
+                          <option value="Surgery">Surgery</option>
+                          <option value="Cardiology">Cardiology</option>
+                          <option value="Internal Medicine">Internal Medicine</option>
+                          <option value="Obstetrics">Obstetrics</option>
+                          <option value="Oncology">Oncology</option>
+                          <option value="Nephrology">Nephrology</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                          Purpose of Transfusion
+                        </label>
+                        <select
+                          value={bloodFormData.purpose}
+                          onChange={(e) => setBloodFormData(prev => ({ ...prev, purpose: e.target.value }))}
+                          className="input-field w-full"
+                        >
+                          <option value="Surgery">Surgery</option>
+                          <option value="Trauma">Trauma</option>
+                          <option value="Anemia">Anemia Treatment</option>
+                          <option value="Cancer">Cancer Treatment</option>
+                          <option value="Childbirth">Childbirth</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 py-2">
+                      <input
+                        type="checkbox"
+                        id="emergencyRequest"
+                        checked={bloodFormData.emergencyRequest}
+                        onChange={(e) => setBloodFormData(prev => ({ ...prev, emergencyRequest: e.target.checked }))}
+                        className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 rounded focus:ring-emerald-500 cursor-pointer"
+                      />
+                      <label htmlFor="emergencyRequest" className="text-sm font-medium text-red-400 cursor-pointer select-none">
+                        Mark as High-Priority Emergency Request
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                        Clinical Notes / Special Instructions
+                      </label>
+                      <textarea
+                        value={bloodFormData.additionalNotes}
+                        onChange={(e) => setBloodFormData(prev => ({ ...prev, additionalNotes: e.target.value }))}
+                        placeholder="Provide any relevant diagnosis details or instructions"
+                        rows={3}
+                        className="input-field w-full resize-none"
+                      />
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={submittingBloodRequest}
+                        className="btn-primary flex items-center justify-center gap-2 px-6 py-2.5"
+                      >
+                        {submittingBloodRequest ? "Submitting Request..." : "Submit Blood Issue Request"}
+                      </button>
+                    </div>
+                  </form>
                 </div>
               )}
 

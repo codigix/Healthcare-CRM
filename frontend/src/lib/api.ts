@@ -187,6 +187,11 @@ export const recordsAPI = {
   updateStatus: (id: string, status: string) => apiClient.patch(`/records/${id}/status`, { status }),
 };
 
+export const whatsappAPI = {
+  getStatus: () => apiClient.get('/whatsapp/status'),
+  sendMessage: (phone: string, message: string) => apiClient.post('/whatsapp/send', { phone, message }),
+};
+
 export const staffAPI = {
   list: (page = 1, limit = 10, filters = {}) => apiClient.get('/staff', { params: { page, limit, ...filters } }),
   get: (id: string) => apiClient.get(`/staff/${id}`),
@@ -216,6 +221,7 @@ export const bloodBankAPI = {
   createIssue: (data: any) => apiClient.post('/blood-bank/blood-issues', data),
   updateIssue: (id: string, data: any) => apiClient.put(`/blood-bank/blood-issues/${id}`, data),
   deleteIssue: (id: string) => apiClient.delete(`/blood-bank/blood-issues/${id}`),
+  fulfillIssue: (id: string) => apiClient.post(`/blood-bank/blood-issues/${id}/fulfill`, {}),
   
   list: (page = 1, limit = 10, search = '') => apiClient.get('/blood-bank', { params: { page, limit, search } }),
   get: (id: string) => apiClient.get(`/blood-bank/${id}`),

@@ -191,24 +191,6 @@ export default function BloodDonorsPage() {
   const eligibleDonors = donors.filter((d) => d.status === "Eligible").length;
   const frequentDonors = donors.filter((d) => d.totalDonations >= 5).length;
 
-  const bloodTypeDistribution = [
-    { type: "O+", percentage: 38, count: 94 },
-    { type: "A+", percentage: 16, count: 40 },
-    { type: "B+", percentage: 12, count: 30 },
-    { type: "AB+", percentage: 6, count: 15 },
-    { type: "O-", percentage: 9, count: 22 },
-    { type: "A-", percentage: 7, count: 17 },
-    { type: "B-", percentage: 6, count: 15 },
-    { type: "AB-", percentage: 4, count: 10 },
-  ];
-
-  const donationFrequency = [
-    { label: "First Time", count: 56, percentage: 23 },
-    { label: "2-4 Times", count: 107, percentage: 43 },
-    { label: "5-9 Times", count: 34, percentage: 14 },
-    { label: "10-24 Times", count: 12, percentage: 5 },
-    { label: "25+ Times", count: 8, percentage: 3 },
-  ];
 
   return (
     <>
@@ -288,58 +270,6 @@ export default function BloodDonorsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-6">Donors by Blood Type</h2>
-            <p className="text-gray-400 text-mdmb-6">
-              Distribution of registered donors by blood type
-            </p>
-
-            <div className="grid grid-cols-4 gap-4">
-              {bloodTypeDistribution.map((item) => (
-                <div key={item.type} className="text-center">
-                  <div
-                    className={`h-32 rounded-lg flex flex-col items-center justify-end p-3 ${
-                      item.type.includes("+") ? "bg-blue-500" : "bg-red-500"
-                    }`}
-                    style={{ height: `${item.percentage * 3}px` }}
-                  >
-                    <div className="text-white font-bold text-lg mb-1">
-                      {item.type}
-                    </div>
-                  </div>
-                  <div className="mt-2 text-mdtext-gray-400">
-                    {item.percentage}%
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-6">Donation Frequency</h2>
-            <p className="text-gray-400 text-mdmb-6">
-              Number of donors by donation frequency
-            </p>
-
-            <div className="space-y-4">
-              {donationFrequency.map((item, index) => (
-                <div key={index}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-mdtext-gray-300">{item.label}</span>
-                    <span className="text-mdtext-gray-400">{item.count}</span>
-                  </div>
-                  <div className="w-full bg-dark-tertiary rounded-full h-2">
-                    <div
-                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"
-                      style={{ width: `${item.percentage * 2}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
         <div className="card">
           <div className="flex items-center gap-2 mb-6 pb-4 border-b border-dark-tertiary">
@@ -501,7 +431,7 @@ export default function BloodDonorsPage() {
                       </td>
                       <td className="py-4 px-4 text-gray-300">
                         {donor.lastDonation
-                          ? new Date(donor.lastDonation).toLocaleDateString()
+                          ? new Date(donor.lastDonation).toLocaleDateString("en-GB")
                           : "Never"}
                       </td>
                       <td className="py-4 px-4">
@@ -611,7 +541,7 @@ export default function BloodDonorsPage() {
                   Last Donation
                 </label>
                 <p className="text-white">
-                  {new Date(selectedDonor.lastDonation).toLocaleDateString()}
+                  {new Date(selectedDonor.lastDonation).toLocaleDateString("en-GB")}
                 </p>
               </div>
             )}
@@ -621,7 +551,7 @@ export default function BloodDonorsPage() {
                   Next Eligible
                 </label>
                 <p className="text-white">
-                  {new Date(selectedDonor.nextEligible).toLocaleDateString()}
+                  {new Date(selectedDonor.nextEligible).toLocaleDateString("en-GB")}
                 </p>
               </div>
             )}

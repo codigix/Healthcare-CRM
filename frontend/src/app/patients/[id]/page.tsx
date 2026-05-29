@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import apiClient, { patientAPI, appointmentAPI, invoiceAPI, recordsAPI } from "@/lib/api";
+import { useAuthStore } from "@/lib/store";
 import {
   ArrowLeft,
   Calendar,
@@ -67,6 +68,8 @@ export default function PatientProfilePage() {
   const params = useParams();
   const router = useRouter();
   const patientId = params.id as string;
+  const { user } = useAuthStore();
+  const isLab = user?.role === 'laboratory' || user?.department?.toLowerCase() === 'laboratory';
 
   const [activeTab, setActiveTab] = useState<TabType>("details");
   const [loading, setLoading] = useState(true);
@@ -210,9 +213,11 @@ export default function PatientProfilePage() {
         </div>
 
         <div className="flex gap-3">
-          <Link href={`/patients/edit/${patient.id}`} className="btn-secondary flex items-center gap-2 text-sm !py-2.5">
-            <Edit size={16} /> Edit Profile
-          </Link>
+          {!isLab && (
+            <Link href={`/patients/edit/${patient.id}`} className="btn-secondary flex items-center gap-2 text-sm !py-2.5">
+              <Edit size={16} /> Edit Profile
+            </Link>
+          )}
           <Link href="/appointments/add" className="btn-primary flex items-center gap-2 text-sm !py-2.5">
             <Plus size={16} /> New Appointment
           </Link>

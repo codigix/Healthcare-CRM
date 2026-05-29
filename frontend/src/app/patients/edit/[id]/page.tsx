@@ -18,12 +18,18 @@ export default function EditPatientPage() {
   const { user } = useAuthStore();
 
   useEffect(() => {
-    if (user && user.role === "doctor") {
-      router.replace("/patients");
+    if (user) {
+      const role = user.role?.toLowerCase();
+      const dept = user.department?.toLowerCase();
+      if (role === "doctor" || role === "laboratory" || dept === "doctor" || dept === "laboratory") {
+        router.replace("/patients");
+      }
     }
   }, [user, router]);
 
-  if (user?.role === "doctor") {
+  const userRole = user?.role?.toLowerCase();
+  const userDept = user?.department?.toLowerCase();
+  if (userRole === "doctor" || userRole === "laboratory" || userDept === "doctor" || userDept === "laboratory") {
     return null;
   }
 

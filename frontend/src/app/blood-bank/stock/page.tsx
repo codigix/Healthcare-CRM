@@ -6,9 +6,7 @@ import ActionModal from "@/components/UI/ActionModal";
 import {
   Search,
   Plus,
-  AlertCircle,
   Droplet,
-  MoreVertical,
   Eye,
   Edit,
   Trash2,
@@ -139,29 +137,6 @@ export default function BloodStockPage() {
     }
   };
 
-  const totalUnits = bloodStock.reduce((sum, item) => sum + item.quantity, 0);
-  const expiringUnits = bloodStock.filter((b) => {
-    const expiry = new Date(b.expiryDate);
-    const today = new Date();
-    const daysUntilExpiry = Math.floor(
-      (expiry.getTime() - today.getTime()) / (1000 * 3600 * 24)
-    );
-    return daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
-  }).length;
-  const criticalLevels = Object.values(stats).filter(
-    (s: any) => s.units <= 3
-  ).length;
-
-  const getStatusColor = (units: number) => {
-    if (units >= 10) return "bg-emerald-500";
-    if (units >= 5) return "bg-orange-500";
-    return "bg-red-500";
-  };
-
-  const getBarWidth = (units: number) => {
-    const maxUnits = Math.max(...bloodStock.map((b) => b.quantity), 1);
-    return `${(units / maxUnits) * 100}%`;
-  };
 
   return (
     <>
@@ -175,129 +150,36 @@ export default function BloodStockPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="card">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                <Plus className="text-blue-500" size={24} />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{totalUnits}</div>
-                <div className="text-mdtext-gray-400">Total Blood Units</div>
-                <div className="text-xs text-emerald-500">
-                  Units available across all blood types
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="card">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                <Droplet className="text-blue-500" size={24} />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">8</div>
-                <div className="text-mdtext-gray-400">
-                  Blood Type Distribution
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div className="card">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
-                <AlertCircle className="text-red-500" size={24} />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{expiringUnits}</div>
-                <div className="text-mdtext-gray-400">Expiring Soon</div>
-                <div className="text-xs text-red-500">
-                  Units expiring within next 7 days
+        {/* Blood Group Stock Summary */}
+        <div className="card">
+          <h2 className="text-base font-semibold mb-4 text-gray-200">Stock by Blood Group</h2>
+          <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
+            {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((type) => {
+              const units = stats[type]?.units ?? 0;
+              const colorClass =
+                units >= 5
+                  ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                  : units >= 1
+                  ? "text-orange-400 border-orange-500/30 bg-orange-500/10"
+                  : "text-red-400 border-red-500/30 bg-red-500/10";
+              return (
+                <div
+                  key={type}
+                  className={`flex flex-col items-center justify-center rounded-xl border py-3 px-2 gap-1 ${colorClass}`}
+                >
+                  <span className="text-lg font-bold">{type}</span>
+                  <span className="text-2xl font-extrabold">{units}</span>
+                  <span className="text-xs opacity-70">units</span>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
-                <AlertCircle className="text-red-500" size={24} />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{criticalLevels}</div>
-                <div className="text-mdtext-gray-400">Critical Levels</div>
-                <div className="text-xs text-red-500">
-                  Blood types with critically low inventory
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
 
         <div className="card">
-          <h2 className="text-xl font-semibold mb-6">
-            Blood Type Distribution
-          </h2>
-          <p className="text-gray-400 text-mdmb-6">
-            Current inventory levels for each blood type
-          </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
-            {Object.entries(stats).map(([bloodType, data]) => (
-              <div key={bloodType} className="text-center">
-                <div
-                  className={`px-4 py-2 rounded-lg ${
-                    bloodType.includes("+")
-                      ? "bg-blue-500/10 text-blue-500"
-                      : "bg-red-500/10 text-red-500"
-                  } border ${
-                    bloodType.includes("+")
-                      ? "border-blue-500/20"
-                      : "border-red-500/20"
-                  } font-semibold`}
-                >
-                  {bloodType}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  {data.units} units
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Blood Type Availability</h3>
-            <p className="text-gray-400 text-sm">
-              Current inventory levels for each blood type
-            </p>
-
-            <div className="space-y-4">
-              {Object.entries(stats).map(([bloodType, data]) => (
-                <div key={bloodType} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="font-semibold w-12">{bloodType}</span>
-                    </div>
-                    <span className="text-white font-medium">
-                      {data.units} units
-                    </span>
-                  </div>
-                  <div className="w-full bg-dark-tertiary rounded-full h-3 overflow-hidden">
-                    <div
-                      className={`h-full ${getStatusColor(
-                        data.units
-                      )} transition-all duration-300`}
-                      style={{ width: getBarWidth(data.units) }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-dark-tertiary">
             <div className="flex items-center gap-2 mb-6">
               <Search size={20} className="text-gray-400" />
               <input
@@ -457,10 +339,10 @@ export default function BloodStockPage() {
                           {unit.quantity} unit{unit.quantity > 1 ? "s" : ""}
                         </td>
                         <td className="py-4 px-4 text-gray-300">
-                          {new Date(unit.collectionDate).toLocaleDateString()}
+                          {new Date(unit.collectionDate).toLocaleDateString("en-GB")}
                         </td>
                         <td className="py-4 px-4 text-gray-300">
-                          {new Date(unit.expiryDate).toLocaleDateString()}
+                          {new Date(unit.expiryDate).toLocaleDateString("en-GB")}
                         </td>
                         <td className="py-4 px-4">
                           <span
@@ -504,7 +386,6 @@ export default function BloodStockPage() {
                 </table>
               </div>
             )}
-          </div>
         </div>
       </div>
 
@@ -549,7 +430,7 @@ export default function BloodStockPage() {
                   Collection Date
                 </label>
                 <p className="text-white">
-                  {new Date(selectedUnit.collectionDate).toLocaleDateString()}
+                  {new Date(selectedUnit.collectionDate).toLocaleDateString("en-GB")}
                 </p>
               </div>
               <div>
@@ -557,7 +438,7 @@ export default function BloodStockPage() {
                   Expiry Date
                 </label>
                 <p className="text-white">
-                  {new Date(selectedUnit.expiryDate).toLocaleDateString()}
+                  {new Date(selectedUnit.expiryDate).toLocaleDateString("en-GB")}
                 </p>
               </div>
             </div>

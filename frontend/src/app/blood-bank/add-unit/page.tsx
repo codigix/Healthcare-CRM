@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Calendar } from "lucide-react";
 import Link from "next/link";
@@ -13,14 +13,29 @@ export default function AddBloodUnitPage() {
     donorName: "",
     bloodGroup: "",
     quantity: "1",
-    screeningComplete: false,
-    processingComplete: false,
     collectionDate: "",
     expiryDate: "",
     sourceType: "",
     collectionLocation: "",
     additionalNotes: "",
   });
+
+  const [donorsList, setDonorsList] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchDonors();
+  }, []);
+
+  const fetchDonors = async () => {
+    try {
+      const response = await bloodBankAPI.getDonors();
+      if (response.data.success) {
+        setDonorsList(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching donors:", error);
+    }
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -30,9 +45,41 @@ export default function AddBloodUnitPage() {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData((prev) => ({ ...prev, [name]: checked }));
+      if (name === "anonymousDonor" && checked) {
+        setFormData((prev) => ({
+          ...prev,
+          anonymousDonor: true,
+          donorId: "",
+          donorName: "",
+        }));
+      } else {
+        setFormData((prev) => ({ ...prev, [name]: checked }));
+      }
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleDonorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    if (!selectedId) {
+      setFormData((prev) => ({
+        ...prev,
+        donorId: "",
+        donorName: "",
+        bloodGroup: "",
+      }));
+      return;
+    }
+
+    const donor = donorsList.find((d) => d.id === selectedId);
+    if (donor) {
+      setFormData((prev) => ({
+        ...prev,
+        donorId: donor.id,
+        donorName: donor.name,
+        bloodGroup: donor.bloodType,
+      }));
     }
   };
 
@@ -59,8 +106,6 @@ export default function AddBloodUnitPage() {
           donorName: "",
           bloodGroup: "",
           quantity: "1",
-          screeningComplete: false,
-          processingComplete: false,
           collectionDate: "",
           expiryDate: "",
           sourceType: "",
@@ -121,19 +166,24 @@ export default function AddBloodUnitPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-mdfont-medium mb-2">
-                    Donor ID
+                    Select Registered Donor
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="donorId"
                     value={formData.donorId}
-                    onChange={handleInputChange}
-                    placeholder="Enter donor ID"
+                    onChange={handleDonorChange}
                     className="input-field w-full"
                     disabled={formData.anonymousDonor}
-                  />
+                  >
+                    <option value="">Select a donor</option>
+                    {donorsList.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} ({d.bloodType}) - ID: {d.id}
+                      </option>
+                    ))}
+                  </select>
                   <p className="text-xs text-gray-400 mt-1">
-                    Enter the unique ID of the donor.
+                    Choose from registered blood donors.
                   </p>
                 </div>
 
@@ -145,10 +195,9 @@ export default function AddBloodUnitPage() {
                     type="text"
                     name="donorName"
                     value={formData.donorName}
-                    onChange={handleInputChange}
-                    placeholder="Enter donor name"
-                    className="input-field w-full"
-                    disabled={formData.anonymousDonor}
+                    className="input-field w-full bg-dark-tertiary/30 cursor-not-allowed text-gray-400"
+                    placeholder="Donor name will fill automatically"
+                    disabled
                   />
                 </div>
 
@@ -195,47 +244,6 @@ export default function AddBloodUnitPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="screeningComplete"
-                    id="screeningComplete"
-                    checked={formData.screeningComplete}
-                    onChange={handleInputChange}
-                    className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 rounded focus:ring-emerald-500"
-                  />
-                  <label
-                    htmlFor="screeningComplete"
-                    className="text-mdfont-medium cursor-pointer"
-                  >
-                    Screening Complete
-                  </label>
-                  <p className="text-xs text-gray-400">
-                    Blood has been screened for infectious diseases.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="processingComplete"
-                    id="processingComplete"
-                    checked={formData.processingComplete}
-                    onChange={handleInputChange}
-                    className="w-4 h-4 text-emerald-500 bg-dark-tertiary border-gray-600 rounded focus:ring-emerald-500"
-                  />
-                  <label
-                    htmlFor="processingComplete"
-                    className="text-mdfont-medium cursor-pointer"
-                  >
-                    Processing Complete
-                  </label>
-                  <p className="text-xs text-gray-400">
-                    Blood has been processed and is ready for storage.
-                  </p>
-                </div>
-              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>

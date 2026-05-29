@@ -40,6 +40,8 @@ const calculateAge = (dob: string): number => {
 export default function PatientsPage() {
   const { user } = useAuthStore();
   const isDoctor = user?.role === 'doctor' || user?.department?.toLowerCase() === 'doctor';
+  const isLab = user?.role === 'laboratory' || user?.department?.toLowerCase() === 'laboratory';
+  const canManagePatients = !isDoctor && !isLab;
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [search, setSearch] = useState('');
@@ -110,7 +112,7 @@ export default function PatientsPage() {
             <h1 className="text-3xl font-bold mb-2">Patients</h1>
             <p className="text-gray-400">Manage your patients and their medical records.</p>
           </div>
-          {!isDoctor && (
+          {canManagePatients && (
             <Link href="/patients/add" className="btn-primary flex items-center gap-2">
               <Plus size={20} />
               Add Patient
@@ -154,7 +156,7 @@ export default function PatientsPage() {
                     <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Age/Gender</th>
                     <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Status</th>
                     <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Last Visit</th>
-                    {!isDoctor && <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>}
+                    {canManagePatients && <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -185,7 +187,7 @@ export default function PatientsPage() {
                         </span>
                       </td>
                       <td className="py-4 px-4 text-gray-300">{patient.lastVisit ? patient.lastVisit : '-'}</td>
-                      {!isDoctor && (
+                      {canManagePatients && (
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
                             <Link href={`/patients/edit/${patient.id}`} title="Edit Patient">

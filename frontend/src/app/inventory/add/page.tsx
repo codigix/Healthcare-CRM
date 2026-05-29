@@ -25,13 +25,13 @@ export default function AddInventoryItemPage() {
     category: "",
     quantity: "0",
     unitType: "Piece",
+    reorderLevel: "5",
     supplier: "",
     purchaseDate: new Date().toISOString().split("T")[0],
     expiryDate: "",
     status: "Active",
     notes: "",
     purchasePrice: "0",
-    sellingPrice: "0",
   });
 
   useEffect(() => {
@@ -86,10 +86,10 @@ export default function AddInventoryItemPage() {
         purchaseDate: formData.purchaseDate || null,
         expiryDate: formData.expiryDate || null,
         initialQuantity: parseInt(formData.quantity) || 0,
-        reorderLevel: 10,
+        reorderLevel: parseInt(formData.reorderLevel) || 5,
         maximumLevel: (parseInt(formData.quantity) || 0) * 2 || 100,
         purchasePrice: parseFloat(formData.purchasePrice) || 0,
-        sellingPrice: parseFloat(formData.sellingPrice) || 0,
+        sellingPrice: 0,
         status: formData.status,
         notes: formData.notes,
       };
@@ -221,6 +221,24 @@ export default function AddInventoryItemPage() {
                 />
               </div>
 
+              {/* Min Stock Level (Reorder Level) */}
+              <div>
+                <label className="block text-md font-semibold text-gray-300 mb-2">
+                  Min Stock Level <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="reorderLevel"
+                  value={formData.reorderLevel}
+                  onChange={handleInputChange}
+                  placeholder="5"
+                  min="0"
+                  className="input-field w-full"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">Warns when stock falls to or below this level</p>
+              </div>
+
               {/* Supplier Selection */}
               <div>
                 <label className="block text-md font-semibold text-gray-300 mb-2">
@@ -295,7 +313,7 @@ export default function AddInventoryItemPage() {
                 </select>
               </div>
 
-              {/* Pricing Section (Optional helper fields for accounting) */}
+              {/* Pricing Section (Procurement cost tracking) */}
               <div>
                 <label className="block text-md font-semibold text-gray-300 mb-2">
                   Purchase Price per Unit (₹)
@@ -307,20 +325,7 @@ export default function AddInventoryItemPage() {
                   onChange={handleInputChange}
                   step="0.01"
                   className="input-field w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-md font-semibold text-gray-300 mb-2">
-                  Selling/Billing Price per Unit (₹)
-                </label>
-                <input
-                  type="number"
-                  name="sellingPrice"
-                  value={formData.sellingPrice}
-                  onChange={handleInputChange}
-                  step="0.01"
-                  className="input-field w-full"
+                  placeholder="0.00"
                 />
               </div>
             </div>

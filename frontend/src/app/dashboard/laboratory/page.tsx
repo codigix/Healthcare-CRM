@@ -3,37 +3,19 @@
 import { useState, useEffect } from "react";
 import { 
   FlaskConical, 
-  Droplet, 
   Activity, 
-  Users, 
-  Plus, 
   CheckCircle,
-  FileText,
   ClipboardList
 } from "lucide-react";
-import Link from "next/link";
 import {
-  PieChart,
-  Pie,
-  Cell,
   Tooltip,
   ResponsiveContainer,
-  Legend,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid
 } from "recharts";
-
-const bloodStockData = [
-  { name: "A+", value: 24, fill: "#ef4444" },
-  { name: "B+", value: 18, fill: "#f87171" },
-  { name: "O+", value: 35, fill: "#b91c1c" },
-  { name: "AB+", value: 8, fill: "#fca5a5" },
-  { name: "A-", value: 6, fill: "#ea580c" },
-  { name: "O-", value: 12, fill: "#dc2626" }
-];
 
 const testVolumeData = [
   { day: "Mon", tests: 45 },
@@ -57,15 +39,7 @@ export default function LaboratoryDashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold mb-2">Laboratory Dashboard</h1>
-          <p className="text-gray-400">Diagnostic screenings, test reports, and blood bank coordination.</p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/blood-bank/add-unit" className="btn-primary flex items-center gap-1.5 text-sm">
-            <Plus size={16} /> Add Blood Unit
-          </Link>
-          <Link href="/blood-bank/issue" className="btn-secondary flex items-center gap-1.5 text-sm">
-            <Plus size={16} /> Issue Blood
-          </Link>
+          <p className="text-gray-400">Diagnostic screenings and test reports.</p>
         </div>
       </div>
 
@@ -75,7 +49,6 @@ export default function LaboratoryDashboard() {
         </div>
       ) : (
         <>
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="card card-hover">
               <div className="flex justify-between items-start">
@@ -88,14 +61,14 @@ export default function LaboratoryDashboard() {
               </div>
             </div>
 
-            <div className="card card-hover border-red-500/20">
+            <div className="card card-hover border-emerald-500/20">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-400 text-sm mb-2">Blood Inventory</p>
-                  <p className="text-2xl font-bold text-red-500">103 Units</p>
-                  <p className="text-red-400 text-xs mt-2">All groups screened</p>
+                  <p className="text-gray-400 text-sm mb-2">Reports Generated</p>
+                  <p className="text-2xl font-bold text-emerald-500">301 Reports</p>
+                  <p className="text-emerald-400 text-xs mt-2">+12% this week</p>
                 </div>
-                <Droplet className="text-red-500" size={24} />
+                <CheckCircle className="text-emerald-500" size={24} />
               </div>
             </div>
 
@@ -110,45 +83,20 @@ export default function LaboratoryDashboard() {
               </div>
             </div>
 
-            <div className="card card-hover">
+            <div className="card card-hover border-blue-500/20">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-400 text-sm mb-2">Blood Donors</p>
-                  <p className="text-2xl font-bold">42 Donors</p>
-                  <p className="text-emerald-500 text-xs mt-2">5 new donors today</p>
+                  <p className="text-gray-400 text-sm mb-2">Diagnostic Accuracy</p>
+                  <p className="text-2xl font-bold text-blue-500">99.8%</p>
+                  <p className="text-blue-400 text-xs mt-2">FDA Quality Standard</p>
                 </div>
-                <Users className="text-[#1abc9c]" size={24} />
+                <Activity className="text-blue-500" size={24} />
               </div>
             </div>
           </div>
 
           {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="card">
-              <h2 className="text-lg font-semibold mb-4">Blood Stock Availability (by Type)</h2>
-              <div className="h-[300px] flex items-center justify-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={bloodStockData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {bloodStockData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: "#1e1f27", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px" }} />
-                    <Legend verticalAlign="bottom" height={36} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
+          <div className="grid grid-cols-1 gap-6">
             <div className="card">
               <h2 className="text-lg font-semibold mb-4">Daily Diagnostic Test Volume</h2>
               <ResponsiveContainer width="100%" height={300}>

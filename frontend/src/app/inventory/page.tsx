@@ -200,48 +200,6 @@ export default function InventoryPage() {
             />
           </div>
 
-          <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
-            <button
-              onClick={() => setActiveTab("all")}
-              className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "all"
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              All Items
-            </button>
-            <button
-              onClick={() => setActiveTab("assets")}
-              className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "assets"
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              Assets
-            </button>
-            <button
-              onClick={() => setActiveTab("supplies")}
-              className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "supplies"
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              Medical Supplies
-            </button>
-            <button
-              onClick={() => setActiveTab("equipment")}
-              className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "equipment"
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              Equipment
-            </button>
-          </div>
 
           <div className="flex gap-3 mb-6">
             <select
@@ -325,15 +283,12 @@ export default function InventoryPage() {
                         </td>
                         <td className="py-4 px-4 text-white">
                           <div className="font-medium">{item.name}</div>
-                          <div className="text-xs text-gray-400">
-                            {item.genericName || "N/A"}
-                          </div>
                         </td>
                         <td className="py-4 px-4 text-gray-300">
                           {item.category}
                         </td>
                         <td className="py-4 px-4 text-gray-300">
-                          {item.initialQuantity} / {item.maximumLevel}
+                          {item.initialQuantity}
                         </td>
                         <td className="py-4 px-4">
                           <span

@@ -1,2 +1,6 @@
 .env*
 !.env.production
+
+# WhatsApp Gateway Session Cache
+backend/.wwebjs_auth/
+backend/.wwebjs_cache/

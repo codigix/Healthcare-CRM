@@ -131,9 +131,8 @@ const menuItems = [
     subItems: [
       { label: "Blood Stock", href: "/blood-bank/stock" },
       { label: "Blood Donor", href: "/blood-bank/donors" },
-      { label: "Blood Issued", href: "/blood-bank/issued" },
       { label: "Add Blood Unit", href: "/blood-bank/add-unit" },
-      { label: "Issue Blood", href: "/blood-bank/issue" },
+      { label: "Issue Blood", href: "/blood-bank/issued" },
     ],
   },
   {
@@ -153,15 +152,11 @@ const menuItems = [
     href: "/inventory",
     moduleId: "inventory",
     subItems: [
-      { label: "Inventory List", href: "/inventory" },
+      { label: "Inventory Items", href: "/inventory" },
       { label: "Add Item", href: "/inventory/add" },
       { label: "Inventory Categories", href: "/inventory/categories" },
       { label: "Stock Alerts", href: "/inventory/alerts" },
       { label: "Expiry Alerts", href: "/inventory/expiry" },
-      { label: "Beds", href: "/inventory/assets/beds" },
-      { label: "Wheelchairs", href: "/inventory/assets/wheelchairs" },
-      { label: "Stretchers", href: "/inventory/assets/stretchers" },
-      { label: "Equipment", href: "/inventory/assets/equipment" },
       { label: "Suppliers List", href: "/inventory/suppliers" },
       { label: "Inventory Reports", href: "/inventory/reports" },
       { label: "Asset Reports", href: "/inventory/reports/assets" },
@@ -500,7 +495,7 @@ export default function Sidebar() {
       subItems: item.subItems ? [...item.subItems] : undefined
     };
 
-    if (cloned.label === "Patients" && dept === "doctor") {
+    if (cloned.label === "Patients" && (dept === "doctor" || dept === "laboratory")) {
       cloned.subItems = cloned.subItems?.filter(s => s.label !== "Add Patient");
     }
 
@@ -550,6 +545,11 @@ export default function Sidebar() {
       getBaseItem("Appointments"),
       getBaseItem("Patients"),
       getBaseItem("Prescriptions"),
+      {
+        icon: Syringe,
+        label: "Issue Blood",
+        href: "/blood-bank/issue-request",
+      },
       getBaseItem("Reports"),
       getBaseItem("Reviews"),
     ].filter(Boolean);
@@ -584,7 +584,6 @@ export default function Sidebar() {
         label: "Reports Upload",
         href: "/records",
       },
-      getBaseItem("Blood Bank"),
     ].filter(Boolean);
   } else if (dept === 'pharmacy') {
     filteredMenuItems = [
@@ -660,22 +659,11 @@ export default function Sidebar() {
         label: "Inventory",
         href: "/inventory",
         subItems: [
-          { label: "Inventory List", href: "/inventory" },
+          { label: "Inventory Items", href: "/inventory" },
           { label: "Add Item", href: "/inventory/add" },
           { label: "Inventory Categories", href: "/inventory/categories" },
           { label: "Stock Alerts", href: "/inventory/alerts" },
           { label: "Expiry Alerts", href: "/inventory/expiry" },
-        ],
-      },
-      {
-        icon: Hotel,
-        label: "Assets",
-        href: "/inventory/assets",
-        subItems: [
-          { label: "Beds", href: "/inventory/assets/beds" },
-          { label: "Wheelchairs", href: "/inventory/assets/wheelchairs" },
-          { label: "Stretchers", href: "/inventory/assets/stretchers" },
-          { label: "Equipment", href: "/inventory/assets/equipment" },
         ],
       },
       {
@@ -695,7 +683,8 @@ export default function Sidebar() {
           { label: "Asset Reports", href: "/inventory/reports/assets" },
         ],
       },
-    ];
+      getBaseItem("Blood Bank"),
+    ].filter(Boolean);
   } else {
     filteredMenuItems = menuItems;
   }

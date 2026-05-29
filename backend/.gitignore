@@ -35,3 +35,7 @@ Thumbs.db
 !.env.production
 .env.local
 .env.test
+
+# WhatsApp Gateway Session Cache
+.wwebjs_auth/
+.wwebjs_cache/
