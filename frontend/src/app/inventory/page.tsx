@@ -13,7 +13,7 @@ import {
   Loader,
 } from "lucide-react";
 import Link from "next/link";
-import { medicineAPI } from "@/lib/api";
+import { inventoryAPI } from "@/lib/api";
 
 interface InventoryItem {
   id: string;
@@ -53,16 +53,16 @@ export default function InventoryPage() {
       if (categoryFilter !== "all") filters.category = categoryFilter;
       if (statusFilter !== "all") filters.status = statusFilter;
 
-      const response = await medicineAPI.list(page, 10, filters);
-      const medicines = response.data.medicines;
+      const response = await inventoryAPI.list(page, 10, filters);
+      const itemsData = response.data.items;
 
-      const value = medicines.reduce(
+      const value = itemsData.reduce(
         (sum: number, m: any) =>
           sum + parseFloat(m.purchasePrice) * m.initialQuantity,
         0
       );
 
-      setItems(medicines);
+      setItems(itemsData);
       setTotal(response.data.total);
       setTotalValue(value);
     } catch (err: any) {
@@ -90,11 +90,10 @@ export default function InventoryPage() {
   const filteredItems = items.filter((item) => {
     const matchesTab =
       activeTab === "all" ||
-      (activeTab === "medications" &&
-        ["Antibiotics", "Analgesics", "Antidiabetics"].includes(
-          item.category
-        )) ||
-      (activeTab === "supplies" && item.category === "Medical Supplies") ||
+      (activeTab === "assets" &&
+        ["Beds", "Wheelchairs", "Stretchers"].includes(item.category)) ||
+      (activeTab === "supplies" &&
+        ["Medical Supplies", "Consumables", "Operational Stock"].includes(item.category)) ||
       (activeTab === "equipment" && item.category === "Equipment");
     return matchesTab;
   });
@@ -115,7 +114,7 @@ export default function InventoryPage() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Link href="/pharmacy/add-medicine" className="btn-primary">
+            <Link href="/inventory/add" className="btn-primary">
               + Add Item
             </Link>
             <button className="btn-secondary">Export</button>
@@ -134,7 +133,7 @@ export default function InventoryPage() {
                 </div>
                 <div className="text-mdtext-gray-400">Total Items</div>
                 <div className="text-xs text-blue-500">
-                  Medicines in inventory
+                  Items in inventory
                 </div>
               </div>
             </div>
@@ -213,14 +212,14 @@ export default function InventoryPage() {
               All Items
             </button>
             <button
-              onClick={() => setActiveTab("medications")}
+              onClick={() => setActiveTab("assets")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "medications"
+                activeTab === "assets"
                   ? "text-emerald-500 border-b-2 border-emerald-500"
                   : "text-gray-400 hover:text-gray-300"
               }`}
             >
-              Medications
+              Assets
             </button>
             <button
               onClick={() => setActiveTab("supplies")}
@@ -293,7 +292,7 @@ export default function InventoryPage() {
                   <thead>
                     <tr className="border-b border-dark-tertiary">
                       <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
-                        Medicine ID
+                        Item ID
                       </th>
                       <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
                         Name

@@ -5,7 +5,6 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import pool from './db';
 
-console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
 
 const app: Express = express();
 
@@ -30,6 +29,7 @@ import staffRoutes from './routes/staff';
 import attendanceRoutes from './routes/attendance';
 import roomAllotmentRoutes from './routes/room-allotment';
 import medicineRoutes from './routes/medicines';
+import inventoryRoutes from './routes/inventory';
 import bloodBankRoutes from './routes/blood-bank';
 import inventoryAlertsRoutes from './routes/inventory-alerts';
 import suppliersRoutes from './routes/suppliers';
@@ -60,6 +60,7 @@ app.use('/api/staff', staffRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/room-allotment', roomAllotmentRoutes);
 app.use('/api/medicines', medicineRoutes);
+app.use('/api/inventory', inventoryRoutes);
 app.use('/api/blood-bank', bloodBankRoutes);
 app.use('/api/inventory-alerts', inventoryAlertsRoutes);
 app.use('/api/suppliers', suppliersRoutes);

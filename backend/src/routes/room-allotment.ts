@@ -265,7 +265,7 @@ router.post('/rooms', authMiddleware, async (req: AuthRequest, res: Response) =>
       status, description, television, attachedBathroom, airConditioning,
       wheelchairAccessible, wifi, oxygenSupply, telephone, nursecallButton,
       ventilator, patientMonitor, additionalNotes, createdAt, updatedAt
-    ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+    ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
 
     await connection.query(query, [
       roomNumber, roomType, department, floor, capacity, parseFloat(pricePerDay),

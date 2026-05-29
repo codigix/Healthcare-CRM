@@ -24,7 +24,6 @@ import {
   prescriptionAPI,
   patientAPI,
   doctorAPI,
-  prescriptionTemplateAPI,
 } from "@/lib/api";
 
 interface Medication {
@@ -59,9 +58,6 @@ export default function CreatePrescriptionPage() {
   const [showDoctorDropdown, setShowDoctorDropdown] = useState(false);
   const patientDropdownRef = useRef<HTMLDivElement>(null);
   const doctorDropdownRef = useRef<HTMLDivElement>(null);
-  const [useTemplate, setUseTemplate] = useState(false);
-  const [saveAsTemplate, setSaveAsTemplate] = useState(false);
-  const [templateName, setTemplateName] = useState("");
 
   const [formData, setFormData] = useState({
     patientId: "",
@@ -89,8 +85,6 @@ export default function CreatePrescriptionPage() {
   const [doctors, setDoctors] = useState<any[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<any | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [templates, setTemplates] = useState<any[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -127,73 +121,7 @@ export default function CreatePrescriptionPage() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (useTemplate) {
-      const fetchTemplates = async () => {
-        try {
-          const response = await prescriptionTemplateAPI.list(
-            1,
-            100,
-            "",
-            "all"
-          );
-          setTemplates(response.data.templates || response.data.data || []);
-        } catch (err) {
-          console.error("Failed to fetch templates", err);
-        }
-      };
-      fetchTemplates();
-    }
-  }, [useTemplate]);
 
-  const handleTemplateSelect = (templateId: string) => {
-    setSelectedTemplate(templateId);
-    const template = templates.find((t) => t.id === templateId);
-    if (template) {
-      const medsField = template.medications || template.medicines;
-      if (medsField) {
-        let templateMeds: any[] = [];
-        if (Array.isArray(medsField)) {
-          templateMeds = medsField;
-        } else if (typeof medsField === "string") {
-          const trimmed = medsField.trim();
-          if (trimmed) {
-            try {
-              const parsed = JSON.parse(trimmed);
-              if (Array.isArray(parsed)) {
-                templateMeds = parsed;
-              } else if (parsed && typeof parsed === "object") {
-                templateMeds = [parsed];
-              }
-            } catch (e) {
-              templateMeds = [{
-                name: trimmed,
-                dosage: "",
-                route: "Oral",
-                frequency: "",
-                duration: "30",
-                instructions: ""
-              }];
-            }
-          }
-        }
-
-        const newMeds = templateMeds.map((med: any, idx: number) => ({
-          id: Date.now().toString() + idx,
-          name: med.name || med.medicineName || "",
-          dosage: med.dosage || "",
-          route: med.route || "Oral",
-          frequency: med.frequency || "",
-          duration: med.duration || "30",
-          instructions: med.instructions || "",
-          allowRefills: false,
-          refillCount: 0,
-        }));
-
-        setMedications(newMeds.length > 0 ? newMeds : medications);
-      }
-    }
-  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -354,14 +282,7 @@ export default function CreatePrescriptionPage() {
         status: "Active",
       });
 
-      if (saveAsTemplate && templateName.trim()) {
-        await prescriptionTemplateAPI.create({
-          name: templateName,
-          category: formData.prescriptionType,
-          medicines: medications.map(({ id, ...med }) => med),
-          createdBy: selectedDoctor.name || "Unknown",
-        });
-      }
+
 
       router.push("/prescriptions/all");
     } catch (err: any) {
@@ -653,35 +574,7 @@ export default function CreatePrescriptionPage() {
                 />
               </div>
 
-              <div className="flex items-center gap-3 p-4 bg-dark-secondary rounded-lg border border-dark-tertiary">
-                <input
-                  type="checkbox"
-                  id="useTemplate"
-                  checked={useTemplate}
-                  onChange={(e) => setUseTemplate(e.target.checked)}
-                  className="w-4 h-4 text-emerald-500"
-                />
-                <label
-                  htmlFor="useTemplate"
-                  className="text-sm text-gray-300 cursor-pointer"
-                >
-                  Use Medication Template
-                </label>
-                {useTemplate && (
-                  <select
-                    value={selectedTemplate}
-                    onChange={(e) => handleTemplateSelect(e.target.value)}
-                    className="input-field ml-auto"
-                  >
-                    <option value="">Select a template</option>
-                    {templates.map((template) => (
-                      <option key={template.id} value={template.id}>
-                        {template.name}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
+
             </div>
 
             <hr className="border-dark-tertiary" />
@@ -1026,37 +919,7 @@ export default function CreatePrescriptionPage() {
                     />
                   </div>
 
-                  <div className="flex items-center gap-3 p-4 bg-dark-secondary rounded-lg border border-dark-tertiary">
-                    <input
-                      type="checkbox"
-                      id="saveAsTemplate"
-                      checked={saveAsTemplate}
-                      onChange={(e) => setSaveAsTemplate(e.target.checked)}
-                      className="w-4 h-4 text-emerald-500"
-                    />
-                    <label
-                      htmlFor="saveAsTemplate"
-                      className="text-sm text-gray-300 cursor-pointer flex-1"
-                    >
-                      Save as Prescription Template
-                    </label>
-                  </div>
 
-                  {saveAsTemplate && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Template Name
-                      </label>
-                      <input
-                        type="text"
-                        value={templateName}
-                        onChange={(e) => setTemplateName(e.target.value)}
-                        className="input-field w-full"
-                        placeholder="Enter a name for this template"
-                        required
-                      />
-                    </div>
-                  )}
                 </div>
               </div>
             </div>

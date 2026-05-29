@@ -82,7 +82,6 @@ const moduleDatabase: Record<string, ModuleInfo> = {
     features: [
       "All Prescriptions: Access prescription history and complete records",
       "Create Prescription: Write new prescriptions digitally with validation",
-      "Medicine Templates: Use pre-configured medication templates for efficiency",
       "Dosage Management: Precise dosing instructions and frequency control",
       "Patient Medication History: Track all prescriptions and medication compliance",
     ],

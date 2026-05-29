@@ -54,13 +54,10 @@ export default function InventoryDashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold mb-2">Inventory Dashboard</h1>
-          <p className="text-gray-400">Manage pharmacy stock, supplies, and supplier logs.</p>
+          <p className="text-gray-400">Manage hospital equipment, consumables, and supplier logs.</p>
         </div>
         <div className="flex gap-2">
-          <Link href="/pharmacy/add-medicine" className="btn-primary flex items-center gap-1.5 text-sm">
-            <Plus size={16} /> Add Medicine
-          </Link>
-          <Link href="/inventory/add" className="btn-secondary flex items-center gap-1.5 text-sm">
+          <Link href="/inventory/add" className="btn-primary flex items-center gap-1.5 text-sm">
             <Plus size={16} /> Add Item
           </Link>
         </div>
@@ -77,9 +74,9 @@ export default function InventoryDashboard() {
             <div className="card card-hover">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-400 text-sm mb-2">Total Medicines</p>
+                  <p className="text-gray-400 text-sm mb-2">Total Supplies & Assets</p>
                   <p className="text-2xl font-bold">148 Types</p>
-                  <p className="text-emerald-500 text-xs mt-2">+12 added this week</p>
+                  <p className="text-emerald-500 text-xs mt-2">+12 supplies registered this week</p>
                 </div>
                 <Package className="text-[#1abc9c]" size={24} />
               </div>
@@ -170,24 +167,24 @@ export default function InventoryDashboard() {
                 </thead>
                 <tbody>
                   <tr className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
-                    <td className="py-3 px-4 font-semibold text-white">Paracetamol Syrup</td>
-                    <td className="py-3 px-4">Pediatric Care</td>
-                    <td className="py-3 px-4 text-red-500 font-bold">12 bottles</td>
-                    <td className="py-3 px-4 text-gray-400">40 bottles</td>
+                    <td className="py-3 px-4 font-semibold text-white">Surgical Masks (Box)</td>
+                    <td className="py-3 px-4">Consumables</td>
+                    <td className="py-3 px-4 text-red-500 font-bold">12 boxes</td>
+                    <td className="py-3 px-4 text-gray-400">40 boxes</td>
                     <td className="py-3 px-4"><span className="status-badge status-pending">Low Stock</span></td>
                   </tr>
                   <tr className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
-                    <td className="py-3 px-4 font-semibold text-white">Amoxicillin Capsule</td>
-                    <td className="py-3 px-4">Antibiotics</td>
-                    <td className="py-3 px-4 text-red-500 font-bold">8 strips</td>
-                    <td className="py-3 px-4 text-gray-400">50 strips</td>
+                    <td className="py-3 px-4 font-semibold text-white">Sterile Gloves (Medium)</td>
+                    <td className="py-3 px-4">Medical Supplies</td>
+                    <td className="py-3 px-4 text-red-500 font-bold">8 boxes</td>
+                    <td className="py-3 px-4 text-gray-400">50 boxes</td>
                     <td className="py-3 px-4"><span className="status-badge status-pending">Critically Low</span></td>
                   </tr>
                   <tr className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
-                    <td className="py-3 px-4 font-semibold text-white">Hepatitis B Vaccine</td>
-                    <td className="py-3 px-4">Immunization</td>
-                    <td className="py-3 px-4 text-amber-500 font-bold">15 vials</td>
-                    <td className="py-3 px-4 text-gray-400">30 vials</td>
+                    <td className="py-3 px-4 font-semibold text-white">Oxygen Cylinders (10L)</td>
+                    <td className="py-3 px-4">Equipment</td>
+                    <td className="py-3 px-4 text-amber-500 font-bold">15 units</td>
+                    <td className="py-3 px-4 text-gray-400">30 units</td>
                     <td className="py-3 px-4"><span className="status-badge status-pending">Reorder Triggered</span></td>
                   </tr>
                 </tbody>

@@ -90,7 +90,7 @@ const dashboardTourSteps: DashboardTourStep[] = [
   },
   {
     title: '💊 Prescriptions Management',
-    description: 'The Prescriptions module handles digital medication management.\n\n📌 Features:\n• Create and issue digital prescriptions\n• Manage medication dosages and frequencies\n• Access prescription templates\n• Track patient medication history\n\n💡 Pro Tip: Use medicine templates for faster prescription creation.',
+    description: 'The Prescriptions module handles digital medication management.\n\n📌 Features:\n• Create and issue digital prescriptions\n• Manage medication dosages and frequencies\n• Track patient medication history',
     actionTip: '👉 Click on the "Create Prescription" button to issue a new prescription.',
     targetSelector: 'a[href="/prescriptions/create"], button:has-text("Create Prescription")',
     position: 'bottom',

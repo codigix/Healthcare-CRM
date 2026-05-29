@@ -188,7 +188,7 @@ export default function SuppliersPage() {
     const matchesTab =
       activeTab === "all" ||
       (activeTab === "preferred" && supplier.rating >= 4) ||
-      (activeTab === "medications" && supplier.category === "Medications") ||
+      (activeTab === "equipment" && supplier.category === "Equipment") ||
       (activeTab === "supplies" && supplier.category === "Medical Supplies");
     return matchesSearch && matchesCategory && matchesStatus && matchesTab;
   });
@@ -236,7 +236,7 @@ export default function SuppliersPage() {
                 <div className="text-2xl font-bold">{suppliers.filter(s => s.category === "Medical Supplies").length}</div>
                 <div className="text-mdtext-gray-400">Medical Supplies</div>
                 <div className="text-xs text-emerald-500">
-                  {suppliers.filter(s => s.category === "Medications").length} medications
+                  {suppliers.filter(s => s.category === "Equipment").length} equipment providers
                 </div>
               </div>
             </div>
@@ -307,14 +307,14 @@ export default function SuppliersPage() {
               Preferred
             </button>
             <button
-              onClick={() => setActiveTab("medications")}
+              onClick={() => setActiveTab("equipment")}
               className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "medications"
+                activeTab === "equipment"
                   ? "text-emerald-500 border-b-2 border-emerald-500"
                   : "text-gray-400 hover:text-gray-300"
               }`}
             >
-              Medications
+              Equipment
             </button>
             <button
               onClick={() => setActiveTab("supplies")}
@@ -463,7 +463,6 @@ export default function SuppliersPage() {
                   >
                     <option value="">Select category</option>
                     <option value="Medical Supplies">Medical Supplies</option>
-                    <option value="Medications">Medications</option>
                     <option value="Equipment">Equipment</option>
                     <option value="Office Supplies">Office Supplies</option>
                     <option value="Laboratory">Laboratory</option>

@@ -115,7 +115,7 @@ const sidebarSteps: TourStep[] = [
   },
   {
     title: '💊 Prescriptions Module',
-    description: 'Digital prescription management for modern healthcare:\n\n• All Prescriptions: Access prescription history and records\n• Create Prescription: Write new prescriptions digitally\n• Medicine Templates: Use pre-configured medication templates\n\nEnsure accurate medication dispensing and maintain prescription records.',
+    description: 'Digital prescription management for modern healthcare:\n\n• All Prescriptions: Access prescription history and records\n• Create Prescription: Write new prescriptions digitally\n\nEnsure accurate medication dispensing and maintain prescription records.',
     targetSelector: '[data-tour="prescriptions-nav"]',
     position: 'right',
     section: 'sidebar',

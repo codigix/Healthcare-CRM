@@ -77,7 +77,7 @@ export const appointmentAPI = {
 
 export const roomAllotmentAPI = {
   available: () => apiClient.get('/room-allotment/available'),
-  list: (page = 1, limit = 10) => apiClient.get('/room-allotment/allotments', { params: { page, limit } }),
+  list: (page = 1, limit = 10, filters = {}) => apiClient.get('/room-allotment/allotments', { params: { page, limit, ...filters } }),
   create: (data: any) => apiClient.post('/room-allotment/allotments', data),
   update: (id: string, data: any) => apiClient.put(`/room-allotment/allotments/${id}`, data),
   delete: (id: string) => apiClient.delete(`/room-allotment/allotments/${id}`),
@@ -170,8 +170,16 @@ export const medicineAPI = {
   delete: (id: string) => apiClient.delete(`/medicines/${id}`),
 };
 
+export const inventoryAPI = {
+  list: (page = 1, limit = 10, filters = {}) => apiClient.get('/inventory', { params: { page, limit, ...filters } }),
+  get: (id: string) => apiClient.get(`/inventory/${id}`),
+  create: (data: any) => apiClient.post('/inventory', data),
+  update: (id: string, data: any) => apiClient.put(`/inventory/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/inventory/${id}`),
+};
+
 export const recordsAPI = {
-  list: (page = 1, limit = 10, type = '', search = '') => apiClient.get('/records', { params: { page, limit, type, search } }),
+  list: (page = 1, limit = 10, type = '', search = '', filters = {}) => apiClient.get('/records', { params: { page, limit, type, search, ...filters } }),
   get: (id: string) => apiClient.get(`/records/${id}`),
   create: (data: any) => apiClient.post('/records', data),
   update: (id: string, data: any) => apiClient.put(`/records/${id}`, data),

@@ -579,7 +579,6 @@ Click to navigate to ambulance management and access emergency response features
 • **Medicine List**: Complete medicine inventory with stock levels and details
 • **Add Medicine**: Register new medicines with dosage, price, and expiry information
 • **Prescriptions**: Manage medicine prescriptions and dispensing to patients
-• **Medicine Templates**: Create and manage prescription templates for common treatments
 
 Click to navigate to pharmacy management and handle all pharmaceutical operations.`,
       attachTo: {
@@ -1682,7 +1681,7 @@ Navigate using the sidebar submenu to access different appointment management fu
     tour.addStep({
       id: "prescriptions-welcome",
       title: "Prescription Management",
-      text: `Prescriptions module includes: Prescription creation, Medication tracking, Prescription templates, and Fulfillment management.`,
+      text: `Prescriptions module includes: Prescription creation, Medication tracking, and Fulfillment management.`,
       buttons: [
         {
           text: "Back to Dashboard",

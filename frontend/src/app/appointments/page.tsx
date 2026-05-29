@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { appointmentAPI, doctorAPI, patientAPI } from "@/lib/api";
-import { Plus, Edit2, Trash2, Search, Filter, Calendar, Loader2, Check, Activity, Send } from "lucide-react";
+import { appointmentAPI, doctorAPI, patientAPI, recordsAPI, roomAllotmentAPI } from "@/lib/api";
+import { Plus, Edit2, Trash2, Search, Filter, Calendar, Loader2, Check, Activity, Send, Eye, Download, ExternalLink, FileText, ClipboardList } from "lucide-react";
 import Modal from "@/components/UI/Modal";
 import AppointmentForm from "@/components/Forms/AppointmentForm";
 import Link from "next/link";
@@ -23,6 +23,8 @@ interface Appointment {
   tokenNumber?: string;
   department?: string;
   visitType?: string;
+  labTestStatus?: string;
+  admissionStatus?: string;
 }
 
 interface Doctor {
@@ -52,6 +54,95 @@ export default function AppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Lab report viewer states
+  const [selectedLabRecord, setSelectedLabRecord] = useState<any | null>(null);
+  const [showLabPreviewModal, setShowLabPreviewModal] = useState(false);
+  const [loadingLabReportId, setLoadingLabReportId] = useState<string | null>(null);
+
+  // Allotment details state
+  const [selectedAllotment, setSelectedAllotment] = useState<any | null>(null);
+  const [showAllotmentModal, setShowAllotmentModal] = useState(false);
+  const [loadingAllotmentId, setLoadingAllotmentId] = useState<string | null>(null);
+
+  const handleViewAllotment = async (apt: Appointment) => {
+    try {
+      setLoadingAllotmentId(apt.id);
+      // Fetch allotments by patientId
+      const res = await roomAllotmentAPI.list(1, 10, { patientId: apt.patientId });
+      const allotmentsList = res.data.allotments || [];
+      // Find the most recent active or occupied allotment for this patient
+      const activeAllotment = allotmentsList[0]; // Ordered by createdAt DESC
+      if (activeAllotment) {
+        setSelectedAllotment(activeAllotment);
+        setShowAllotmentModal(true);
+      } else {
+        alert("No active room allotment found for this patient.");
+      }
+    } catch (error) {
+      console.error("Failed to fetch allotment details:", error);
+      alert("Failed to load allotment details. Please try again.");
+    } finally {
+      setLoadingAllotmentId(null);
+    }
+  };
+
+  const parseLabDetails = (detailsStr: string) => {
+    try {
+      if (detailsStr && detailsStr.startsWith("{")) {
+        const parsed = JSON.parse(detailsStr);
+        return {
+          request: parsed.request || "N/A",
+          observations: parsed.observations || "",
+          fileName: parsed.fileName || null,
+          fileType: parsed.fileType || null,
+          fileData: parsed.fileData || null,
+          reportedAt: parsed.reportedAt || null
+        };
+      }
+    } catch (e) {}
+
+    // Fallback for legacy format
+    const parts = detailsStr ? detailsStr.split("\n\n") : [];
+    const request = parts[0] || "N/A";
+    const observations = parts[1] ? parts[1].replace(/\[LABORATORY REPORT - .*\]:\n/, "") : "";
+    return {
+      request,
+      observations,
+      fileName: null,
+      fileType: null,
+      fileData: null,
+      reportedAt: null
+    };
+  };
+
+  const handleViewLabReport = async (apt: Appointment) => {
+    try {
+      setLoadingLabReportId(apt.id);
+      // Fetch laboratory record matching the appointmentId
+      const res = await recordsAPI.list(1, 1, "Lab Test", "", { appointmentId: apt.id });
+      const record = res.data.records?.[0];
+      if (record) {
+        setSelectedLabRecord(record);
+        setShowLabPreviewModal(true);
+      } else {
+        // Fallback: search by patient name if legacy record or appointmentId search fails
+        const fallbackRes = await recordsAPI.list(1, 10, "Lab Test", apt.patient?.name || "");
+        const fallbackRecord = fallbackRes.data.records?.find((r: any) => r.patientName === apt.patient?.name);
+        if (fallbackRecord) {
+          setSelectedLabRecord(fallbackRecord);
+          setShowLabPreviewModal(true);
+        } else {
+          alert("No laboratory report found for this appointment.");
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch lab report:", error);
+      alert("Failed to load laboratory report. Please try again.");
+    } finally {
+      setLoadingLabReportId(null);
+    }
+  };
 
   const handleSendLabRequest = async (id: string) => {
     try {
@@ -352,10 +443,25 @@ export default function AppointmentsPage() {
                                     <div className="flex flex-wrap items-center justify-end gap-2">
                                       {hasLabAction && (
                                         parsedNotes.labRequestSent ? (
-                                          <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
-                                            <Check size={13} className="text-emerald-400" />
-                                            Test Request Sent
-                                          </span>
+                                          apt.labTestStatus?.toLowerCase() === 'completed' ? (
+                                            <button
+                                              onClick={() => handleViewLabReport(apt)}
+                                              disabled={loadingLabReportId === apt.id}
+                                              className="px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-650 hover:from-emerald-605 hover:to-teal-750 text-white rounded-lg transition-all shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/25 flex items-center gap-1.5 border border-emerald-500/20 active:scale-95 disabled:opacity-50"
+                                            >
+                                              {loadingLabReportId === apt.id ? (
+                                                <Loader2 size={13} className="animate-spin" />
+                                              ) : (
+                                                <Eye size={13} />
+                                              )}
+                                              View Report
+                                            </button>
+                                          ) : (
+                                            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                              <Check size={13} className="text-emerald-400" />
+                                              Test Request Sent
+                                            </span>
+                                          )
                                         ) : isDoctor ? (
                                           <button
                                             onClick={() => handleSendLabRequest(apt.id)}
@@ -378,11 +484,31 @@ export default function AppointmentsPage() {
                                       )}
 
                                       {hasAdmissionAction && (
-                                        parsedNotes.admissionRequestSent ? (
-                                          <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
-                                            <Check size={13} className="text-emerald-400" />
-                                            Admission Request Sent
+                                        hasLabAction && (!parsedNotes.labRequestSent || apt.labTestStatus?.toLowerCase() !== 'completed') ? (
+                                          <span className="text-xs font-bold text-gray-400 bg-dark-tertiary/40 border border-dark-tertiary/65 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                            <Loader2 size={13} className="animate-pulse" />
+                                            Waiting for Lab Report
                                           </span>
+                                        ) : parsedNotes.admissionRequestSent ? (
+                                          apt.admissionStatus?.toLowerCase() === 'admitted' ? (
+                                            <button
+                                              onClick={() => handleViewAllotment(apt)}
+                                              disabled={loadingAllotmentId === apt.id}
+                                              className="px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white rounded-lg transition-all shadow-md shadow-purple-500/10 hover:shadow-purple-500/25 flex items-center gap-1.5 border border-purple-500/20 active:scale-95 disabled:opacity-50"
+                                            >
+                                              {loadingAllotmentId === apt.id ? (
+                                                <Loader2 size={13} className="animate-spin" />
+                                              ) : (
+                                                <ClipboardList size={13} />
+                                              )}
+                                              View Allotment
+                                            </button>
+                                          ) : (
+                                            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                              <Check size={13} className="text-emerald-400" />
+                                              Admission Request Sent
+                                            </span>
+                                          )
                                         ) : isDoctor ? (
                                           <button
                                             onClick={() => handleSendAdmissionRequest(apt.id)}
@@ -481,6 +607,249 @@ export default function AppointmentsPage() {
             fetchData();
           }}
         />
+      </Modal>
+
+      {/* Modal for viewing clinical diagnostic report findings */}
+      <Modal
+        isOpen={showLabPreviewModal}
+        onClose={() => setShowLabPreviewModal(false)}
+        title="Laboratory Test Findings"
+      >
+        {selectedLabRecord && (() => {
+          const parsed = parseLabDetails(selectedLabRecord.details);
+          return (
+            <div className="space-y-4 text-gray-300">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold">Patient Name</p>
+                  <p className="text-sm text-white font-bold mt-0.5">{selectedLabRecord.patientName}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold">Reported Date</p>
+                  <p className="text-xs text-white font-semibold mt-0.5">
+                    {parsed.reportedAt ? new Date(parsed.reportedAt).toLocaleString() : new Date(selectedLabRecord.date).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">Doctor's Requested Tests</p>
+                <p className="text-xs text-white font-semibold mt-0.5 bg-dark-tertiary/40 p-2.5 rounded-lg border border-dark-tertiary/20">
+                  {parsed.request.replace("Recommended Laboratory Tests: ", "")}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">Clinical Observations / Readings</p>
+                <div className="text-xs text-gray-300 leading-relaxed bg-dark-tertiary/20 p-4 rounded-lg border border-dark-tertiary/20 min-h-[100px] whitespace-pre-line">
+                  {parsed.observations || "No clinical observations entered."}
+                </div>
+              </div>
+
+              {parsed.fileData && (
+                <div className="bg-emerald-500/[0.02] border border-emerald-500/20 p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <FileText size={20} className="text-emerald-400" />
+                    <div>
+                      <p className="text-xs font-bold text-white max-w-[200px] truncate" title={parsed.fileName}>{parsed.fileName || "report-attachment"}</p>
+                      <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mt-0.5">{parsed.fileType?.split("/")[1] || "File"}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newTab = window.open();
+                        if (newTab) {
+                          try {
+                            const rawBase64 = parsed.fileData.split(',')[1] || parsed.fileData;
+                            const contentType = parsed.fileType || 'application/pdf';
+                            const byteCharacters = atob(rawBase64);
+                            const byteNumbers = new Array(byteCharacters.length);
+                            for (let i = 0; i < byteCharacters.length; i++) {
+                              byteNumbers[i] = byteCharacters.charCodeAt(i);
+                            }
+                            const byteArray = new Uint8Array(byteNumbers);
+                            const blob = new Blob([byteArray], { type: contentType });
+                            const blobUrl = URL.createObjectURL(blob);
+
+                            newTab.document.write(`
+                              <!DOCTYPE html>
+                              <html>
+                              <head>
+                                <title>Laboratory Report - ${selectedLabRecord?.patientName || 'Attachment'}</title>
+                                <style>
+                                  body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #121214; }
+                                  iframe { border: none; width: 100%; height: 100%; }
+                                </style>
+                              </head>
+                              <body>
+                                <iframe src="${blobUrl}" allowfullscreen></iframe>
+                              </body>
+                              </html>
+                            `);
+                            newTab.document.close();
+                          } catch (err) {
+                            console.error("Failed to parse base64 to blob:", err);
+                            newTab.close();
+                            alert("Failed to render PDF report.");
+                          }
+                        }
+                      }}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow shadow-emerald-500/10"
+                    >
+                      <ExternalLink size={13} />
+                      View Attachment
+                    </button>
+                    <a
+                      href={parsed.fileData}
+                      download={parsed.fileName || "lab-report"}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-dark-tertiary/50"
+                    >
+                      <Download size={13} />
+                      Download
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {parsed.fileData && parsed.fileType?.startsWith("image/") && (
+                <div className="border border-dark-tertiary rounded-lg p-2 bg-dark-secondary/30 flex items-center justify-center max-h-[220px] overflow-hidden">
+                  <img
+                    src={parsed.fileData}
+                    alt={parsed.fileName || "attachment"}
+                    className="max-h-[200px] object-contain rounded"
+                  />
+                </div>
+              )}
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLabPreviewModal(false)}
+                  className="px-5 py-2 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded-lg text-xs font-bold transition-colors"
+                >
+                  Close Findings
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
+
+      {/* Modal for viewing room allotment bed details */}
+      <Modal
+        isOpen={showAllotmentModal}
+        onClose={() => setShowAllotmentModal(false)}
+        title="Patient Room & Bed Allotment Details"
+      >
+        {selectedAllotment && (
+          <div className="space-y-4 text-gray-300">
+            {/* Header Allotment Status Banner */}
+            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 p-4 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Allotment ID</p>
+                <p className="text-sm text-white font-mono font-bold mt-0.5">
+                  #{selectedAllotment.id ? selectedAllotment.id.slice(0, 8).toUpperCase() : 'N/A'}
+                </p>
+              </div>
+              <div>
+                <span className="px-3 py-1 bg-purple-500/15 text-purple-400 border border-purple-500/20 rounded-full text-xs font-bold uppercase tracking-wide">
+                  {selectedAllotment.status || 'Active'}
+                </span>
+              </div>
+            </div>
+
+            {/* Room & Bed Details Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-dark-secondary/35 border border-dark-tertiary/20 p-3.5 rounded-lg">
+                <p className="text-[10px] text-gray-500 uppercase font-bold">Room Assigned</p>
+                <p className="text-base text-white font-bold mt-1">
+                  Room {selectedAllotment.room?.roomNumber || selectedAllotment.roomNumber || 'N/A'}
+                </p>
+                <p className="text-xs text-purple-400 font-semibold mt-0.5">
+                  {selectedAllotment.room?.roomType || selectedAllotment.roomType || 'General Ward'}
+                </p>
+              </div>
+              <div className="bg-dark-secondary/35 border border-dark-tertiary/20 p-3.5 rounded-lg">
+                <p className="text-[10px] text-gray-500 uppercase font-bold">Bed Slot Assigned</p>
+                <p className="text-base text-emerald-400 font-bold mt-1">
+                  Slot {selectedAllotment.bed || 'A'}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {selectedAllotment.room?.department || selectedAllotment.department || 'General Medicine'}
+                </p>
+              </div>
+            </div>
+
+            {/* Allotment Dates */}
+            <div className="grid grid-cols-2 gap-4 border-t border-dark-tertiary/50 pt-3">
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">Admission Date</p>
+                <p className="text-xs text-white font-semibold mt-1">
+                  {selectedAllotment.allotmentDate ? new Date(selectedAllotment.allotmentDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  }) : 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">Expected Discharge</p>
+                <p className="text-xs text-white font-semibold mt-1">
+                  {selectedAllotment.expectedDischargeDate ? new Date(selectedAllotment.expectedDischargeDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  }) : 'Routine Care'}
+                </p>
+              </div>
+            </div>
+
+            {/* Doctor Info */}
+            <div className="grid grid-cols-2 gap-4 border-t border-dark-tertiary/50 pt-3">
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase font-bold">Attending Doctor</p>
+                <p className="text-xs text-white font-semibold mt-1">
+                  {selectedAllotment.attendingDoctor || 'Dr. Attending'}
+                </p>
+              </div>
+            </div>
+
+            {/* Additional Clinical/Receptionist Notes */}
+            {(selectedAllotment.specialRequirements || selectedAllotment.additionalNotes) && (
+              <div className="border-t border-dark-tertiary/50 pt-3 space-y-2">
+                {selectedAllotment.specialRequirements && (
+                  <div>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold">Special Requirements</p>
+                    <p className="text-xs text-gray-300 bg-dark-tertiary/20 p-2.5 rounded-lg border border-dark-tertiary/20 mt-1 whitespace-pre-line leading-relaxed">
+                      {selectedAllotment.specialRequirements}
+                    </p>
+                  </div>
+                )}
+                {selectedAllotment.additionalNotes && (
+                  <div>
+                    <p className="text-[10px] text-gray-500 uppercase font-bold">Receptionist Allotment Notes</p>
+                    <p className="text-xs text-gray-300 bg-dark-tertiary/20 p-2.5 rounded-lg border border-dark-tertiary/20 mt-1 whitespace-pre-line leading-relaxed">
+                      {selectedAllotment.additionalNotes}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Actions Footer */}
+            <div className="flex justify-end pt-3 border-t border-dark-tertiary/50">
+              <button
+                type="button"
+                onClick={() => setShowAllotmentModal(false)}
+                className="px-5 py-2.5 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded-lg text-xs font-bold transition-all shadow active:scale-95"
+              >
+                Close Details
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </>
   );

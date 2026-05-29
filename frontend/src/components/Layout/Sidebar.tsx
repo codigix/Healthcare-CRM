@@ -90,7 +90,6 @@ const menuItems = [
     subItems: [
       { label: "All Prescriptions", href: "/prescriptions/all" },
       { label: "Create Prescription", href: "/prescriptions/create" },
-      { label: "Medicine Templates", href: "/prescriptions/templates" },
     ],
   },
   {
@@ -110,8 +109,18 @@ const menuItems = [
     href: "/pharmacy",
     moduleId: "pharmacy",
     subItems: [
+      { label: "Pending Prescriptions", href: "/pharmacy/prescriptions/pending" },
+      { label: "Prescription History", href: "/pharmacy/prescriptions/history" },
       { label: "Medicine List", href: "/pharmacy/medicines" },
       { label: "Add Medicine", href: "/pharmacy/add-medicine" },
+      { label: "Medicine Categories", href: "/pharmacy/categories" },
+      { label: "OPD Medicine Issue", href: "/pharmacy/issue/opd" },
+      { label: "IPD Medicine Supply", href: "/pharmacy/issue/ipd" },
+      { label: "Medicine Bills", href: "/pharmacy/billing" },
+      { label: "Low Stock Medicines", href: "/pharmacy/alerts/low-stock" },
+      { label: "Expiring Medicines", href: "/pharmacy/alerts/expiring" },
+      { label: "Pharmacy Reports", href: "/pharmacy/reports" },
+      { label: "Medicine Usage Reports", href: "/pharmacy/reports/usage" },
     ],
   },
   {
@@ -146,8 +155,16 @@ const menuItems = [
     subItems: [
       { label: "Inventory List", href: "/inventory" },
       { label: "Add Item", href: "/inventory/add" },
+      { label: "Inventory Categories", href: "/inventory/categories" },
       { label: "Stock Alerts", href: "/inventory/alerts" },
+      { label: "Expiry Alerts", href: "/inventory/expiry" },
+      { label: "Beds", href: "/inventory/assets/beds" },
+      { label: "Wheelchairs", href: "/inventory/assets/wheelchairs" },
+      { label: "Stretchers", href: "/inventory/assets/stretchers" },
+      { label: "Equipment", href: "/inventory/assets/equipment" },
       { label: "Suppliers List", href: "/inventory/suppliers" },
+      { label: "Inventory Reports", href: "/inventory/reports" },
+      { label: "Asset Reports", href: "/inventory/reports/assets" },
     ],
   },
   {
@@ -320,7 +337,6 @@ const moduleDatabase: Record<string, ModuleInfo> = {
     features: [
       "All Prescriptions: Access prescription history and complete records",
       "Create Prescription: Write new prescriptions digitally with validation",
-      "Medicine Templates: Use pre-configured medication templates for efficiency",
       "Dosage Management: Precise dosing instructions and frequency control",
       "Patient Medication History: Track all prescriptions and medication compliance",
     ],
@@ -570,6 +586,68 @@ export default function Sidebar() {
       },
       getBaseItem("Blood Bank"),
     ].filter(Boolean);
+  } else if (dept === 'pharmacy') {
+    filteredMenuItems = [
+      {
+        icon: LayoutDashboard,
+        label: "Dashboard",
+        href: "/dashboard/pharmacy",
+      },
+      {
+        icon: Clipboard,
+        label: "Prescriptions",
+        href: "/pharmacy/prescriptions",
+        subItems: [
+          { label: "Pending Prescriptions", href: "/pharmacy/prescriptions/pending" },
+          { label: "Prescription History", href: "/pharmacy/prescriptions/history" },
+        ],
+      },
+      {
+        icon: Pill,
+        label: "Medicines",
+        href: "/pharmacy/medicines",
+        subItems: [
+          { label: "Medicine List", href: "/pharmacy/medicines" },
+          { label: "Add Medicine", href: "/pharmacy/add-medicine" },
+          { label: "Medicine Categories", href: "/pharmacy/categories" },
+        ],
+      },
+      {
+        icon: ClipboardList,
+        label: "Medicine Issue",
+        href: "/pharmacy/issue",
+        subItems: [
+          { label: "OPD Medicine Issue", href: "/pharmacy/issue/opd" },
+          { label: "IPD Medicine Supply", href: "/pharmacy/issue/ipd" },
+        ],
+      },
+      {
+        icon: FileText,
+        label: "Billing",
+        href: "/pharmacy/billing",
+        subItems: [
+          { label: "Medicine Bills", href: "/pharmacy/billing" },
+        ],
+      },
+      {
+        icon: Bell,
+        label: "Alerts",
+        href: "/pharmacy/alerts",
+        subItems: [
+          { label: "Low Stock Medicines", href: "/pharmacy/alerts/low-stock" },
+          { label: "Expiring Medicines", href: "/pharmacy/alerts/expiring" },
+        ],
+      },
+      {
+        icon: BarChart3,
+        label: "Reports",
+        href: "/pharmacy/reports",
+        subItems: [
+          { label: "Pharmacy Reports", href: "/pharmacy/reports" },
+          { label: "Medicine Usage Reports", href: "/pharmacy/reports/usage" },
+        ],
+      },
+    ];
   } else if (dept === 'inventory') {
     filteredMenuItems = [
       {
@@ -577,25 +655,52 @@ export default function Sidebar() {
         label: "Dashboard",
         href: "/dashboard/inventory",
       },
-      getBaseItem("Pharmacy"),
-      getBaseItem("Inventory"),
+      {
+        icon: Package,
+        label: "Inventory",
+        href: "/inventory",
+        subItems: [
+          { label: "Inventory List", href: "/inventory" },
+          { label: "Add Item", href: "/inventory/add" },
+          { label: "Inventory Categories", href: "/inventory/categories" },
+          { label: "Stock Alerts", href: "/inventory/alerts" },
+          { label: "Expiry Alerts", href: "/inventory/expiry" },
+        ],
+      },
+      {
+        icon: Hotel,
+        label: "Assets",
+        href: "/inventory/assets",
+        subItems: [
+          { label: "Beds", href: "/inventory/assets/beds" },
+          { label: "Wheelchairs", href: "/inventory/assets/wheelchairs" },
+          { label: "Stretchers", href: "/inventory/assets/stretchers" },
+          { label: "Equipment", href: "/inventory/assets/equipment" },
+        ],
+      },
       {
         icon: Users2,
         label: "Suppliers",
         href: "/inventory/suppliers",
+        subItems: [
+          { label: "Suppliers List", href: "/inventory/suppliers" },
+        ],
       },
       {
-        icon: Bell,
-        label: "Stock Alerts",
-        href: "/inventory/alerts",
+        icon: BarChart3,
+        label: "Reports",
+        href: "/inventory/reports",
+        subItems: [
+          { label: "Inventory Reports", href: "/inventory/reports" },
+          { label: "Asset Reports", href: "/inventory/reports/assets" },
+        ],
       },
-      getBaseItem("Reports"),
-    ].filter(Boolean);
+    ];
   } else {
     filteredMenuItems = menuItems;
   }
 
-  const filteredSecondaryMenuItems = ['admin', 'doctor', 'receptionist', 'laboratory', 'inventory'].includes(dept)
+  const filteredSecondaryMenuItems = ['admin', 'doctor', 'receptionist', 'laboratory', 'inventory', 'pharmacy'].includes(dept)
     ? []
     : secondaryMenuItems;
     
@@ -612,6 +717,10 @@ export default function Sidebar() {
     "Blood Bank",
     "Departments",
     "Inventory",
+    "Assets",
+    "Medicines",
+    "Medicine Issue",
+    "Alerts",
     "Staff",
     "Records",
     "Room Allotment",

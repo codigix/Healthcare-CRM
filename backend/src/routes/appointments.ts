@@ -78,7 +78,9 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
                   a.id, a.doctorId, a.patientId, a.date, a.time, a.roomId, a.tokenNumber, a.status, a.notes, 
                   a.department, a.visitType, a.createdAt, a.updatedAt,
                   d.name as doctorName,
-                  p.name as patientName, p.email as patientEmail, p.phone as patientPhone
+                  p.name as patientName, p.email as patientEmail, p.phone as patientPhone,
+                  (SELECT status FROM records WHERE appointmentId = a.id AND type = 'Lab Test' LIMIT 1) as labTestStatus,
+                  (SELECT status FROM records WHERE appointmentId = a.id AND type = 'Admission Request' LIMIT 1) as admissionStatus
                 FROM appointments a
                 LEFT JOIN doctors d ON a.doctorId = d.id
                 LEFT JOIN patients p ON a.patientId = p.id

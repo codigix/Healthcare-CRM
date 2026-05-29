@@ -18,7 +18,8 @@ import {
   PlusCircle,
   LogIn,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Pill
 } from "lucide-react";
 
 const DEPARTMENTS = [
@@ -39,10 +40,18 @@ const DEPARTMENTS = [
     color: 'border-emerald-500/30 hover:border-emerald-500 text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10' 
   },
   { 
+    id: 'Pharmacy', 
+    label: 'Pharmacy', 
+    icon: Pill, 
+    desc: 'Medications & prescriptions', 
+    role: 'pharmacy', 
+    color: 'border-teal-500/30 hover:border-teal-500 text-teal-400 bg-teal-500/5 hover:bg-teal-500/10' 
+  },
+  { 
     id: 'Inventory', 
     label: 'Inventory', 
     icon: Package, 
-    desc: 'Pharmacy & stocks control', 
+    desc: 'Stocks & clinical supplies', 
     role: 'inventory', 
     color: 'border-amber-500/30 hover:border-amber-500 text-amber-400 bg-amber-500/5 hover:bg-amber-500/10' 
   },

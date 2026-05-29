@@ -1,52 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
-import { ArrowLeft, Save, AlertCircle } from "lucide-react";
+import { ArrowLeft, Save, AlertCircle, Loader } from "lucide-react";
 import Link from "next/link";
+import { inventoryAPI } from "@/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
+interface Supplier {
+  id: string;
+  name: string;
+}
+
 export default function AddInventoryItemPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("basic");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [suppliersLoading, setSuppliersLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     itemName: "",
-    itemId: "",
     category: "",
-    subcategory: "",
-    description: "",
-    unitOfMeasure: "",
-    unitQuantity: "",
-    storageLocation: "",
-    manufacturer: "",
-    brand: "",
-    modelVersion: "",
-    expiryTracking: "",
-    requiresRefrigeration: false,
-    hazardousMaterial: false,
-    controlledSubstance: false,
-    sterile: false,
+    quantity: "0",
+    unitType: "Piece",
+    supplier: "",
+    purchaseDate: new Date().toISOString().split("T")[0],
+    expiryDate: "",
+    status: "Active",
     notes: "",
-    purchasePrice: "",
-    sellingPrice: "",
+    purchasePrice: "0",
+    sellingPrice: "0",
   });
+
+  useEffect(() => {
+    fetchSuppliers();
+  }, []);
+
+  const fetchSuppliers = async () => {
+    try {
+      setSuppliersLoading(true);
+      const token = localStorage.getItem("token");
+      const headers: any = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const response = await fetch(`${API_URL}/suppliers?page=1&limit=100`, { headers });
+      if (response.ok) {
+        const data = await response.json();
+        setSuppliers(data.suppliers || []);
+      }
+    } catch (err) {
+      console.error("Failed to load suppliers:", err);
+    } finally {
+      setSuppliersLoading(false);
+    }
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    const { name, value, type } = e.target;
-    if (type === "checkbox") {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData((prev) => ({ ...prev, [name]: checked }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,58 +73,51 @@ export default function AddInventoryItemPage() {
     setLoading(true);
 
     try {
-      if (!formData.itemName || !formData.category || !formData.unitOfMeasure) {
-        throw new Error("Please fill in all required fields (Item Name, Category, Unit of Measure)");
+      if (!formData.itemName || !formData.category || !formData.unitType) {
+        throw new Error("Please fill in all required fields (Item Name, Category, Unit Type)");
       }
 
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Authentication required. Please log in.");
-      }
-
-      const medicineData = {
+      const payload = {
         name: formData.itemName,
-        genericName: formData.itemId || formData.itemName,
         category: formData.category,
-        medicineType: formData.subcategory || "General",
-        medicineForm: formData.unitOfMeasure,
-        description: formData.description,
-        manufacturer: formData.manufacturer || formData.brand,
-        supplier: formData.brand,
-        initialQuantity: parseInt(formData.unitQuantity) || 0,
+        description: formData.notes,
+        unitType: formData.unitType,
+        supplier: formData.supplier || "Direct Procurement",
+        purchaseDate: formData.purchaseDate || null,
+        expiryDate: formData.expiryDate || null,
+        initialQuantity: parseInt(formData.quantity) || 0,
+        reorderLevel: 10,
+        maximumLevel: (parseInt(formData.quantity) || 0) * 2 || 100,
         purchasePrice: parseFloat(formData.purchasePrice) || 0,
         sellingPrice: parseFloat(formData.sellingPrice) || 0,
-        roomTemperature: !formData.requiresRefrigeration,
-        refrigerated: formData.requiresRefrigeration,
-        status: "Active",
+        status: formData.status,
+        notes: formData.notes,
       };
 
-      const response = await fetch(`${API_URL}/medicines`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(medicineData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save inventory item");
-      }
-
+      await inventoryAPI.create(payload);
       router.push("/inventory");
     } catch (err: any) {
-      setError(err.message || "Failed to save inventory item");
+      setError(err.response?.data?.error || err.message || "Failed to save inventory item");
       console.error("Error saving inventory item:", err);
     } finally {
       setLoading(false);
     }
   };
 
+  // Predefined dynamic quick category tags
+  const quickCategories = [
+    "Hospital Equipment",
+    "Consumables",
+    "Medical Supplies",
+    "Operational Stock",
+    "Assets",
+    "Cleaning Supplies",
+    "Office Supplies",
+  ];
+
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-4xl mx-auto">
         <div className="flex items-center gap-4">
           <Link
             href="/inventory"
@@ -115,8 +126,8 @@ export default function AddInventoryItemPage() {
             <ArrowLeft size={24} />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold">Add Inventory Item</h1>
-            <p className="text-gray-400">Add a new item to your inventory</p>
+            <h1 className="text-3xl font-bold">Add Hospital Item</h1>
+            <p className="text-gray-400">Register any dynamic clinical supply, durable asset, or hospital equipment</p>
           </div>
         </div>
 
@@ -127,388 +138,209 @@ export default function AddInventoryItemPage() {
           </div>
         )}
 
-        <div className="card">
-          <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
-            <button
-              onClick={() => setActiveTab("basic")}
-              className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "basic"
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              Item Details
-            </button>
-            <button
-              onClick={() => setActiveTab("stock")}
-              className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "stock"
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              Stock Management
-            </button>
-            <button
-              onClick={() => setActiveTab("suppliers")}
-              className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "suppliers"
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              Suppliers
-            </button>
-          </div>
+        <div className="card relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-500 to-teal-500"></div>
 
-          <form onSubmit={handleSubmit}>
-            {activeTab === "basic" && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">
-                    Basic Information
-                  </h2>
-                  <p className="text-gray-400 text-mdmb-6">
-                    Enter the basic details of the inventory item
-                  </p>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Item Name */}
+              <div className="md:col-span-2">
+                <label className="block text-md font-semibold text-gray-300 mb-2">
+                  Item Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="itemName"
+                  value={formData.itemName}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Syringes 5ml, Wheelchair, ICU Bed"
+                  className="input-field w-full"
+                  required
+                />
+              </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-mdfont-medium mb-2">
-                        Item Name
-                      </label>
-                      <input
-                        type="text"
-                        name="itemName"
-                        value={formData.itemName}
-                        onChange={handleInputChange}
-                        placeholder="Enter item name"
-                        className="input-field w-full"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-mdfont-medium mb-2">
-                        Item ID/SKU
-                      </label>
-                      <input
-                        type="text"
-                        name="itemId"
-                        value={formData.itemId}
-                        onChange={handleInputChange}
-                        placeholder="Enter item ID or SKU"
-                        className="input-field w-full"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-mdfont-medium mb-2">
-                        Category
-                      </label>
-                      <select
-                        name="category"
-                        value={formData.category}
-                        onChange={handleInputChange}
-                        className="input-field w-full"
-                        required
-                      >
-                        <option value="">Select category</option>
-                        <option value="Medical Supplies">
-                          Medical Supplies
-                        </option>
-                        <option value="Medications">Medications</option>
-                        <option value="Equipment">Equipment</option>
-                        <option value="Office Supplies">Office Supplies</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-mdfont-medium mb-2">
-                        Subcategory
-                      </label>
-                      <select
-                        name="subcategory"
-                        value={formData.subcategory}
-                        onChange={handleInputChange}
-                        className="input-field w-full"
-                      >
-                        <option value="">Select subcategory</option>
-                        <option value="Disposables">Disposables</option>
-                        <option value="Surgical">Surgical</option>
-                        <option value="Diagnostic">Diagnostic</option>
-                      </select>
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="block text-mdfont-medium mb-2">
-                        Description
-                      </label>
-                      <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        placeholder="Enter item description"
-                        rows={4}
-                        className="input-field w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-mdfont-medium mb-2">
-                        Unit of Measure
-                      </label>
-                      <select
-                        name="unitOfMeasure"
-                        value={formData.unitOfMeasure}
-                        onChange={handleInputChange}
-                        className="input-field w-full"
-                        required
-                      >
-                        <option value="">Select unit</option>
-                        <option value="Box">Box</option>
-                        <option value="Piece">Piece</option>
-                        <option value="Bottle">Bottle</option>
-                        <option value="Pack">Pack</option>
-                        <option value="Unit">Unit</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-mdfont-medium mb-2">
-                        Unit Quantity
-                      </label>
-                      <input
-                        type="number"
-                        name="unitQuantity"
-                        value={formData.unitQuantity}
-                        onChange={handleInputChange}
-                        placeholder="Quantity per unit"
-                        className="input-field w-full"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-mdfont-medium mb-2">
-                        Storage Location
-                      </label>
-                      <input
-                        type="text"
-                        name="storageLocation"
-                        value={formData.storageLocation}
-                        onChange={handleInputChange}
-                        placeholder="Enter storage location"
-                        className="input-field w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">
-                    Additional Information
-                  </h2>
-                  <p className="text-gray-400 text-mdmb-6">
-                    Enter additional details about the item
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-mdfont-medium mb-2">
-                        Manufacturer
-                      </label>
-                      <input
-                        type="text"
-                        name="manufacturer"
-                        value={formData.manufacturer}
-                        onChange={handleInputChange}
-                        placeholder="Enter manufacturer"
-                        className="input-field w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-mdfont-medium mb-2">
-                        Brand
-                      </label>
-                      <input
-                        type="text"
-                        name="brand"
-                        value={formData.brand}
-                        onChange={handleInputChange}
-                        placeholder="Enter brand name"
-                        className="input-field w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-mdfont-medium mb-2">
-                        Model/Version
-                      </label>
-                      <input
-                        type="text"
-                        name="modelVersion"
-                        value={formData.modelVersion}
-                        onChange={handleInputChange}
-                        placeholder="Enter model or version"
-                        className="input-field w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-mdfont-medium mb-2">
-                        Expiry Tracking
-                      </label>
-                      <select
-                        name="expiryTracking"
-                        value={formData.expiryTracking}
-                        onChange={handleInputChange}
-                        className="input-field w-full"
-                      >
-                        <option value="">Select option</option>
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <h3 className="text-lg font-medium mb-4">
-                      Item Properties
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="requiresRefrigeration"
-                          checked={formData.requiresRefrigeration}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 rounded border-gray-600 bg-dark-tertiary text-emerald-500 focus:ring-emerald-500"
-                        />
-                        <span className="text-sm">Requires Refrigeration</span>
-                      </label>
-
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="hazardousMaterial"
-                          checked={formData.hazardousMaterial}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 rounded border-gray-600 bg-dark-tertiary text-emerald-500 focus:ring-emerald-500"
-                        />
-                        <span className="text-sm">Hazardous Material</span>
-                      </label>
-
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="controlledSubstance"
-                          checked={formData.controlledSubstance}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 rounded border-gray-600 bg-dark-tertiary text-emerald-500 focus:ring-emerald-500"
-                        />
-                        <span className="text-sm">Controlled Substance</span>
-                      </label>
-
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="sterile"
-                          checked={formData.sterile}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 rounded border-gray-600 bg-dark-tertiary text-emerald-500 focus:ring-emerald-500"
-                        />
-                        <span className="text-sm">Sterile</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <label className="block text-mdfont-medium mb-2">
-                      Notes
-                    </label>
-                    <textarea
-                      name="notes"
-                      value={formData.notes}
-                      onChange={handleInputChange}
-                      placeholder="Enter any additional notes"
-                      rows={4}
-                      className="input-field w-full"
-                    />
-                  </div>
-
-                  <div className="mt-6">
-                    <h3 className="text-lg font-medium mb-4">
-                      Pricing Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-mdfont-medium mb-2">
-                          Purchase Price
-                        </label>
-                        <input
-                          type="number"
-                          name="purchasePrice"
-                          value={formData.purchasePrice}
-                          onChange={handleInputChange}
-                          placeholder="Enter purchase price"
-                          step="0.01"
-                          className="input-field w-full"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-mdfont-medium mb-2">
-                          Selling Price
-                        </label>
-                        <input
-                          type="number"
-                          name="sellingPrice"
-                          value={formData.sellingPrice}
-                          onChange={handleInputChange}
-                          placeholder="Enter selling price"
-                          step="0.01"
-                          className="input-field w-full"
-                        />
-                      </div>
-                    </div>
-                  </div>
+              {/* Dynamic Item Category */}
+              <div className="md:col-span-2">
+                <label className="block text-md font-semibold text-gray-300 mb-2">
+                  Item Category <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Consumables, Life Support, Furniture"
+                  className="input-field w-full mb-3"
+                  required
+                />
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-xs text-gray-500 flex items-center mr-1">Quick Tags:</span>
+                  {quickCategories.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, category: cat }))}
+                      className="px-3 py-1 bg-dark-tertiary hover:bg-[#1abc9c]/20 hover:text-[#1abc9c] text-gray-400 text-xs rounded-full border border-white/5 transition-all"
+                    >
+                      {cat}
+                    </button>
+                  ))}
                 </div>
               </div>
-            )}
 
-            {activeTab === "stock" && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">
-                    Stock Management
-                  </h2>
-                  <p className="text-gray-400 text-mdmb-6">
-                    Configure stock levels and reorder settings
-                  </p>
-                  <div className="text-center py-12 text-gray-400">
-                    Stock management features coming soon...
-                  </div>
-                </div>
+              {/* Quantity */}
+              <div>
+                <label className="block text-md font-semibold text-gray-300 mb-2">
+                  Quantity <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="quantity"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  placeholder="0"
+                  min="0"
+                  className="input-field w-full"
+                  required
+                />
               </div>
-            )}
 
-            {activeTab === "suppliers" && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Suppliers</h2>
-                  <p className="text-gray-400 text-mdmb-6">
-                    Manage suppliers for this item
-                  </p>
-                  <div className="text-center py-12 text-gray-400">
-                    Supplier management features coming soon...
-                  </div>
-                </div>
+              {/* Unit Type */}
+              <div>
+                <label className="block text-md font-semibold text-gray-300 mb-2">
+                  Unit Type (Measure) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="unitType"
+                  value={formData.unitType}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Piece, Box, Pack, Cylinder"
+                  className="input-field w-full"
+                  required
+                />
               </div>
-            )}
 
-            <div className="flex gap-3 mt-8 pt-6 border-t border-dark-tertiary">
+              {/* Supplier Selection */}
+              <div>
+                <label className="block text-md font-semibold text-gray-300 mb-2">
+                  Supplier
+                </label>
+                <select
+                  name="supplier"
+                  value={formData.supplier}
+                  onChange={handleInputChange}
+                  className="input-field w-full"
+                >
+                  <option value="">Select Supplier</option>
+                  {suppliers.map((sup) => (
+                    <option key={sup.id} value={sup.name}>
+                      {sup.name}
+                    </option>
+                  ))}
+                  {suppliers.length === 0 && (
+                    <>
+                      <option value="MedPlus Supplies">MedPlus Supplies</option>
+                      <option value="MediEquip Solutions">MediEquip Solutions</option>
+                      <option value="Global Pharma Ltd.">Global Pharma Ltd.</option>
+                      <option value="Health Supply Co.">Health Supply Co.</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* Purchase Date */}
+              <div>
+                <label className="block text-md font-semibold text-gray-300 mb-2">
+                  Purchase Date
+                </label>
+                <input
+                  type="date"
+                  name="purchaseDate"
+                  value={formData.purchaseDate}
+                  onChange={handleInputChange}
+                  className="input-field w-full"
+                />
+              </div>
+
+              {/* Expiry Date (Optional) */}
+              <div>
+                <label className="block text-md font-semibold text-gray-300 mb-2">
+                  Expiry Date <span className="text-xs text-gray-500 font-normal">(Optional for non-expiring assets)</span>
+                </label>
+                <input
+                  type="date"
+                  name="expiryDate"
+                  value={formData.expiryDate}
+                  onChange={handleInputChange}
+                  className="input-field w-full"
+                />
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-md font-semibold text-gray-300 mb-2">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleInputChange}
+                  className="input-field w-full"
+                >
+                  <option value="Active">Available (In Use / Active)</option>
+                  <option value="Low Stock">Low Stock</option>
+                  <option value="Out of Stock">Out of Stock</option>
+                  <option value="Inactive">Inactive / Maintenance</option>
+                </select>
+              </div>
+
+              {/* Pricing Section (Optional helper fields for accounting) */}
+              <div>
+                <label className="block text-md font-semibold text-gray-300 mb-2">
+                  Purchase Price per Unit (₹)
+                </label>
+                <input
+                  type="number"
+                  name="purchasePrice"
+                  value={formData.purchasePrice}
+                  onChange={handleInputChange}
+                  step="0.01"
+                  className="input-field w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-md font-semibold text-gray-300 mb-2">
+                  Selling/Billing Price per Unit (₹)
+                </label>
+                <input
+                  type="number"
+                  name="sellingPrice"
+                  value={formData.sellingPrice}
+                  onChange={handleInputChange}
+                  step="0.01"
+                  className="input-field w-full"
+                />
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label className="block text-md font-semibold text-gray-300 mb-2">
+                Operational Notes / Descriptions
+              </label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                placeholder="Enter room assignments, maintenance schedules, or description of the supply..."
+                rows={4}
+                className="input-field w-full resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-6 border-t border-white/5">
               <Link href="/inventory" className="btn-secondary">
                 Cancel
               </Link>
@@ -519,13 +351,13 @@ export default function AddInventoryItemPage() {
               >
                 {loading ? (
                   <>
-                    <span className="animate-spin">⟳</span>
-                    Saving...
+                    <Loader size={18} className="animate-spin" />
+                    Registering Item...
                   </>
                 ) : (
                   <>
                     <Save size={18} />
-                    Save Item
+                    Register Item
                   </>
                 )}
               </button>

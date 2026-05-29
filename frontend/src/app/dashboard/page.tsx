@@ -71,6 +71,8 @@ export default function DashboardPage() {
         router.push('/dashboard/doctor');
       } else if (lowerDept === 'inventory') {
         router.push('/dashboard/inventory');
+      } else if (lowerDept === 'pharmacy') {
+        router.push('/dashboard/pharmacy');
       } else if (lowerDept === 'laboratory') {
         router.push('/dashboard/laboratory');
       } else if (lowerDept === 'receptionist') {

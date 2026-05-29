@@ -104,9 +104,20 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       refrigerated,
       protectFromLight,
       status,
+      department,
     } = req.body;
 
-    if (!name || !genericName || !category || !medicineType || !medicineForm || !purchasePrice || !sellingPrice) {
+    if (
+      !name ||
+      !genericName ||
+      !category ||
+      !medicineType ||
+      !medicineForm ||
+      purchasePrice === undefined ||
+      purchasePrice === null ||
+      sellingPrice === undefined ||
+      sellingPrice === null
+    ) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -117,8 +128,8 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       manufacturer, supplier, manufacturingDate, expiryDate, batchNumber, dosage,
       sideEffects, precautions, initialQuantity, reorderLevel, maximumLevel,
       purchasePrice, sellingPrice, taxRate, roomTemperature, frozen, refrigerated,
-      protectFromLight, status, createdAt, updatedAt
-    ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+      protectFromLight, status, department, createdAt, updatedAt
+    ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
 
     await connection.query(query, [
       name,
@@ -146,6 +157,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       refrigerated || false,
       protectFromLight || false,
       status || 'Active',
+      department || 'Pharmacy',
     ]);
 
     const [result]: any = await connection.query('SELECT * FROM medicines WHERE name = ? ORDER BY createdAt DESC LIMIT 1', [name]);
@@ -189,6 +201,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       refrigerated,
       protectFromLight,
       status,
+      department,
     } = req.body;
 
     const connection = await pool.getConnection();
@@ -221,6 +234,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     if (refrigerated !== undefined) { updates.push('refrigerated = ?'); values.push(refrigerated); }
     if (protectFromLight !== undefined) { updates.push('protectFromLight = ?'); values.push(protectFromLight); }
     if (status) { updates.push('status = ?'); values.push(status); }
+    if (department) { updates.push('department = ?'); values.push(department); }
 
     if (updates.length === 0) {
       connection.release();

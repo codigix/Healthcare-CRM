@@ -6,7 +6,7 @@ const router = Router();
 
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { page = 1, limit = 10, type, search } = req.query;
+    const { page = 1, limit = 10, type, search, appointmentId } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
     let query = 'SELECT records.*, doctors.name as doctorName FROM records LEFT JOIN doctors ON records.doctorId = doctors.id WHERE 1=1';
@@ -15,6 +15,11 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     if (type && String(type).trim() !== '') {
       query += ' AND records.type = ?';
       params.push(String(type));
+    }
+
+    if (appointmentId && String(appointmentId).trim() !== '') {
+      query += ' AND records.appointmentId = ?';
+      params.push(String(appointmentId));
     }
 
     if (search && String(search).trim() !== '') {
@@ -34,6 +39,9 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     let countSql = 'SELECT COUNT(*) as total FROM records WHERE 1=1';
     if (type && String(type).trim() !== '') {
       countSql += ' AND type = ?';
+    }
+    if (appointmentId && String(appointmentId).trim() !== '') {
+      countSql += ' AND appointmentId = ?';
     }
     if (search && String(search).trim() !== '') {
       countSql += ' AND (patientName LIKE ? OR details LIKE ?)';
