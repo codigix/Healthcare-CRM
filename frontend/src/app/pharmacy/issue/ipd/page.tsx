@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { roomAllotmentAPI, medicineAPI } from "@/lib/api";
-import { Pill, ArrowLeft, RefreshCw, Loader, Hotel, CheckCircle, Search, Activity, User } from "lucide-react";
+import { roomAllotmentAPI, medicineAPI, invoiceAPI } from "@/lib/api";
+import { Pill, ArrowLeft, RefreshCw, Loader, Hotel, CheckCircle, Search, Activity, User, FileText } from "lucide-react";
 import Link from "next/link";
 
 interface RoomAllotment {
@@ -13,13 +13,15 @@ interface RoomAllotment {
   roomId: string;
   status: string;
   attendingDoctor: string;
-  room?: { roomNumber: string; roomType: string; floor: string };
+  room?: { roomNumber: string; roomType: string; floor: string; department?: string };
 }
 
 interface Medicine {
   id: string;
   name: string;
   initialQuantity: number;
+  sellingPrice?: number;
+  taxRate?: number;
 }
 
 export default function IPDMedicineSupplyPage() {
@@ -92,32 +94,37 @@ export default function IPDMedicineSupplyPage() {
 
     try {
       setSupplyLoading(true);
-      const token = localStorage.getItem("token");
 
       // Reduce stock
       const remainingStock = Math.max(0, selectedMed.initialQuantity - qty);
-      const response = await fetch(`http://localhost:5000/api/medicines/${selectedMedId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          initialQuantity: remainingStock,
-        }),
+      await medicineAPI.update(selectedMedId, {
+        initialQuantity: remainingStock
       });
 
-      if (!response.ok) throw new Error("Failed to deduct stock");
+      // Calculate IPD medication billing charges
+      const price = parseFloat(selectedMed.sellingPrice as any) || 0;
+      const taxRate = parseFloat(selectedMed.taxRate as any) || 0;
+      const totalAmount = price * qty * (1 + taxRate / 100);
 
-      setSuccess(`✓ Successfully supplied ${qty} unit(s) of "${selectedMed.name}" to Patient ${selectedAdmission.patientName} at Bed ${selectedAdmission.bed || "A1"}.`);
+      // Create a pending invoice entry representing accumulated IPD charges
+      await invoiceAPI.create({
+        patientId: selectedAdmission.patientId,
+        amount: parseFloat(totalAmount.toFixed(2)),
+        status: "Pending", // IPD billing stays pending until final check-out/discharge
+        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        notes: `IPD Pharmacy Supply: ${qty}x ${selectedMed.name} (Ref: ${selectedMed.id.substring(0, 5).toUpperCase()}) supplied to Bed ${selectedAdmission.bed || "A1"}, Room ${selectedAdmission.room?.roomNumber || "302"} (${selectedAdmission.room?.department || "Inpatient Ward"}).`
+      });
+
+      setSuccess(`✓ Successfully supplied ${qty} unit(s) of "${selectedMed.name}" to Patient ${selectedAdmission.patientName} at Bed ${selectedAdmission.bed || "A1"}. Charges (₹${totalAmount.toFixed(2)}) appended to inpatient billing queue!`);
       setSelectedAdmission(null);
       setSelectedMedId("");
       setSupplyQty("1");
       fetchInpatientAdmissions();
       fetchMedicines();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to supply drug:", err);
-      setError("Failed to process inpatient supply order");
+      const errMsg = err.response?.data?.error || "Failed to process inpatient supply order. Please check connection.";
+      setError(errMsg);
     } finally {
       setSupplyLoading(false);
     }

@@ -613,7 +613,7 @@ export default function Sidebar() {
       },
       {
         icon: ClipboardList,
-        label: "Medicine Issue",
+        label: "Medicine Dispensing",
         href: "/pharmacy/issue",
         subItems: [
           { label: "OPD Medicine Issue", href: "/pharmacy/issue/opd" },
@@ -630,7 +630,7 @@ export default function Sidebar() {
       },
       {
         icon: Bell,
-        label: "Alerts",
+        label: "Inventory & Alerts",
         href: "/pharmacy/alerts",
         subItems: [
           { label: "Low Stock Medicines", href: "/pharmacy/alerts/low-stock" },
@@ -708,8 +708,8 @@ export default function Sidebar() {
     "Inventory",
     "Assets",
     "Medicines",
-    "Medicine Issue",
-    "Alerts",
+    "Medicine Dispensing",
+    "Inventory & Alerts",
     "Staff",
     "Records",
     "Room Allotment",

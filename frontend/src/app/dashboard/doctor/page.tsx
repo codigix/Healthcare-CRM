@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/lib/store";
+import Link from "next/link";
 
 import { appointmentAPI, dashboardAPI, bloodBankAPI, patientAPI } from "@/lib/api";
 import {
@@ -16,6 +17,8 @@ import {
   User,
   CheckCircle,
   AlertCircle,
+  Check,
+  Loader2,
 } from "lucide-react";
 
 interface DoctorStats {
@@ -37,6 +40,7 @@ interface Appointment {
   duration: string;
   type: string;
   status: string;
+  prescriptionStatus?: string;
 }
 
 interface UpcomingAppointment {
@@ -153,6 +157,7 @@ export default function DoctorDashboard() {
           duration: "30 min",
           type: "Check-up",
           status: apt.status || "confirmed",
+          prescriptionStatus: apt.prescriptionStatus,
         }));
 
         const upcomingMapped: UpcomingAppointment[] = upcomingAppts.map(
@@ -495,9 +500,32 @@ export default function DoctorDashboard() {
                             >
                               {apt.type}
                             </span>
-                            <button className="px-4 py-2 bg-dark-tertiary hover:bg-emerald-500 text-white rounded-lg text-mdtransition-colors">
-                              View
-                            </button>
+                            {apt.status?.toLowerCase() === "completed" ? (
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                                  ✓ Completed
+                                </span>
+                                {apt.prescriptionStatus !== null && apt.prescriptionStatus !== undefined && (
+                                  apt.prescriptionStatus === "Completed" ? (
+                                    <span className="text-xs font-bold text-[#1abc9c] bg-[#1abc9c]/10 border border-[#1abc9c]/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5" title="Pharmacy has dispensed all medications and cleared bills.">
+                                      <Check size={13} className="text-[#1abc9c]" />
+                                      Rx: Dispensed
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5 animate-pulse" title="Awaiting medication dispense and stock allocation at pharmacy.">
+                                      <Loader2 size={13} className="animate-spin text-amber-500" />
+                                      Rx: Dispense Pending
+                                    </span>
+                                  )
+                                )}
+                              </div>
+                            ) : (
+                              <Link href={`/appointments/consultation/${apt.id}`}>
+                                <button className="px-4 py-2 bg-dark-tertiary hover:bg-emerald-500 text-white rounded-lg text-mdtransition-colors active:scale-95">
+                                  Start Consultation
+                                </button>
+                              </Link>
+                            )}
                           </div>
                         </div>
                       ))}

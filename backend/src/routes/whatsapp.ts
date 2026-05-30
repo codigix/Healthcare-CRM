@@ -5,7 +5,7 @@ import fs from 'fs';
 const router = Router();
 
 // Import whatsapp-web.js dynamically/CommonJS to avoid compilation/typing issues
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const qrcodeTerminal = require('qrcode-terminal');
 
 let clientReady = false;
@@ -156,7 +156,7 @@ router.get('/status', authMiddleware, async (req: AuthRequest, res: Response) =>
 // Endpoint to send WhatsApp message in the background
 router.post('/send', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { phone, message } = req.body;
+    const { phone, message, fileData, fileName, fileType } = req.body;
 
     if (!phone || !message) {
       return res.status(400).json({ error: 'Phone number and message are required' });
@@ -192,10 +192,27 @@ router.post('/send', authMiddleware, async (req: AuthRequest, res: Response) => 
       console.log(`⚠ Could not resolve verified WhatsApp ID for ${cleanedPhone}. Using fallback: ${whatsappId}`);
     }
 
-    console.log(`Sending background WhatsApp message to ${whatsappId}...`);
-    
-    // Send message using the resolved client ID
-    await client.sendMessage(whatsappId, message);
+    if (fileData) {
+      console.log(`Preparing WhatsApp media attachment: ${fileName || 'attachment'} (${fileType})...`);
+      
+      // Strip Data URI header if present
+      let rawBase64 = fileData;
+      if (fileData.includes(';base64,')) {
+        rawBase64 = fileData.split(';base64,')[1];
+      }
+
+      const media = new MessageMedia(
+        fileType || 'application/octet-stream',
+        rawBase64,
+        fileName || 'attachment'
+      );
+
+      console.log(`Sending background WhatsApp media to ${whatsappId}...`);
+      await client.sendMessage(whatsappId, media, { caption: message });
+    } else {
+      console.log(`Sending background WhatsApp text-only message to ${whatsappId}...`);
+      await client.sendMessage(whatsappId, message);
+    }
 
     res.json({ 
       success: true, 

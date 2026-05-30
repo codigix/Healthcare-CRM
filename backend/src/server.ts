@@ -40,6 +40,7 @@ import feedbackRoutes from './routes/feedback';
 import servicesRoutes from './routes/services';
 import notificationRoutes from './routes/notifications';
 import whatsappRoutes from './routes/whatsapp';
+import refillRoutes from './routes/refills';
 
 console.log('Registering routes...');
 app.use('/api/auth', authRoutes);
@@ -71,6 +72,7 @@ app.use('/api/reviews', reviewsRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
+app.use('/api/pharmacy/refills', refillRoutes);
 console.log('✓ All routes registered');
 
 app.get('/api/health', (req, res) => {

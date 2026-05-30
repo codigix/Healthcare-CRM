@@ -87,6 +87,8 @@ export default function AllPrescriptionsPage() {
     switch (status?.toLowerCase()) {
       case "active":
         return "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+      case "completed":
+        return "bg-[#1abc9c]/10 text-[#1abc9c] border border-[#1abc9c]/20";
       case "expired":
         return "bg-red-500/10 text-red-500 border border-red-500/20";
       case "pending":
@@ -255,6 +257,7 @@ export default function AllPrescriptionsPage() {
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
+                <option value="completed">Completed</option>
                 <option value="expired">Expired</option>
                 <option value="pending">Pending</option>
               </select>
@@ -594,6 +597,7 @@ export default function AllPrescriptionsPage() {
                   className="input-field w-full"
                 >
                   <option value="Active">Active</option>
+                  <option value="Completed">Completed</option>
                   <option value="Expired">Expired</option>
                   <option value="Pending">Pending</option>
                 </select>

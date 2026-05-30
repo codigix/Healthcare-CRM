@@ -42,6 +42,7 @@ interface Appointment {
   visitType?: string;
   labTestStatus?: string;
   admissionStatus?: string;
+  prescriptionStatus?: string;
 }
 
 interface Doctor {
@@ -470,20 +471,41 @@ export default function AllAppointmentsPage() {
                                 </button>
                               </Link>
                             ) : apt.status?.toLowerCase() === "completed" ? (
-                              (() => {
-                                let parsedNotes: any = null;
-                                if (apt.notes) {
-                                  try {
-                                    parsedNotes = JSON.parse(apt.notes);
-                                  } catch (e) {}
-                                }
+                                (() => {
+                                  let parsedNotes: any = null;
+                                  if (apt.notes) {
+                                    try {
+                                      parsedNotes = JSON.parse(apt.notes);
+                                    } catch (e) {}
+                                  }
 
-                                const hasLabAction = parsedNotes?.labTestsActive === true;
-                                const hasAdmissionAction = parsedNotes?.admissionRecommended === true;
+                                  const hasLabAction = parsedNotes?.labTestsActive === true;
+                                  const hasAdmissionAction = parsedNotes?.admissionRecommended === true;
+                                  const hasPrescription = apt.prescriptionStatus !== null && apt.prescriptionStatus !== undefined;
 
-                                if (hasLabAction || hasAdmissionAction) {
                                   return (
                                     <div className="flex flex-wrap items-center justify-end gap-2">
+                                      {/* Consultation completed badge */}
+                                      <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                                        ✓ Completed
+                                      </span>
+
+                                      {/* Prescription Dispense status */}
+                                      {hasPrescription && (
+                                        apt.prescriptionStatus === "Completed" ? (
+                                          <span className="text-xs font-bold text-[#1abc9c] bg-[#1abc9c]/10 border border-[#1abc9c]/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5" title="Pharmacy has dispensed all medications and cleared bills.">
+                                            <Check size={13} className="text-[#1abc9c]" />
+                                            Rx: Dispensed
+                                          </span>
+                                        ) : (
+                                          <span className="text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5 animate-pulse" title="Awaiting medication dispense and stock allocation at pharmacy.">
+                                            <Loader2 size={13} className="animate-spin text-amber-500" />
+                                            Rx: Dispense Pending
+                                          </span>
+                                        )
+                                      )}
+
+                                      {/* Lab Action */}
                                       {hasLabAction && (
                                         parsedNotes.labRequestSent ? (
                                           apt.labTestStatus?.toLowerCase() === 'completed' ? (
@@ -526,6 +548,7 @@ export default function AllAppointmentsPage() {
                                         )
                                       )}
 
+                                      {/* Admission Action */}
                                       {hasAdmissionAction && (
                                         hasLabAction && (!parsedNotes.labRequestSent || apt.labTestStatus?.toLowerCase() !== 'completed') ? (
                                           <span className="text-xs font-bold text-gray-400 bg-dark-tertiary/40 border border-dark-tertiary/65 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
@@ -574,14 +597,7 @@ export default function AllAppointmentsPage() {
                                       )}
                                     </div>
                                   );
-                                }
-
-                                return (
-                                  <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
-                                    ✓ Consultation Completed
-                                  </span>
-                                );
-                              })()
+                                })()
                             ) : null}
                             {!isDoctor && (
                               <>

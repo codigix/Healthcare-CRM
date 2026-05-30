@@ -189,7 +189,16 @@ export const recordsAPI = {
 
 export const whatsappAPI = {
   getStatus: () => apiClient.get('/whatsapp/status'),
-  sendMessage: (phone: string, message: string) => apiClient.post('/whatsapp/send', { phone, message }),
+  sendMessage: (phone: string, message: string, fileData?: string, fileName?: string, fileType?: string) => 
+    apiClient.post('/whatsapp/send', { phone, message, fileData, fileName, fileType }),
+};
+
+export const refillAPI = {
+  list: () => apiClient.get('/pharmacy/refills'),
+  create: (data: { medicineName: string; quantityRequested: number; notes?: string }) => 
+    apiClient.post('/pharmacy/refills', data),
+  update: (id: string, data: { status: string; notes?: string }) => 
+    apiClient.put(`/pharmacy/refills/${id}`, data),
 };
 
 export const staffAPI = {

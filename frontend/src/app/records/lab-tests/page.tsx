@@ -46,6 +46,7 @@ export default function LabTestsPage() {
   const [whatsappRecord, setWhatsappRecord] = useState<LabRecord | null>(null);
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [searchingPhone, setSearchingPhone] = useState(false);
+  const [attachFile, setAttachFile] = useState(true);
 
   // WhatsApp Scanner states
   const [whatsappStatus, setWhatsappStatus] = useState("loading"); // 'loading', 'qr_required', 'ready', 'disconnected'
@@ -148,10 +149,21 @@ Thank you,
     }
 
     const msg = generateWhatsAppMessage(whatsappRecord);
+    const parsed = parseLabDetails(whatsappRecord.details);
 
     try {
       setSendingMessage(true);
-      await whatsappAPI.sendMessage(cleanPhone, msg);
+      if (attachFile && parsed.fileData) {
+        await whatsappAPI.sendMessage(
+          cleanPhone,
+          msg,
+          parsed.fileData,
+          parsed.fileName || "lab-report",
+          parsed.fileType || "application/pdf"
+        );
+      } else {
+        await whatsappAPI.sendMessage(cleanPhone, msg);
+      }
       alert("✓ Report sent successfully in the background on WhatsApp!");
       setShowWhatsAppModal(false);
     } catch (err: any) {
@@ -166,6 +178,7 @@ Thank you,
   const handleOpenWhatsAppModal = (record: LabRecord) => {
     setWhatsappRecord(record);
     setWhatsappNumber("");
+    setAttachFile(true);
     setShowWhatsAppModal(true);
     if (record.patientName) {
       lookupPatientPhone(record.patientName);
@@ -782,6 +795,29 @@ Thank you,
                   Ensure to include country code (e.g. <span className="text-emerald-400">91</span> for India) without '+' or spaces.
                 </p>
               </div>
+
+              {hasAttachment && (
+                <div className="bg-emerald-500/5 border border-emerald-500/10 hover:border-emerald-500/20 p-3.5 rounded-lg flex items-center justify-between transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <div className="bg-emerald-500/10 p-2 rounded-lg text-emerald-400">
+                      <FileText size={16} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white max-w-[200px] truncate" title={parsed.fileName}>{parsed.fileName || "report-attachment"}</p>
+                      <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mt-0.5">{parsed.fileType?.split("/")[1] || "File"}</p>
+                    </div>
+                  </div>
+                  <label className="relative flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={attachFile}
+                      onChange={(e) => setAttachFile(e.target.checked)}
+                      className="rounded border-dark-tertiary bg-dark-secondary text-emerald-500 focus:ring-emerald-500 focus:ring-offset-dark-secondary w-4.5 h-4.5 transition-all cursor-pointer"
+                    />
+                    <span className="text-xs font-bold text-gray-200">Send Attachment</span>
+                  </label>
+                </div>
+              )}
 
               <div>
                 <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1.5">

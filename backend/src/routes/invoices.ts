@@ -63,7 +63,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const { patientId, amount, status, dueDate, notes } = req.body;
 
     const connection = await pool.getConnection();
-    const query = `INSERT INTO Invoice (id, patientId, amount, status, dueDate, notes, createdAt, updatedAt)
+    const query = `INSERT INTO invoices (id, patientId, amount, status, dueDate, notes, createdAt, updatedAt)
                    VALUES (UUID(), ?, ?, ?, ?, ?, NOW(), NOW())`;
     
     await connection.query(query, [patientId, parseFloat(amount), status || 'pending', dueDate ? new Date(dueDate) : null, notes]);

@@ -25,7 +25,8 @@ import {
   Eye,
   Download,
   ExternalLink,
-  ClipboardList
+  ClipboardList,
+  Hotel
 } from "lucide-react";
 
 interface MedicineItem {
@@ -33,6 +34,7 @@ interface MedicineItem {
   dosage: string;
   duration: string;
   instructions: string;
+  qty?: number;
 }
 
 interface PastAppointment {
@@ -76,13 +78,47 @@ export default function ConsultationPage() {
   // Prescription builder state
   const [medicines, setMedicines] = useState<MedicineItem[]>([]);
   const [medName, setMedName] = useState("");
-  const [medDosage, setMedDosage] = useState("1-0-1");
-  const [medDuration, setMedDuration] = useState("5 days");
-  const [medInstructions, setMedInstructions] = useState("After food");
+  const [medDosage, setMedDosage] = useState("");
+  const [medDuration, setMedDuration] = useState("");
+  const [medInstructions, setMedInstructions] = useState("");
+  const [medQty, setMedQty] = useState<number | "">("");
+
+  const calculateDefaultQty = (dosage: string, duration: string): number | "" => {
+    if (!dosage || !duration) return "";
+    let dailyTotal = 0;
+    if (dosage.includes("-")) {
+      const parts = dosage.split("-").map(p => parseInt(p.trim()));
+      dailyTotal = parts.reduce((sum, val) => sum + (isNaN(val) ? 0 : val), 0);
+    } else {
+      const singleVal = parseInt(dosage.replace(/[^0-9]/g, ""));
+      if (!isNaN(singleVal)) dailyTotal = singleVal;
+    }
+    
+    let days = 5;
+    const durationNum = parseInt(duration.replace(/[^0-9]/g, ""));
+    if (!isNaN(durationNum)) {
+      if (duration.toLowerCase().includes("week")) {
+        days = durationNum * 7;
+      } else if (duration.toLowerCase().includes("month")) {
+        days = durationNum * 30;
+      } else {
+        days = durationNum;
+      }
+    }
+    
+    return dailyTotal > 0 ? dailyTotal * days : "";
+  };
+
+  useEffect(() => {
+    setMedQty(calculateDefaultQty(medDosage, medDuration));
+  }, [medDosage, medDuration]);
 
   // Autocomplete medicines from DB
   const [dbMedicines, setDbMedicines] = useState<any[]>([]);
   const [showMedSuggestions, setShowMedSuggestions] = useState(false);
+  const [showDosageSuggestions, setShowDosageSuggestions] = useState(false);
+  const [showDurationSuggestions, setShowDurationSuggestions] = useState(false);
+  const [showInstructionsSuggestions, setShowInstructionsSuggestions] = useState(false);
 
   // Recommendations state
   const [labTestsActive, setLabTestsActive] = useState(false);
@@ -91,6 +127,7 @@ export default function ConsultationPage() {
   const [followUpDate, setFollowUpDate] = useState("");
   const [admissionRecommended, setAdmissionRecommended] = useState(false);
   const [admissionNotes, setAdmissionNotes] = useState("");
+  const [triageSelected, setTriageSelected] = useState(false);
 
   // Error/Success state
   const [errorMsg, setErrorMsg] = useState("");
@@ -131,10 +168,15 @@ export default function ConsultationPage() {
             setOtherLabTests(parsedNotes.otherLabTests || "");
             setAdmissionRecommended(!!parsedNotes.admissionRecommended);
             setAdmissionNotes(parsedNotes.admissionNotes || "");
+            setTriageSelected(true);
           } catch (e) {
             // Treat as plain text reason for visit or notes
             setSymptoms(aptData.notes);
           }
+        }
+
+        if (aptData.status?.toLowerCase() === "completed") {
+          setTriageSelected(true);
         }
 
         // 2. Fetch Patient Details
@@ -197,17 +239,19 @@ export default function ConsultationPage() {
     
     const newMed: MedicineItem = {
       name: medName.trim(),
-      dosage: medDosage,
-      duration: medDuration,
-      instructions: medInstructions
+      dosage: medDosage || "N/A",
+      duration: medDuration || "N/A",
+      instructions: medInstructions || "N/A",
+      qty: typeof medQty === "number" ? medQty : undefined
     };
 
     setMedicines([...medicines, newMed]);
     setMedName("");
     // Reset preset selections to defaults
-    setMedDosage("1-0-1");
-    setMedDuration("5 days");
-    setMedInstructions("After food");
+    setMedDosage("");
+    setMedDuration("");
+    setMedInstructions("");
+    setMedQty("");
     setShowMedSuggestions(false);
   };
 
@@ -363,7 +407,39 @@ export default function ConsultationPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Top-Level Mode Selector */}
+          <div className="bg-dark-tertiary/40 border border-dark-tertiary/80 p-1 rounded-xl flex items-center gap-1 shadow-inner">
+            <button
+              type="button"
+              onClick={() => {
+                setAdmissionRecommended(false);
+                setTriageSelected(true);
+              }}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                triageSelected && !admissionRecommended
+                  ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/15"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-dark-tertiary/20"
+              }`}
+            >
+              OPD Outpatient
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAdmissionRecommended(true);
+                setTriageSelected(true);
+              }}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                triageSelected && admissionRecommended
+                  ? "bg-red-500 text-white shadow-md shadow-red-500/15"
+                  : "text-gray-400 hover:text-gray-200 hover:bg-dark-tertiary/20"
+              }`}
+            >
+              IPD Admission
+            </button>
+          </div>
+
           <button
             onClick={handleCompleteConsultation}
             disabled={submitting}
@@ -399,8 +475,89 @@ export default function ConsultationPage() {
         </div>
       )}
 
-      {/* Main Grid Structure */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {!triageSelected ? (
+        <div className="card bg-dark-secondary/85 border border-dark-tertiary/60 p-6 rounded-2xl max-w-2xl mx-auto mt-6 text-center space-y-4 shadow-2xl backdrop-blur-md border-t-2 border-t-emerald-500/20 animate-fadeIn">
+          <div className="relative w-12 h-12 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 rounded-full flex items-center justify-center text-emerald-400 mx-auto shadow-lg shadow-emerald-500/5 animate-pulse">
+            <ClipboardList size={20} />
+            <span className="absolute top-0 right-0 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+          </div>
+          
+          <div className="space-y-2">
+            <h2 className="text-xl font-extrabold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent font-outfit tracking-tight">
+              Patient Triage Classification Required
+            </h2>
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-dark-tertiary/45 border border-dark-tertiary/80 rounded-full text-[11px] text-gray-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Active Case: <strong className="text-white font-bold">{patient?.name || "Patient"}</strong>
+              </div>
+            </div>
+            <p className="text-[11px] text-gray-400 max-w-md mx-auto leading-relaxed">
+              Attending clinician, please select the care classification for this encounter to configure the correct clinical forms, prescriptions, and billing pathways.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+            {/* OPD Option Card */}
+            <div
+              onClick={() => {
+                setAdmissionRecommended(false);
+                setTriageSelected(true);
+              }}
+              className="bg-dark-secondary/60 hover:bg-emerald-500/[0.02] border border-dark-tertiary hover:border-emerald-500/30 p-4 rounded-xl flex flex-col justify-between transition-all duration-300 group hover:scale-[1.01] hover:shadow-[0_4px_20px_rgb(16,185,129,0.04)] cursor-pointer text-center space-y-3"
+            >
+              <div className="space-y-2 py-2">
+                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 mx-auto group-hover:scale-110 transition-transform duration-200">
+                  <User size={18} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">OPD Outpatient</p>
+                </div>
+              </div>
+
+              <div className="w-full pt-1 flex justify-center">
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center px-5 py-1.5 text-xs font-extrabold text-white bg-emerald-500 hover:bg-emerald-600 rounded-full transition-all active:scale-95 duration-200 shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/35"
+                >
+                  Choose OPD Outpatient
+                </button>
+              </div>
+            </div>
+
+            {/* IPD Option Card */}
+            <div
+              onClick={() => {
+                setAdmissionRecommended(true);
+                setTriageSelected(true);
+              }}
+              className="bg-dark-secondary/60 hover:bg-red-500/[0.02] border border-dark-tertiary hover:border-red-500/30 p-4 rounded-xl flex flex-col justify-between transition-all duration-300 group hover:scale-[1.01] hover:shadow-[0_4px_20px_rgb(239,68,68,0.04)] cursor-pointer text-center space-y-3"
+            >
+              <div className="space-y-2 py-2">
+                <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 mx-auto group-hover:scale-110 transition-transform duration-200">
+                  <Hotel size={18} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white group-hover:text-red-400 transition-colors">IPD Admission</p>
+                </div>
+              </div>
+
+              <div className="w-full pt-1 flex justify-center">
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center px-5 py-1.5 text-xs font-extrabold text-white bg-red-500 hover:bg-red-600 rounded-full transition-all active:scale-95 duration-200 shadow-md shadow-red-500/20 hover:shadow-red-500/35"
+                >
+                  Choose IPD Admission
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
         
         {/* LEFT COLUMN: Patient Context Panel */}
         <div className="lg:col-span-1 space-y-6">
@@ -676,7 +833,7 @@ export default function ConsultationPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
                 {/* Search Medicine name */}
-                <div className="md:col-span-4 relative">
+                <div className="md:col-span-3 relative">
                   <label className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Medicine Name</label>
                   <div className="flex items-center gap-2 bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1">
                     <Search size={12} className="text-gray-500" />
@@ -689,15 +846,20 @@ export default function ConsultationPage() {
                         setShowMedSuggestions(true);
                       }}
                       onFocus={() => setShowMedSuggestions(true)}
+                      onBlur={() => setShowMedSuggestions(false)}
                       className="bg-transparent text-xs w-full outline-none text-white py-0.5"
                     />
                   </div>
 
                   {/* Autocomplete dropdown suggestions */}
-                  {showMedSuggestions && medName.trim().length > 0 && (
-                    <div className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-xl z-20 max-h-40 overflow-y-auto">
+                  {showMedSuggestions && (
+                    <div 
+                      onMouseDown={(e) => e.preventDefault()}
+                      className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-xl z-20 max-h-40 overflow-y-auto"
+                    >
                       {dbMedicines
-                        .filter(m => m.name.toLowerCase().includes(medName.toLowerCase()))
+                        .filter(m => !medName.trim() || m.name.toLowerCase().includes(medName.toLowerCase()))
+                        .slice(0, 30)
                         .map((med) => (
                           <button
                             key={med.id}
@@ -711,81 +873,135 @@ export default function ConsultationPage() {
                             {med.name} <span className="text-[10px] text-gray-500 hover:text-emerald-200">({med.category || "General"})</span>
                           </button>
                         ))}
-                      {dbMedicines.filter(m => m.name.toLowerCase().includes(medName.toLowerCase())).length === 0 && (
-                        <div className="px-3 py-2 text-xs text-gray-500 italic">No exact matches, press enter to add custom name</div>
+                      {dbMedicines.filter(m => !medName.trim() || m.name.toLowerCase().includes(medName.toLowerCase())).length === 0 && (
+                        <div className="px-3 py-2 text-xs text-gray-500 italic">No matches found, press enter to add custom name</div>
                       )}
                     </div>
                   )}
                 </div>
 
-                {/* Dosage Selector */}
-                <div className="md:col-span-3">
+                {/* Dosage Schedule Selector */}
+                <div className="md:col-span-2 relative">
                   <label className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Dosage Schedule</label>
-                  <div className="flex gap-1.5 items-center">
-                    <input
-                      type="text"
-                      value={medDosage}
-                      onChange={(e) => setMedDosage(e.target.value)}
-                      className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
-                    />
-                    <select
-                      value={medDosage}
-                      onChange={(e) => setMedDosage(e.target.value)}
-                      className="bg-dark-secondary border border-dark-tertiary rounded p-1 text-[10px] text-gray-400 outline-none h-[30px]"
+                  <input
+                    type="text"
+                    placeholder="e.g. 1-0-1"
+                    value={medDosage}
+                    onChange={(e) => setMedDosage(e.target.value)}
+                    onFocus={() => setShowDosageSuggestions(true)}
+                    onBlur={() => setShowDosageSuggestions(false)}
+                    className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
+                  />
+                  {showDosageSuggestions && (
+                    <div 
+                      onMouseDown={(e) => e.preventDefault()}
+                      className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-xl z-20 max-h-40 overflow-y-auto"
                     >
-                      <option value="">Presets</option>
-                      {dosagePresets.map(preset => (
-                        <option key={preset} value={preset}>{preset}</option>
-                      ))}
-                    </select>
-                  </div>
+                      {dosagePresets
+                        .filter(preset => !medDosage.trim() || preset.toLowerCase().includes(medDosage.toLowerCase()))
+                        .map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => {
+                              setMedDosage(preset);
+                              setShowDosageSuggestions(false);
+                            }}
+                            className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-emerald-500 hover:text-white transition-colors border-b border-dark-tertiary/30 last:border-0"
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Duration */}
-                <div className="md:col-span-2">
+                <div className="md:col-span-2 relative">
                   <label className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Duration</label>
-                  <div className="flex gap-1.5 items-center">
-                    <input
-                      type="text"
-                      value={medDuration}
-                      onChange={(e) => setMedDuration(e.target.value)}
-                      className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
-                    />
-                    <select
-                      value={medDuration}
-                      onChange={(e) => setMedDuration(e.target.value)}
-                      className="bg-dark-secondary border border-dark-tertiary rounded p-1 text-[10px] text-gray-400 outline-none h-[30px]"
+                  <input
+                    type="text"
+                    placeholder="e.g. 5 days"
+                    value={medDuration}
+                    onChange={(e) => setMedDuration(e.target.value)}
+                    onFocus={() => setShowDurationSuggestions(true)}
+                    onBlur={() => setShowDurationSuggestions(false)}
+                    className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
+                  />
+                  {showDurationSuggestions && (
+                    <div 
+                      onMouseDown={(e) => e.preventDefault()}
+                      className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-xl z-20 max-h-40 overflow-y-auto"
                     >
-                      <option value="">Presets</option>
-                      {durationPresets.map(preset => (
-                        <option key={preset} value={preset}>{preset}</option>
-                      ))}
-                    </select>
-                  </div>
+                      {durationPresets
+                        .filter(preset => !medDuration.trim() || preset.toLowerCase().includes(medDuration.toLowerCase()))
+                        .map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => {
+                              setMedDuration(preset);
+                              setShowDurationSuggestions(false);
+                            }}
+                            className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-emerald-500 hover:text-white transition-colors border-b border-dark-tertiary/30 last:border-0"
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Total Qty (Tablets) */}
+                <div className="md:col-span-2">
+                  <label className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Total Qty (Tabs)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={medQty || ""}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setMedQty(isNaN(val) ? 0 : val);
+                    }}
+                    className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
+                  />
                 </div>
 
                 {/* Instructions */}
-                <div className="md:col-span-3 flex items-end gap-2">
-                  <div className="w-full">
+                <div className="md:col-span-3 flex items-end gap-2 relative">
+                  <div className="w-full relative">
                     <label className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Instructions</label>
-                    <div className="flex gap-1.5 items-center">
-                      <input
-                        type="text"
-                        value={medInstructions}
-                        onChange={(e) => setMedInstructions(e.target.value)}
-                        className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
-                      />
-                      <select
-                        value={medInstructions}
-                        onChange={(e) => setMedInstructions(e.target.value)}
-                        className="bg-dark-secondary border border-dark-tertiary rounded p-1 text-[10px] text-gray-400 outline-none h-[30px]"
+                    <input
+                      type="text"
+                      placeholder="e.g. After food"
+                      value={medInstructions}
+                      onChange={(e) => setMedInstructions(e.target.value)}
+                      onFocus={() => setShowInstructionsSuggestions(true)}
+                      onBlur={() => setShowInstructionsSuggestions(false)}
+                      className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
+                    />
+                    {showInstructionsSuggestions && (
+                      <div 
+                        onMouseDown={(e) => e.preventDefault()}
+                        className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-xl z-20 max-h-40 overflow-y-auto"
                       >
-                        <option value="">Presets</option>
-                        {instructionPresets.map(preset => (
-                          <option key={preset} value={preset}>{preset}</option>
-                        ))}
-                      </select>
-                    </div>
+                        {instructionPresets
+                          .filter(preset => !medInstructions.trim() || preset.toLowerCase().includes(medInstructions.toLowerCase()))
+                          .map((preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => {
+                                setMedInstructions(preset);
+                                setShowInstructionsSuggestions(false);
+                              }}
+                              className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-emerald-500 hover:text-white transition-colors border-b border-dark-tertiary/30 last:border-0"
+                            >
+                              {preset}
+                            </button>
+                          ))}
+                      </div>
+                    )}
                   </div>
                   
                   <button
@@ -809,6 +1025,7 @@ export default function ConsultationPage() {
                     <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider">Medicine Name</th>
                     <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider">Dosage Schedule</th>
                     <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider">Duration</th>
+                    <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider">Total Qty</th>
                     <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider">Instructions</th>
                     <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider text-right">Action</th>
                   </tr>
@@ -816,7 +1033,7 @@ export default function ConsultationPage() {
                 <tbody>
                   {medicines.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-6 text-xs text-gray-500 italic">
+                      <td colSpan={7} className="text-center py-6 text-xs text-gray-500 italic">
                         No medications prescribed yet.
                       </td>
                     </tr>
@@ -834,6 +1051,7 @@ export default function ConsultationPage() {
                           </span>
                         </td>
                         <td className="py-3 px-3 text-xs text-gray-300 font-semibold">{med.duration}</td>
+                        <td className="py-3 px-3 text-xs text-emerald-400 font-bold font-mono">{med.qty || 10}</td>
                         <td className="py-3 px-3 text-xs text-gray-400 font-medium">
                           <span className="bg-purple-500/10 text-purple-400 border border-purple-500/15 px-2 py-0.5 rounded text-[10px]">
                             {med.instructions}
@@ -929,62 +1147,40 @@ export default function ConsultationPage() {
               {/* Follow-up & Admission Column */}
               <div className="space-y-4 border-t md:border-t-0 md:border-l border-dark-tertiary/45 pt-4 md:pt-0 md:pl-6">
                 
-                {/* Follow-up Visit selector */}
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 mb-1.5">
-                    Follow-up Recommendation
-                  </label>
-                  <div className="flex items-center gap-2 bg-dark-tertiary/15 border border-dark-tertiary/80 rounded px-3 py-1.5">
-                    <Calendar size={13} className="text-gray-400" />
-                    <input
-                      type="date"
-                      value={followUpDate}
-                      onChange={(e) => setFollowUpDate(e.target.value)}
-                      className="bg-transparent text-xs w-full text-white outline-none focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Admission Referral serious toggle */}
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-bold text-gray-400">Emergency Admission Referral</p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">Toggle if patient condition mandates inpatient admission.</p>
-                    </div>
-                    
-                    <button
-                      type="button"
-                      onClick={() => setAdmissionRecommended(!admissionRecommended)}
-                      className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        admissionRecommended ? "bg-emerald-500" : "bg-dark-tertiary"
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          admissionRecommended ? "translate-x-5" : "translate-x-0"
-                        }`}
-                      ></span>
-                    </button>
-                  </div>
-
-                  {/* Expandable Admission notes instructions */}
-                  {admissionRecommended && (
-                    <div className="bg-red-500/5 p-3 rounded-lg border border-red-500/15 space-y-2 animate-fadeIn">
-                      <div className="flex items-center gap-1.5">
-                        <AlertCircle size={12} className="text-red-400" />
-                        <span className="text-[10px] text-red-400 font-bold uppercase tracking-wide">Critical Referral Instructions</span>
-                      </div>
-                      <textarea
-                        value={admissionNotes}
-                        onChange={(e) => setAdmissionNotes(e.target.value)}
-                        placeholder="State clinical reason for admission, department, ward choice, emergency level."
-                        rows={2}
-                        className="w-full text-xs bg-dark-secondary/80 hover:bg-dark-secondary border border-red-500/15 focus:border-red-500 rounded px-2.5 py-1.5 outline-none text-white transition-colors"
+                {/* OPD Mode: Render Follow-up Visit selector */}
+                {!admissionRecommended ? (
+                  <div className="space-y-2 animate-fadeIn">
+                    <label className="block text-xs font-bold text-gray-400 mb-1.5">
+                      Follow-up Recommendation
+                    </label>
+                    <div className="flex items-center gap-2 bg-dark-tertiary/15 border border-dark-tertiary/80 rounded px-3 py-1.5">
+                      <Calendar size={13} className="text-gray-400" />
+                      <input
+                        type="date"
+                        value={followUpDate}
+                        onChange={(e) => setFollowUpDate(e.target.value)}
+                        className="bg-transparent text-xs w-full text-white outline-none focus:outline-none"
                       />
                     </div>
-                  )}
-                </div>
+                    <p className="text-[10px] text-gray-500 mt-1">Specify the next outpatient follow-up date for this OPD consult.</p>
+                  </div>
+                ) : (
+                  /* IPD Mode: Render critical referral instructions directly */
+                  <div className="bg-red-500/5 p-3.5 rounded-lg border border-red-500/15 space-y-2.5 animate-fadeIn">
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle size={12} className="text-red-400" />
+                      <span className="text-[10px] text-red-400 font-bold uppercase tracking-wide">Critical Referral Instructions</span>
+                    </div>
+                    <textarea
+                      value={admissionNotes}
+                      onChange={(e) => setAdmissionNotes(e.target.value)}
+                      placeholder="State clinical reason for admission, department, ward choice, emergency level."
+                      rows={3}
+                      className="w-full text-xs bg-dark-secondary/80 hover:bg-dark-secondary border border-red-500/15 focus:border-red-500 rounded px-2.5 py-1.5 outline-none text-white transition-colors resize-none"
+                    />
+                    <p className="text-[10px] text-gray-500">This patient will be routed directly to the Admission Requests desk for room and bed allotment.</p>
+                  </div>
+                )}
 
               </div>
 
@@ -994,6 +1190,7 @@ export default function ConsultationPage() {
         </div>
 
       </div>
+      )}
 
       {/* Modal for viewing patient's diagnostic lab reports */}
       <Modal

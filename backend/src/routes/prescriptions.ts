@@ -63,6 +63,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       medications: p.medications,
       notesForPharmacist: p.notesForPharmacist,
       status: p.status,
+      appointmentId: p.appointmentId,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
       patient: p.patientId ? {
@@ -125,6 +126,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       medications: p.medications,
       notesForPharmacist: p.notesForPharmacist,
       status: p.status,
+      appointmentId: p.appointmentId,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
       patient: p.patientId ? {
@@ -192,6 +194,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       medications: p.medications,
       notesForPharmacist: p.notesForPharmacist,
       status: p.status,
+      appointmentId: p.appointmentId,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
       patient: p.patientId ? {
@@ -272,6 +275,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       medications: p.medications,
       notesForPharmacist: p.notesForPharmacist,
       status: p.status,
+      appointmentId: p.appointmentId,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
       patient: p.patientId ? {

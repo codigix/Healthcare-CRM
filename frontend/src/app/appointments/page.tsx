@@ -25,6 +25,7 @@ interface Appointment {
   visitType?: string;
   labTestStatus?: string;
   admissionStatus?: string;
+  prescriptionStatus?: string;
 }
 
 interface Doctor {
@@ -437,106 +438,117 @@ export default function AppointmentsPage() {
 
                                 const hasLabAction = parsedNotes?.labTestsActive === true;
                                 const hasAdmissionAction = parsedNotes?.admissionRecommended === true;
-
-                                if (hasLabAction || hasAdmissionAction) {
-                                  return (
-                                    <div className="flex flex-wrap items-center justify-end gap-2">
-                                      {hasLabAction && (
-                                        parsedNotes.labRequestSent ? (
-                                          apt.labTestStatus?.toLowerCase() === 'completed' ? (
-                                            <button
-                                              onClick={() => handleViewLabReport(apt)}
-                                              disabled={loadingLabReportId === apt.id}
-                                              className="px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-650 hover:from-emerald-605 hover:to-teal-750 text-white rounded-lg transition-all shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/25 flex items-center gap-1.5 border border-emerald-500/20 active:scale-95 disabled:opacity-50"
-                                            >
-                                              {loadingLabReportId === apt.id ? (
-                                                <Loader2 size={13} className="animate-spin" />
-                                              ) : (
-                                                <Eye size={13} />
-                                              )}
-                                              View Report
-                                            </button>
-                                          ) : (
-                                            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
-                                              <Check size={13} className="text-emerald-400" />
-                                              Test Request Sent
-                                            </span>
-                                          )
-                                        ) : isDoctor ? (
-                                          <button
-                                            onClick={() => handleSendLabRequest(apt.id)}
-                                            disabled={actionLoading === `${apt.id}-lab`}
-                                            className="px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg transition-all shadow-md shadow-blue-500/10 hover:shadow-blue-500/25 flex items-center gap-1.5 border border-blue-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                          >
-                                            {actionLoading === `${apt.id}-lab` ? (
-                                              <Loader2 size={13} className="animate-spin" />
-                                            ) : (
-                                              <Activity size={13} />
-                                            )}
-                                            Send Test Request
-                                          </button>
-                                        ) : (
-                                          <span className="text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
-                                            <Loader2 size={13} className="animate-pulse" />
-                                            Lab Request Pending
-                                          </span>
-                                        )
-                                      )}
-
-                                      {hasAdmissionAction && (
-                                        hasLabAction && (!parsedNotes.labRequestSent || apt.labTestStatus?.toLowerCase() !== 'completed') ? (
-                                          <span className="text-xs font-bold text-gray-400 bg-dark-tertiary/40 border border-dark-tertiary/65 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
-                                            <Loader2 size={13} className="animate-pulse" />
-                                            Waiting for Lab Report
-                                          </span>
-                                        ) : parsedNotes.admissionRequestSent ? (
-                                          apt.admissionStatus?.toLowerCase() === 'admitted' ? (
-                                            <button
-                                              onClick={() => handleViewAllotment(apt)}
-                                              disabled={loadingAllotmentId === apt.id}
-                                              className="px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white rounded-lg transition-all shadow-md shadow-purple-500/10 hover:shadow-purple-500/25 flex items-center gap-1.5 border border-purple-500/20 active:scale-95 disabled:opacity-50"
-                                            >
-                                              {loadingAllotmentId === apt.id ? (
-                                                <Loader2 size={13} className="animate-spin" />
-                                              ) : (
-                                                <ClipboardList size={13} />
-                                              )}
-                                              View Allotment
-                                            </button>
-                                          ) : (
-                                            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
-                                              <Check size={13} className="text-emerald-400" />
-                                              Admission Request Sent
-                                            </span>
-                                          )
-                                        ) : isDoctor ? (
-                                          <button
-                                            onClick={() => handleSendAdmissionRequest(apt.id)}
-                                            disabled={actionLoading === `${apt.id}-admission`}
-                                            className="px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white rounded-lg transition-all shadow-md shadow-purple-500/10 hover:shadow-purple-500/25 flex items-center gap-1.5 border border-purple-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                          >
-                                            {actionLoading === `${apt.id}-admission` ? (
-                                              <Loader2 size={13} className="animate-spin" />
-                                            ) : (
-                                              <Send size={13} />
-                                            )}
-                                            Send Admission Request
-                                          </button>
-                                        ) : (
-                                          <span className="text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
-                                            <Loader2 size={13} className="animate-pulse" />
-                                            Admission Pending
-                                          </span>
-                                        )
-                                      )}
-                                    </div>
-                                  );
-                                }
+                                const hasPrescription = apt.prescriptionStatus !== null && apt.prescriptionStatus !== undefined;
 
                                 return (
-                                  <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
-                                    ✓ Consultation Completed
-                                  </span>
+                                  <div className="flex flex-wrap items-center justify-end gap-2">
+                                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+                                      ✓ Completed
+                                    </span>
+
+                                    {hasPrescription && (
+                                      apt.prescriptionStatus === "Completed" ? (
+                                        <span className="text-xs font-bold text-[#1abc9c] bg-[#1abc9c]/10 border border-[#1abc9c]/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5" title="Pharmacy has dispensed all medications and cleared bills.">
+                                          <Check size={13} className="text-[#1abc9c]" />
+                                          Rx: Dispensed
+                                        </span>
+                                      ) : (
+                                        <span className="text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5 animate-pulse" title="Awaiting medication dispense and stock allocation at pharmacy.">
+                                          <Loader2 size={13} className="animate-spin text-amber-500" />
+                                          Rx: Dispense Pending
+                                        </span>
+                                      )
+                                    )}
+
+                                    {hasLabAction && (
+                                      parsedNotes.labRequestSent ? (
+                                        apt.labTestStatus?.toLowerCase() === 'completed' ? (
+                                          <button
+                                            onClick={() => handleViewLabReport(apt)}
+                                            disabled={loadingLabReportId === apt.id}
+                                            className="px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-650 hover:from-emerald-605 hover:to-teal-750 text-white rounded-lg transition-all shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/25 flex items-center gap-1.5 border border-emerald-500/20 active:scale-95 disabled:opacity-50"
+                                          >
+                                            {loadingLabReportId === apt.id ? (
+                                              <Loader2 size={13} className="animate-spin" />
+                                            ) : (
+                                              <Eye size={13} />
+                                            )}
+                                            View Report
+                                          </button>
+                                        ) : (
+                                          <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                            <Check size={13} className="text-emerald-400" />
+                                            Test Request Sent
+                                          </span>
+                                        )
+                                      ) : isDoctor ? (
+                                        <button
+                                          onClick={() => handleSendLabRequest(apt.id)}
+                                          disabled={actionLoading === `${apt.id}-lab`}
+                                          className="px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg transition-all shadow-md shadow-blue-500/10 hover:shadow-blue-500/25 flex items-center gap-1.5 border border-blue-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                          {actionLoading === `${apt.id}-lab` ? (
+                                            <Loader2 size={13} className="animate-spin" />
+                                          ) : (
+                                            <Activity size={13} />
+                                          )}
+                                          Send Test Request
+                                        </button>
+                                      ) : (
+                                        <span className="text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                          <Loader2 size={13} className="animate-pulse" />
+                                          Lab Request Pending
+                                        </span>
+                                      )
+                                    )}
+
+                                    {hasAdmissionAction && (
+                                      hasLabAction && (!parsedNotes.labRequestSent || apt.labTestStatus?.toLowerCase() !== 'completed') ? (
+                                        <span className="text-xs font-bold text-gray-400 bg-dark-tertiary/40 border border-dark-tertiary/65 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                          <Loader2 size={13} className="animate-pulse" />
+                                          Waiting for Lab Report
+                                        </span>
+                                      ) : parsedNotes.admissionRequestSent ? (
+                                        apt.admissionStatus?.toLowerCase() === 'admitted' ? (
+                                          <button
+                                            onClick={() => handleViewAllotment(apt)}
+                                            disabled={loadingAllotmentId === apt.id}
+                                            className="px-3.5 py-1.5 text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white rounded-lg transition-all shadow-md shadow-purple-500/10 hover:shadow-purple-500/25 flex items-center gap-1.5 border border-purple-500/20 active:scale-95 disabled:opacity-50"
+                                          >
+                                            {loadingAllotmentId === apt.id ? (
+                                              <Loader2 size={13} className="animate-spin" />
+                                            ) : (
+                                              <ClipboardList size={13} />
+                                            )}
+                                            View Allotment
+                                          </button>
+                                        ) : (
+                                          <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                            <Check size={13} className="text-emerald-400" />
+                                            Admission Request Sent
+                                          </span>
+                                        )
+                                      ) : isDoctor ? (
+                                        <button
+                                          onClick={() => handleSendAdmissionRequest(apt.id)}
+                                          disabled={actionLoading === `${apt.id}-admission`}
+                                          className="px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white rounded-lg transition-all shadow-md shadow-purple-500/10 hover:shadow-purple-500/25 flex items-center gap-1.5 border border-purple-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                          {actionLoading === `${apt.id}-admission` ? (
+                                            <Loader2 size={13} className="animate-spin" />
+                                          ) : (
+                                            <Send size={13} />
+                                          )}
+                                          Send Admission Request
+                                        </button>
+                                      ) : (
+                                        <span className="text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                                          <Loader2 size={13} className="animate-pulse" />
+                                          Admission Pending
+                                        </span>
+                                      )
+                                    )}
+                                  </div>
                                 );
                               })()
                             ) : null}
