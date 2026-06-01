@@ -120,6 +120,38 @@ export default function ConsultationPage() {
   const [showDurationSuggestions, setShowDurationSuggestions] = useState(false);
   const [showInstructionsSuggestions, setShowInstructionsSuggestions] = useState(false);
 
+  // Dynamic debounced search medicines from live pharmacy inventory database
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (medName.trim()) {
+        searchMedicines(medName);
+      } else {
+        // Reset to initial pre-fetched medicines list
+        fetchInitialMedicines();
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [medName]);
+
+  const fetchInitialMedicines = async () => {
+    try {
+      const medRes = await medicineAPI.list(1, 50);
+      setDbMedicines(medRes.data.medicines || []);
+    } catch (err) {
+      console.error("Failed to load initial medicines:", err);
+    }
+  };
+
+  const searchMedicines = async (query: string) => {
+    try {
+      const medRes = await medicineAPI.list(1, 30, { search: query });
+      setDbMedicines(medRes.data.medicines || []);
+    } catch (err) {
+      console.error("Failed to search medicines:", err);
+    }
+  };
+
   // Recommendations state
   const [labTestsActive, setLabTestsActive] = useState(false);
   const [selectedLabTests, setSelectedLabTests] = useState<string[]>([]);
@@ -846,7 +878,7 @@ export default function ConsultationPage() {
                         setShowMedSuggestions(true);
                       }}
                       onFocus={() => setShowMedSuggestions(true)}
-                      onBlur={() => setShowMedSuggestions(false)}
+                      onBlur={() => setTimeout(() => setShowMedSuggestions(false), 200)}
                       className="bg-transparent text-xs w-full outline-none text-white py-0.5"
                     />
                   </div>
@@ -889,7 +921,7 @@ export default function ConsultationPage() {
                     value={medDosage}
                     onChange={(e) => setMedDosage(e.target.value)}
                     onFocus={() => setShowDosageSuggestions(true)}
-                    onBlur={() => setShowDosageSuggestions(false)}
+                    onBlur={() => setTimeout(() => setShowDosageSuggestions(false), 200)}
                     className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
                   />
                   {showDosageSuggestions && (
@@ -925,7 +957,7 @@ export default function ConsultationPage() {
                     value={medDuration}
                     onChange={(e) => setMedDuration(e.target.value)}
                     onFocus={() => setShowDurationSuggestions(true)}
-                    onBlur={() => setShowDurationSuggestions(false)}
+                    onBlur={() => setTimeout(() => setShowDurationSuggestions(false), 200)}
                     className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
                   />
                   {showDurationSuggestions && (
@@ -977,7 +1009,7 @@ export default function ConsultationPage() {
                       value={medInstructions}
                       onChange={(e) => setMedInstructions(e.target.value)}
                       onFocus={() => setShowInstructionsSuggestions(true)}
-                      onBlur={() => setShowInstructionsSuggestions(false)}
+                      onBlur={() => setTimeout(() => setShowInstructionsSuggestions(false), 200)}
                       className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
                     />
                     {showInstructionsSuggestions && (

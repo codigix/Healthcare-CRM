@@ -209,13 +209,16 @@ export default function PendingPrescriptionsPage() {
         }
       }
 
-      // 2. Create the paid invoice record in database
+      // 2. Create the paid/pending invoice record in database
+      const isIPD = prescription.prescriptionType === "IPD";
       await invoiceAPI.create({
         patientId: prescription.patientId,
         amount: parseFloat(details.totalBillAmount.toFixed(2)),
-        status: "Paid",
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        notes: `OPD Pharmacy Bill for Prescription Ref: RX-${prescription.id.substring(0, 5).toUpperCase()} (${prescription.diagnosis || "General Details"}).`
+        status: isIPD ? "Pending" : "Paid",
+        dueDate: new Date(Date.now() + (isIPD ? 14 : 7) * 24 * 60 * 60 * 1000).toISOString(),
+        notes: isIPD
+          ? `IPD Pharmacy Supply for Prescription Ref: RX-${prescription.id.substring(0, 5).toUpperCase()} (${prescription.diagnosis || "General Details"}). Charges appended to inpatient billing queue.`
+          : `OPD Pharmacy Bill for Prescription Ref: RX-${prescription.id.substring(0, 5).toUpperCase()} (${prescription.diagnosis || "General Details"}).`
       });
 
       // 3. Update prescription status to Completed
@@ -223,7 +226,8 @@ export default function PendingPrescriptionsPage() {
         status: "Completed",
       });
 
-      setSuccessMsg(`✓ Prescription for ${prescription.patient?.name || "Patient"} successfully dispensed and billed! Total Net Charges: ₹${details.totalBillAmount.toFixed(2)}`);
+      const flowText = isIPD ? "IPD Inpatient Supply" : "OPD Outpatient Bill";
+      setSuccessMsg(`✓ Prescription for ${prescription.patient?.name || "Patient"} successfully dispensed as ${flowText}! Total Net Charges: ₹${details.totalBillAmount.toFixed(2)}`);
       setSelectedPrescription(null);
       fetchPendingPrescriptions();
       fetchMedicines();
@@ -245,7 +249,10 @@ export default function PendingPrescriptionsPage() {
     const query = searchQuery.toLowerCase();
     
     const matchesSearch = patientName.includes(query) || doctorName.includes(query) || diagnosis.includes(query);
-    const matchesType = filterType === "All" || p.prescriptionType === filterType;
+    const matchesType = 
+      filterType === "All" || 
+      p.prescriptionType === filterType ||
+      (filterType === "OPD" && (p.prescriptionType === "Standard" || !p.prescriptionType));
     
     return matchesSearch && matchesType;
   });

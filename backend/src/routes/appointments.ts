@@ -394,8 +394,8 @@ router.post('/:id/complete', authMiddleware, async (req: AuthRequest, res: Respo
       // Generate standard prescription
       await connection.query(
         `INSERT INTO prescriptions (id, patientId, doctorId, prescriptionType, diagnosis, medications, notesForPharmacist, prescriptionDate, status, appointmentId, createdAt, updatedAt)
-         VALUES (UUID(), ?, ?, 'Standard', ?, ?, ?, NOW(), 'Active', ?, NOW(), NOW())`,
-        [appointment.patientId, doctorId, diagnosis || 'Consultation Summary', medicationsStr, advice || '', appointmentId]
+         VALUES (UUID(), ?, ?, ?, ?, ?, ?, NOW(), 'Active', ?, NOW(), NOW())`,
+        [appointment.patientId, doctorId, admissionRecommended ? 'IPD' : 'OPD', diagnosis || 'Consultation Summary', medicationsStr, advice || '', appointmentId]
       );
     }
 
