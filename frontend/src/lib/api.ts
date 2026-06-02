@@ -168,6 +168,9 @@ export const medicineAPI = {
   create: (data: any) => apiClient.post('/medicines', data),
   update: (id: string, data: any) => apiClient.put(`/medicines/${id}`, data),
   delete: (id: string) => apiClient.delete(`/medicines/${id}`),
+  addStock: (id: string, data: any) => apiClient.post(`/medicines/${id}/add-stock`, data),
+  getTransactions: (id: string) => apiClient.get(`/medicines/${id}/transactions`),
+  getBatches: (id: string) => apiClient.get(`/medicines/${id}/batches`),
 };
 
 export const inventoryAPI = {

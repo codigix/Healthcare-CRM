@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { medicineAPI } from "@/lib/api";
-import { Pill, ArrowLeft, RefreshCw, Loader, Calendar, ShieldAlert, AlertTriangle, AlertCircle, CheckCircle } from "lucide-react";
+import { Pill, ArrowLeft, RefreshCw, Loader, Calendar, ShieldAlert, AlertTriangle, AlertCircle, CheckCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 interface ExpiringDrug {
@@ -20,6 +20,29 @@ export default function ExpiringMedicinesPage() {
   const [items, setItems] = useState<ExpiringDrug[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [disposalConfirm, setDisposalConfirm] = useState<{
+    show: boolean;
+    item: ExpiringDrug | null;
+  }>({ show: false, item: null });
+  const [disposingId, setDisposingId] = useState<string | null>(null);
+
+  const handleDispose = async (item: ExpiringDrug) => {
+    try {
+      setDisposingId(item.id);
+      await medicineAPI.update(item.id, {
+        initialQuantity: 0,
+        status: "Out of Stock",
+        transactionNotes: `Disposal of expired stock for medicine ${item.name}`
+      });
+      await fetchExpiringDrugs();
+      setDisposalConfirm({ show: false, item: null });
+    } catch (err) {
+      console.error("Failed to dispose stock:", err);
+      alert("Failed to write off expired stock. Please check backend connection.");
+    } finally {
+      setDisposingId(null);
+    }
+  };
 
   useEffect(() => {
     fetchExpiringDrugs();
@@ -147,6 +170,7 @@ export default function ExpiringMedicinesPage() {
                   <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Expiry Date</th>
                   <th className="text-center py-4 px-4 text-gray-400 font-medium text-sm">Days Left</th>
                   <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">Expiry Status</th>
+                  <th className="text-center py-4 px-4 text-gray-400 font-medium text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -185,11 +209,62 @@ export default function ExpiringMedicinesPage() {
                           {status.label}
                         </span>
                       </td>
+                      <td className="py-4 px-4 text-center">
+                        {daysLeft < 0 && item.initialQuantity > 0 ? (
+                          <button
+                            onClick={() => setDisposalConfirm({ show: true, item })}
+                            className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 mx-auto"
+                          >
+                            <Trash2 size={13} /> Dispose Stock
+                          </button>
+                        ) : daysLeft < 0 ? (
+                          <span className="text-gray-500 text-xs font-semibold italic">Stock Cleared</span>
+                        ) : (
+                          <span className="text-emerald-500 text-xs font-semibold">—</span>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {disposalConfirm.show && disposalConfirm.item && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#1a202c] border border-dark-tertiary rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+            <h2 className="text-lg font-bold mb-2 text-white flex items-center gap-2">
+              <Trash2 className="text-red-500" size={20} />
+              Dispose Expired Medicine
+            </h2>
+            <p className="text-xs text-gray-400 mb-6 leading-relaxed font-sans">
+              Are you sure you want to write off the entire stock (<strong>{disposalConfirm.item.initialQuantity} Units</strong>) of <strong>{disposalConfirm.item.name}</strong>? This action will set the active stock to 0 and record a disposal transaction.
+            </p>
+            <div className="flex gap-3 justify-end text-xs font-sans">
+              <button
+                onClick={() => setDisposalConfirm({ show: false, item: null })}
+                disabled={disposingId !== null}
+                className="px-4 py-2 bg-dark-tertiary text-white rounded-lg hover:bg-dark-tertiary/70 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => disposalConfirm.item && handleDispose(disposalConfirm.item)}
+                disabled={disposingId !== null}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow shadow-red-600/25"
+              >
+                {disposingId !== null ? (
+                  <>
+                    <Loader className="animate-spin" size={13} />
+                    Disposing...
+                  </>
+                ) : (
+                  "Confirm Disposal"
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

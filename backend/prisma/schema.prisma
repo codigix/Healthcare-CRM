@@ -412,6 +412,36 @@ model Medicine {
   @@map("medicines")
 }
 
+model MedicineStockTransaction {
+  id            String   @id @default(cuid())
+  medicineId    String
+  type          String   // "RESTOCK", "DISPENSE", "ADJUSTMENT"
+  quantity      Int
+  previousStock Int
+  newStock      Int
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  @@map("medicine_stock_transactions")
+}
+
+model MedicineBatch {
+  id            String   @id @default(cuid())
+  medicineId    String
+  batchNumber   String
+  expiryDate    DateTime
+  purchasePrice Decimal
+  sellingPrice  Decimal
+  quantity      Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([medicineId, batchNumber])
+  @@map("medicine_batches")
+}
+
+
+
 model InventoryItem {
   id                String   @id @default(cuid())
   name              String   @unique

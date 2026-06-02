@@ -108,9 +108,9 @@ export default function EditMedicinePage({
         initialQuantity: medicine.initialQuantity.toString(),
         reorderLevel: medicine.reorderLevel.toString(),
         maximumLevel: medicine.maximumLevel.toString(),
-        purchasePrice: medicine.purchasePrice.toString(),
-        sellingPrice: medicine.sellingPrice.toString(),
-        taxRate: medicine.taxRate.toString(),
+        purchasePrice: medicine.purchasePrice ? String(parseFloat(String(medicine.purchasePrice))) : "0",
+        sellingPrice: medicine.sellingPrice ? String(parseFloat(String(medicine.sellingPrice))) : "0",
+        taxRate: medicine.taxRate ? String(parseFloat(String(medicine.taxRate))) : "0",
         roomTemperature: medicine.roomTemperature,
         frozen: medicine.frozen,
         refrigerated: medicine.refrigerated,
@@ -171,8 +171,8 @@ export default function EditMedicinePage({
         expiryDate: formData.expiryDate || null,
         batchNumber: formData.batchNumber,
         dosage: formData.dosage,
-        sideEffects: "",
-        precautions: "",
+        sideEffects: formData.sideEffects,
+        precautions: formData.precautions,
         initialQuantity: Number(formData.initialQuantity) || 0,
         reorderLevel: Number(formData.reorderLevel) || 0,
         maximumLevel: (Number(formData.initialQuantity) || 0) * 2 || 100,
@@ -460,7 +460,44 @@ export default function EditMedicinePage({
               </div>
             </div>
 
-            {/* Section 3: Inventory & Pricing */}
+            {/* Section 3: Clinical & Warnings Details */}
+            <div className="space-y-6 pt-4">
+              <h2 className="text-xl font-semibold text-[#1abc9c] border-b border-dark-tertiary pb-2">
+                Clinical Details & Warnings
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-md font-semibold text-gray-300 mb-2">
+                    Side Effects
+                  </label>
+                  <textarea
+                    name="sideEffects"
+                    value={formData.sideEffects}
+                    onChange={handleInputChange}
+                    placeholder="Enter side effects"
+                    rows={3}
+                    className="input-field w-full resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-md font-semibold text-gray-300 mb-2">
+                    Precautions & Warnings
+                  </label>
+                  <textarea
+                    name="precautions"
+                    value={formData.precautions}
+                    onChange={handleInputChange}
+                    placeholder="Enter precautions and warnings"
+                    rows={3}
+                    className="input-field w-full resize-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: Inventory & Pricing */}
             <div className="space-y-6 pt-4">
               <h2 className="text-xl font-semibold text-[#1abc9c] border-b border-dark-tertiary pb-2">
                 Inventory & Pricing

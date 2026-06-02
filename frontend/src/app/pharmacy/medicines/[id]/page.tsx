@@ -6,6 +6,7 @@ import { ArrowLeft, Loader, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { medicineAPI } from "@/lib/api";
+import AddStockModal from "@/components/Pharmacy/AddStockModal";
 
 interface Medicine {
   id: string;
@@ -47,10 +48,33 @@ export default function MedicineViewPage({
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [batches, setBatches] = useState<any[]>([]);
+  const [stockModalOpen, setStockModalOpen] = useState(false);
 
   useEffect(() => {
     fetchMedicine();
+    fetchTransactions();
+    fetchBatches();
   }, [params.id]);
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await medicineAPI.getTransactions(params.id);
+      setTransactions(response.data || []);
+    } catch (err) {
+      console.error("Failed to fetch stock transactions history:", err);
+    }
+  };
+
+  const fetchBatches = async () => {
+    try {
+      const response = await medicineAPI.getBatches(params.id);
+      setBatches(response.data || []);
+    } catch (err) {
+      console.error("Failed to fetch medicine batches:", err);
+    }
+  };
 
   const fetchMedicine = async () => {
     try {
@@ -154,9 +178,17 @@ export default function MedicineViewPage({
               Back to Medicines
             </button>
           </Link>
-          <Link href={`/pharmacy/edit-medicine/${medicine.id}`}>
-            <button className="btn-primary">Edit Medicine</button>
-          </Link>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setStockModalOpen(true)}
+              className="btn-secondary bg-emerald-600 hover:bg-emerald-500 text-white font-bold border-none"
+            >
+              Add Stock
+            </button>
+            <Link href={`/pharmacy/edit-medicine/${medicine.id}`}>
+              <button className="btn-primary">Edit Medicine</button>
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -402,7 +434,7 @@ export default function MedicineViewPage({
               <div className="flex justify-between items-center text-mdmb-2">
                 <span className="text-gray-400">Tax Rate</span>
                 <span className="text-white font-medium">
-                  {medicine.taxRate}%
+                  {parseFloat(String(medicine.taxRate))}%
                 </span>
               </div>
 
@@ -450,7 +482,114 @@ export default function MedicineViewPage({
             </div>
           </div>
         </div>
+
+        <div className="card font-sans">
+          <h3 className="text-xl font-bold text-white mb-4">Active Batches</h3>
+          {batches.length === 0 ? (
+            <p className="text-gray-400 text-sm italic font-sans">No active batches available. Need to restock.</p>
+          ) : (
+            <div className="overflow-x-auto font-sans">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-dark-tertiary text-xs text-gray-400 uppercase">
+                    <th className="py-3 px-4">Batch Number</th>
+                    <th className="py-3 px-4 text-center">Remaining Quantity</th>
+                    <th className="py-3 px-4">Expiry Date</th>
+                    <th className="py-3 px-4 text-right">Purchase Price</th>
+                    <th className="py-3 px-4 text-right">Selling Price</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-dark-tertiary">
+                  {batches.map((batch: any) => (
+                    <tr key={batch.id} className="text-sm hover:bg-dark-tertiary/20">
+                      <td className="py-3.5 px-4 font-mono font-bold text-teal-400">
+                        {batch.batchNumber}
+                      </td>
+                      <td className="py-3.5 px-4 text-center font-bold text-white">
+                        {batch.quantity} units
+                      </td>
+                      <td className="py-3.5 px-4 text-gray-300">
+                        {new Date(batch.expiryDate).toLocaleDateString()}
+                      </td>
+                      <td className="py-3.5 px-4 text-right text-gray-300">
+                        ₹{formatPrice(batch.purchasePrice)}
+                      </td>
+                      <td className="py-3.5 px-4 text-right text-emerald-400 font-bold">
+                        ₹{formatPrice(batch.sellingPrice)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <h3 className="text-xl font-bold text-white mb-4">Stock History Logs</h3>
+          {transactions.length === 0 ? (
+            <p className="text-gray-400 text-sm italic">No stock transactions logged yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-dark-tertiary text-xs text-gray-400 uppercase">
+                    <th className="py-3 px-4">Date & Time</th>
+                    <th className="py-3 px-4">Type</th>
+                    <th className="py-3 px-4 text-center">Quantity Change</th>
+                    <th className="py-3 px-4 text-center">Previous Stock</th>
+                    <th className="py-3 px-4 text-center">New Stock Level</th>
+                    <th className="py-3 px-4">Notes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-dark-tertiary">
+                  {transactions.map((tx: any) => (
+                    <tr key={tx.id} className="text-sm hover:bg-dark-tertiary/20">
+                      <td className="py-3.5 px-4 text-gray-300">
+                        {new Date(tx.createdAt).toLocaleString()}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className={`px-2.5 py-0.5 rounded text-xs font-bold ${
+                          tx.type === 'RESTOCK' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                          tx.type === 'DISPENSE' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                          'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                        }`}>
+                          {tx.type}
+                        </span>
+                      </td>
+                      <td className={`py-3.5 px-4 text-center font-bold ${
+                        tx.quantity > 0 ? 'text-emerald-400' : 'text-rose-400'
+                      }`}>
+                        {tx.quantity > 0 ? `+${tx.quantity}` : tx.quantity}
+                      </td>
+                      <td className="py-3.5 px-4 text-center text-gray-300">
+                        {tx.previousStock} units
+                      </td>
+                      <td className="py-3.5 px-4 text-center text-white font-semibold">
+                        {tx.newStock} units
+                      </td>
+                      <td className="py-3.5 px-4 text-gray-400 italic">
+                        {tx.notes || 'N/A'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
+
+      <AddStockModal
+        isOpen={stockModalOpen}
+        onClose={() => setStockModalOpen(false)}
+        medicine={medicine}
+        onSuccess={() => {
+          fetchMedicine();
+          fetchTransactions();
+          fetchBatches();
+        }}
+      />
     </>
   );
 }

@@ -9,9 +9,14 @@ import {
   AlertCircle,
   MoreVertical,
   Loader,
+  Eye,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { medicineAPI } from "@/lib/api";
+import AddStockModal from "@/components/Pharmacy/AddStockModal";
+import ViewMedicineModal from "@/components/Pharmacy/ViewMedicineModal";
 
 interface Medicine {
   id: string;
@@ -41,12 +46,43 @@ export default function MedicineListPage() {
     show: boolean;
     id: string | null;
   }>({ show: false, id: null });
+  const [stockModal, setStockModal] = useState<{
+    show: boolean;
+    medicine: Medicine | null;
+  }>({ show: false, medicine: null });
+  const [viewModal, setViewModal] = useState<{
+    show: boolean;
+    id: string | null;
+  }>({ show: false, id: null });
 
   const limit = 10;
 
   useEffect(() => {
     fetchMedicines();
   }, [page, statusFilter, categoryFilter, searchQuery]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const restockId = params.get("restockId");
+      if (restockId) {
+        const fetchAndOpenRestock = async () => {
+          try {
+            const response = await medicineAPI.get(restockId);
+            if (response.data) {
+              setStockModal({ show: true, medicine: response.data });
+            }
+          } catch (err) {
+            console.error("Failed to fetch medicine for restock modal:", err);
+          } finally {
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, "", newUrl);
+          }
+        };
+        fetchAndOpenRestock();
+      }
+    }
+  }, []);
 
   const fetchMedicines = async () => {
     try {
@@ -155,12 +191,21 @@ export default function MedicineListPage() {
               Manage and view all medicines in the pharmacy inventory
             </p>
           </div>
-          <Link href="/pharmacy/add-medicine">
-            <button className="btn-primary flex items-center gap-2">
+          <div className="flex gap-3">
+            <button
+              onClick={() => setStockModal({ show: true, medicine: null })}
+              className="btn-secondary bg-emerald-600 hover:bg-emerald-500 text-white font-bold border-none flex items-center gap-2"
+            >
               <Plus size={20} />
-              Add New Medicine
+              Add Stock
             </button>
-          </Link>
+            <Link href="/pharmacy/add-medicine">
+              <button className="btn-primary flex items-center gap-2">
+                <Plus size={20} />
+                Add New Medicine
+              </button>
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -224,86 +269,48 @@ export default function MedicineListPage() {
         </div>
 
         <div className="card">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-dark-tertiary">
-            <Search size={20} className="text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search medicines..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent flex-1 outline-none"
-            />
-          </div>
+          <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
+            {/* Search Input Container */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-lg flex-1 w-full">
+              <Search size={18} className="text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search medicines..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent flex-1 outline-none text-xs text-white placeholder-gray-500"
+              />
+            </div>
 
-          <div className="flex gap-4 mb-6 border-b border-dark-tertiary">
-            <button
-              onClick={() => setActiveTab("all")}
-              className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "all"
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setActiveTab("prescription")}
-              className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "prescription"
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              Prescription
-            </button>
-            <button
-              onClick={() => setActiveTab("otc")}
-              className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "otc"
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              OTC
-            </button>
-            <button
-              onClick={() => setActiveTab("controlled")}
-              className={`pb-3 px-1 font-medium transition-colors ${
-                activeTab === "controlled"
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-            >
-              Controlled
-            </button>
-          </div>
+            {/* Filter Selects Container */}
+            <div className="flex gap-3 w-full md:w-auto">
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="bg-dark-secondary border border-dark-tertiary rounded-lg px-3 py-2 text-xs text-gray-300 outline-none focus:border-emerald-500 min-w-[140px]"
+              >
+                <option value="all">All Categories</option>
+                <option value="Antibiotics">Antibiotics</option>
+                <option value="Analgesics">Analgesics</option>
+                <option value="Antidiabetics">Antidiabetics</option>
+                <option value="Antihypertensives">Antihypertensives</option>
+                <option value="Antihistamines">Antihistamines</option>
+                <option value="Statins">Statins</option>
+                <option value="Anxiolytics">Anxiolytics</option>
+                <option value="NSAIDs">NSAIDs</option>
+              </select>
 
-          <div className="flex gap-3 mb-6">
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="input-field"
-            >
-              <option value="all">All Categories</option>
-              <option value="Antibiotics">Antibiotics</option>
-              <option value="Analgesics">Analgesics</option>
-              <option value="Antidiabetics">Antidiabetics</option>
-              <option value="Antihypertensives">Antihypertensives</option>
-              <option value="Antihistamines">Antihistamines</option>
-              <option value="Statins">Statins</option>
-              <option value="Anxiolytics">Anxiolytics</option>
-              <option value="NSAIDs">NSAIDs</option>
-            </select>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="input-field"
-            >
-              <option value="all">All Status</option>
-              <option value="In Stock">In Stock</option>
-              <option value="Low Stock">Low Stock</option>
-              <option value="Out of Stock">Out of Stock</option>
-            </select>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-dark-secondary border border-dark-tertiary rounded-lg px-3 py-2 text-xs text-gray-300 outline-none focus:border-emerald-500 min-w-[120px]"
+              >
+                <option value="all">All Status</option>
+                <option value="In Stock">In Stock</option>
+                <option value="Low Stock">Low Stock</option>
+                <option value="Out of Stock">Out of Stock</option>
+              </select>
+            </div>
           </div>
 
           {loading ? (
@@ -335,9 +342,7 @@ export default function MedicineListPage() {
                     <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
                       Stock
                     </th>
-                    <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
-                      Expiry Date
-                    </th>
+
                     <th className="text-left py-4 px-4 text-gray-400 font-medium text-sm">
                       Status
                     </th>
@@ -379,13 +384,7 @@ export default function MedicineListPage() {
                           {medicine.initialQuantity} units
                         </span>
                       </td>
-                      <td className="py-4 px-4">
-                        <span className="text-gray-300">
-                          {medicine.expiryDate
-                            ? new Date(medicine.expiryDate).toLocaleDateString()
-                            : "N/A"}
-                        </span>
-                      </td>
+
                       <td className="py-4 px-4">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
@@ -397,23 +396,29 @@ export default function MedicineListPage() {
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex gap-2">
-                          <Link href={`/pharmacy/medicines/${medicine.id}`}>
-                            <button className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-xs hover:bg-blue-500/30 transition-colors">
-                              View
-                            </button>
-                          </Link>
+                          <button
+                            onClick={() => setViewModal({ show: true, id: medicine.id })}
+                            className="p-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded transition-colors"
+                            title="View Specifications & Batches"
+                          >
+                            <Eye size={15} />
+                          </button>
                           <Link href={`/pharmacy/edit-medicine/${medicine.id}`}>
-                            <button className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded text-xs hover:bg-yellow-500/30 transition-colors">
-                              Edit
+                            <button
+                              className="p-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded transition-colors"
+                              title="Edit Medicine"
+                            >
+                              <Pencil size={15} />
                             </button>
                           </Link>
                           <button
                             onClick={() =>
                               setDeleteModal({ show: true, id: medicine.id })
                             }
-                            className="px-3 py-1 bg-red-500/20 text-red-400 rounded text-xs hover:bg-red-500/30 transition-colors"
+                            className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded transition-colors"
+                            title="Delete Medicine"
                           >
-                            Delete
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </td>
@@ -475,6 +480,19 @@ export default function MedicineListPage() {
           </div>
         </div>
       )}
+
+      <AddStockModal
+        isOpen={stockModal.show}
+        onClose={() => setStockModal({ show: false, medicine: null })}
+        medicine={stockModal.medicine}
+        onSuccess={fetchMedicines}
+      />
+
+      <ViewMedicineModal
+        isOpen={viewModal.show}
+        onClose={() => setViewModal({ show: false, id: null })}
+        medicineId={viewModal.id}
+      />
     </>
   );
 }
