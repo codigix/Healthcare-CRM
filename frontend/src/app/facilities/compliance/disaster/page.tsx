@@ -87,7 +87,7 @@ export default function DisasterManagementPage() {
         </div>
       </div>
 
-      <div className="bg-dark-secondary rounded-xl border border-gray-800 overflow-hidden">
+      <div className="">
         <div className="flex justify-between items-center my-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
