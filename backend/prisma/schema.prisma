@@ -56,25 +56,75 @@ model Doctor {
 }
 
 model Patient {
-  id             String   @id @default(cuid())
-  name           String
-  email          String   @unique
-  phone          String
-  dob            DateTime
-  gender         String
-  address        String?
-  history        String?
-  specialization String?
-  doctorId       String?
-  bloodGroup     String?
-  status         String   @default("Active")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  name                   String
+  email                  String   @unique
+  phone                  String
+  dob                    DateTime
+  gender                 String
+  address                String?
+  history                String?
+  specialization         String?
+  doctorId               String?
+  bloodGroup             String?
+  status                 String   @default("Active")
+  
+  // Personal 
+  firstName              String?
+  middleName             String?
+  lastName               String?
+  title                  String?
+  maritalStatus          String?
+  nationality            String?
+  religion               String?
+  language               String?
+  photoUrl               String?
+  isVip                  Boolean  @default(false)
+  patientType            String   @default("OPD")
+  
+  // Contact
+  alternateMobile        String?
+  landline               String?
+  city                   String?
+  state                  String?
+  pincode                String?
+  country                String?
+  
+  // ID Proof
+  idProofType            String?
+  idProofNumber          String?
+  idProofUrl             String?
+  
+  // Emergency Contact
+  emergencyContactName   String?
+  emergencyContactRel    String?
+  emergencyContactMobile String?
+  
+  // Additional Info
+  occupation             String?
+  employerName           String?
+  annualIncome           String?
+  registrationType       String?
+  referredBy             String?
+  referralDoctor         String?
+  notes                  String?  @db.Text
+  
+  // Insurance
+  hasInsurance           Boolean  @default(false)
+  insuranceProvider      String?
+  policyNumber           String?
+  tpaName                String?
+  policyRelation         String?
+  policyValidTill        DateTime?
+  policyDocumentUrl      String?
 
-  appointments    Appointment[]
-  invoices        Invoice[]
-  insuranceClaims InsuranceClaim[]
-  prescriptions   Prescription[]
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  appointments           Appointment[]
+  invoices               Invoice[]
+  insuranceClaims        InsuranceClaim[]
+  prescriptions          Prescription[]
 
   @@map("patients")
 }

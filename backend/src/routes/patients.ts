@@ -155,6 +155,49 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
+router.get('/registration-meta', authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Recent 4 registrations
+        const recentRegistrations = await prisma.patient.findMany({
+            take: 4,
+            orderBy: { createdAt: 'desc' },
+            select: { id: true, name: true, patientType: true, createdAt: true }
+        });
+
+        // Footer stats
+        const todaysReg = await prisma.patient.count({ where: { createdAt: { gte: today, lt: tomorrow } } });
+        const opdReg = await prisma.patient.count({ where: { createdAt: { gte: today, lt: tomorrow }, patientType: 'OPD' } });
+        const emergencyReg = await prisma.patient.count({ where: { createdAt: { gte: today, lt: tomorrow }, patientType: 'Emergency' } });
+        const ipdAdmissions = await prisma.roomAllotment.count({ where: { allotmentDate: { gte: today, lt: tomorrow } } });
+        
+        // Mock returning/new patients for today
+        const returningPatients = Math.floor(todaysReg * 0.3);
+        const newPatients = todaysReg - returningPatients;
+        const returningPercent = todaysReg ? ((returningPatients / todaysReg) * 100).toFixed(1) : 0;
+        const newPercent = todaysReg ? ((newPatients / todaysReg) * 100).toFixed(1) : 0;
+
+        res.json({
+            recentRegistrations,
+            footerStats: {
+                today: todaysReg,
+                opd: opdReg,
+                ipd: ipdAdmissions,
+                emergency: emergencyReg,
+                returning: { count: returningPatients, percent: returningPercent },
+                new: { count: newPatients, percent: newPercent }
+            }
+        });
+    } catch (error: any) {
+        console.error('[PATIENTS META] Error:', error);
+        res.status(500).json({ error: 'Failed to fetch registration meta', details: error.message });
+    }
+});
+
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
@@ -190,26 +233,81 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (req.user?.role === 'doctor' || req.user?.doctorId) {
       return res.status(403).json({ error: 'Access denied: Doctors are not permitted to register patients. Patient profiles are created exclusively by the reception staff.' });
     }
 
-    const { name, email, phone, dob, gender, address, history, bloodGroup, status } = req.body;
-
-    const connection = await pool.getConnection();
+    const data = req.body;
     
-    const patientId = require('uuid').v4();
-    const query = `INSERT INTO patients (id, name, email, phone, dob, gender, address, history, bloodGroup, status, createdAt, updatedAt)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+    // Auto-generate name if first/last are provided
+    if (!data.name && (data.firstName || data.lastName)) {
+        data.name = `${data.title ? data.title + ' ' : ''}${data.firstName || ''} ${data.lastName || ''}`.trim();
+    }
     
-    await connection.query(query, [patientId, name, email, phone, new Date(dob), gender, address, history, bloodGroup || null, status || 'Active']);
+    // Make sure dob is a date
+    if (data.dob) {
+        data.dob = new Date(data.dob);
+    }
+    if (data.policyValidTill) {
+        data.policyValidTill = new Date(data.policyValidTill);
+    }
 
-    const [patient]: any = await connection.query('SELECT * FROM patients WHERE id = ?', [patientId]);
-    connection.release();
+    const newPatient = await prisma.patient.create({
+        data: {
+            name: data.name || "Unknown",
+            email: data.email || `temp${Date.now()}@medixpro.com`,
+            phone: data.phone || "0000000000",
+            dob: data.dob || new Date(),
+            gender: data.gender || "Unknown",
+            address: data.address,
+            bloodGroup: data.bloodGroup,
+            status: data.status || "Active",
+            firstName: data.firstName,
+            middleName: data.middleName,
+            lastName: data.lastName,
+            title: data.title,
+            maritalStatus: data.maritalStatus,
+            nationality: data.nationality,
+            religion: data.religion,
+            language: data.language,
+            photoUrl: data.photoUrl,
+            isVip: data.isVip || false,
+            patientType: data.patientType || "OPD",
+            alternateMobile: data.alternateMobile,
+            landline: data.landline,
+            city: data.city,
+            state: data.state,
+            pincode: data.pincode,
+            country: data.country,
+            idProofType: data.idProofType,
+            idProofNumber: data.idProofNumber,
+            idProofUrl: data.idProofUrl,
+            emergencyContactName: data.emergencyContactName,
+            emergencyContactRel: data.emergencyContactRel,
+            emergencyContactMobile: data.emergencyContactMobile,
+            occupation: data.occupation,
+            employerName: data.employerName,
+            annualIncome: data.annualIncome,
+            registrationType: data.registrationType,
+            referredBy: data.referredBy,
+            referralDoctor: data.referralDoctor,
+            notes: data.notes,
+            hasInsurance: data.hasInsurance || false,
+            insuranceProvider: data.insuranceProvider,
+            policyNumber: data.policyNumber,
+            tpaName: data.tpaName,
+            policyRelation: data.policyRelation,
+            policyValidTill: data.policyValidTill,
+            policyDocumentUrl: data.policyDocumentUrl
+        }
+    });
 
-    res.status(201).json(patient[0]);
+    res.status(201).json(newPatient);
   } catch (error: any) {
     console.error('[PATIENTS POST] Error:', error);
     res.status(500).json({ error: 'Failed to create patient', details: error.message });

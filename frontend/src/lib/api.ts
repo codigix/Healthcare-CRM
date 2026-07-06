@@ -43,6 +43,7 @@ export const authAPI = {
  getProfile: () => apiClient.get('/auth/profile'),
  updateProfile: (data: any) => apiClient.put('/auth/profile', data),
  changePassword: (data: any) => apiClient.post('/auth/change-password', data),
+ getDummyLogins: () => apiClient.get('/auth/dummy-logins'),
 };
 
 export const doctorAPI = {
@@ -56,12 +57,13 @@ export const doctorAPI = {
 };
 
 export const patientAPI = {
- list: (page = 1, limit = 10, search = '') => apiClient.get('/patients', { params: { page, limit, search } }),
- get: (id: string) => apiClient.get(`/patients/${id}`),
- search: (name: string) => apiClient.get('/patients/search', { params: { name } }),
- create: (data: any) => apiClient.post('/patients', data),
- update: (id: string, data: any) => apiClient.put(`/patients/${id}`, data),
- delete: (id: string) => apiClient.delete(`/patients/${id}`),
+  getAll: (page: number = 1, limit: number = 10) => apiClient.get(`/patients?page=${page}&limit=${limit}`),
+  search: (name: string) => apiClient.get(`/patients/search?name=${name}`),
+  getById: (id: string) => apiClient.get(`/patients/${id}`),
+  create: (data: any) => apiClient.post('/patients', data),
+  update: (id: string, data: any) => apiClient.put(`/patients/${id}`, data),
+  registrationMeta: () => apiClient.get('/patients/registration-meta'),
+  delete: (id: string) => apiClient.delete(`/patients/${id}`),
 };
 
 export const appointmentAPI = {
@@ -99,6 +101,7 @@ export const dashboardAPI = {
  recentAppointments: () => apiClient.get('/dashboard/recent-appointments'),
  revenueChart: () => apiClient.get('/dashboard/revenue-chart'),
  patientGrowth: () => apiClient.get('/dashboard/patient-growth'),
+ reception: () => apiClient.get('/dashboard/reception'),
 };
 
 export const insuranceClaimsAPI = {

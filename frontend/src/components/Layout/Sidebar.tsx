@@ -4324,7 +4324,7 @@ export default function Sidebar() {
                     <button
                       onClick={() => toggleExpand(item.label)}
                       suppressHydrationWarning
-                      className={`flex items-center justify-between w-full gap-2 p-2 rounded transition-colors ${currentPath.startsWith(item.href)
+                      className={`flex items-center justify-between w-full gap-2 p-2  text-xs  rounded transition-colors ${currentPath.startsWith(item.href)
                         ? "bg-accent/10 text-accent"
                         : "text-gray-300 hover:bg-dark-tertiary"
                         }`}
@@ -4350,7 +4350,7 @@ export default function Sidebar() {
                             <Link
                               key={`${subItem.href}-${subItem.label}`}
                               href={subItem.href}
-                              className={`flex items-center gap-2 p-2 rounded transition-colors text-md ${isSubActive
+                              className={`flex items-center gap-2 p-2 rounded  text-xs  transition-colors text-md ${isSubActive
                                 ? "bg-accent text-white text-md"
                                 : " hover:bg-dark-tertiary hover:text-gray-300"
                                 }`}
@@ -4366,7 +4366,7 @@ export default function Sidebar() {
                 ) : (
                   <Link
                     href={item.href}
-                    className={`flex items-center gap-2 p-2 rounded transition-colors ${isActive
+                    className={`flex items-center gap-2 p-2 rounded  text-xs  transition-colors ${isActive
                       ? "bg-accent text-white"
                       : "text-gray-300 hover:bg-dark-tertiary"
                       }`}
@@ -4395,7 +4395,7 @@ export default function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2 p-2 rounded transition-colors ${isActive
+                className={`flex items-center gap-2 p-2 rounded  text-xs  transition-colors ${isActive
                   ? "bg-accent text-white"
                   : "text-gray-300 hover:bg-dark-tertiary"
                   }`}

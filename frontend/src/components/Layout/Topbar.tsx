@@ -166,7 +166,7 @@ export default function Topbar() {
 
           {/* Premium Glassmorphic Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 mt-2.5 w-80 bg-dark-secondary/95 border border-dark-tertiary shadow-2xl rounded-xl overflow-hidden z-50 backdrop-blur-md animate-fadeIn flex flex-col max-h-[460px] max-w-[90vw]">
+            <div className="absolute right-0 mt-2.5 w-80 bg-dark-secondary/95 border border-dark-tertiary shadow-2xl roundederflow-hidden z-50 backdrop-blur-md animate-fadeIn flex flex-col max-h-[460px] max-w-[90vw]">
 
               {/* Header */}
               <div className="flex items-center justify-between p-3.5 border-b border-dark-tertiary/60">

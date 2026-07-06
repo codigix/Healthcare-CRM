@@ -155,7 +155,7 @@ export default function ${componentName}Page() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         ${page.stats.map(stat => `
-        <div className="bg-dark-secondary rounded-xl p-4 border border-gray-800 flex items-center justify-between">
+        <div className="bg-dark-secondary rounded p-4 border border-gray-800 flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-400 font-medium">${stat.label}</p>
             <p className="text-2xl  mt-1 ${stat.color}">${stat.value}</p>

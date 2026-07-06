@@ -110,7 +110,7 @@ const template = (page, componentName) => {
   let statsGen = "";
   page.stats.forEach(stat => {
     statsGen += `
-        <div className="bg-dark-secondary rounded-xl p-4 border border-gray-800">
+        <div className="bg-dark-secondary rounded p-4 border border-gray-800">
           <p className="text-sm text-gray-400 font-medium">${stat.label}</p>
           <p className={"text-2xl font-bold mt-2 " + "${stat.col}"}>${stat.val}</p>
         </div>`;

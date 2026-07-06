@@ -90,7 +90,7 @@ export default function ${name}Page() {
           { label: 'Active', value: '856', color: 'text-emerald-400' },
           { label: 'Pending Review', value: '45', color: 'text-amber-400' },
         ].map((stat, i) => (
-          <div key={i} className="bg-dark-secondary rounded-xl p-4 border border-gray-800">
+          <div key={i} className="bg-dark-secondary rounded p-4 border border-gray-800">
             <p className="text-sm text-gray-400 font-medium">{stat.label}</p>
             <p className={\`text-2xl  mt-2 \${stat.color}\`}>{stat.value}</p>
           </div>

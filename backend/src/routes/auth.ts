@@ -6,6 +6,31 @@ import pool from '../db';
 
 const router = Router();
 
+router.get('/dummy-logins', async (req: AuthRequest, res: Response) => {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    const [users]: any = await connection.query(`
+      SELECT id, email, role, department 
+      FROM users 
+      WHERE email IN (
+        'superadmin@medixpro.com', 'admin@medixpro.com', 'receptionist@medixpro.com',
+        'doctor@medixpro.com', 'nurse@medixpro.com', 'laboratory@medixpro.com',
+        'ot@medixpro.com', 'pharmacy@medixpro.com', 'inventory@medixpro.com',
+        'finance@medixpro.com', 'hr@medixpro.com', 'records@medixpro.com',
+        'crm@medixpro.com', 'facilities@medixpro.com', 'it@medixpro.com',
+        'executive@medixpro.com'
+      )
+    `);
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching dummy logins:', error);
+    res.status(500).json({ error: 'Server error' });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
 router.post('/register', async (req: AuthRequest, res: Response) => {
   let connection;
   try {
