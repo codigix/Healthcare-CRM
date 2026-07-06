@@ -80,7 +80,7 @@ export default function Topbar() {
 
   useEffect(() => {
     const savedTheme =
-      (localStorage.getItem("theme") as "light" | "dark") || "dark";
+      (localStorage.getItem("theme") as "light" | "dark") || "light";
     setTheme(savedTheme);
     if (savedTheme === "light") {
       document.body.classList.add("light");

@@ -9,7 +9,7 @@ import pool from './db';
 const app: Express = express();
 
 app.use(cors({
-  origin: process.env.ORIGIN,
+  origin: process.env.ORIGIN || 'http://localhost:3000',
   credentials: true,
 }));
 app.use(express.json({ limit: '50mb' }));

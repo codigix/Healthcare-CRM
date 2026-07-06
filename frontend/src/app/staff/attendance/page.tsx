@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-import ActionModal from "@/components/UI/ActionModal";
+import ActionModal from "@/components/ui/ActionModal";
 import {
   Search,
   UserCheck,

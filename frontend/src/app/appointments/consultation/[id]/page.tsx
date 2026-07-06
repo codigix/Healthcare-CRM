@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store";
 import { appointmentAPI, patientAPI, medicineAPI, recordsAPI } from "@/lib/api";
 import Link from "next/link";
-import Modal from "@/components/UI/Modal";
+import Modal from "@/components/ui/Modal";
 import {
   ArrowLeft,
   Activity,

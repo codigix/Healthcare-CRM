@@ -4,9 +4,9 @@ import { redirect } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function RoomAllotmentPage() {
-  useEffect(() => {
-    redirect('/room-allotment/requests');
-  }, []);
+ useEffect(() => {
+ redirect('/room-allotment/requests');
+ }, []);
 
-  return null;
+ return null;
 }
