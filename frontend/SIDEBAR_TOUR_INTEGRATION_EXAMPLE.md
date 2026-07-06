@@ -287,7 +287,7 @@ const CustomSidebarTour = () => {
   return (
     <button
       onClick={handleStartTour}
-      className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+      className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
       data-testid="custom-sidebar-tour-start-button"
     >
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 export interface Column<T> {
   header: string;
@@ -12,31 +12,30 @@ export interface Column<T> {
 interface DataTableProps<T> {
   columns: Column<T>[];
   data: T[];
-  enableLocalSearch?: boolean;
-  enableLocalPagination?: boolean;
-  searchPlaceholder?: string;
+  searchTerm?: string;
+  enablePagination?: boolean;
   itemsPerPage?: number;
+  isLoading?: boolean;
 }
 
 export function DataTable<T>({
   columns,
   data,
-  enableLocalSearch = false,
-  enableLocalPagination = false,
-  searchPlaceholder = "Search...",
+  searchTerm = "",
+  enablePagination = true,
   itemsPerPage = 10,
+  isLoading = false,
 }: DataTableProps<T>) {
-  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
   const filteredData = useMemo(() => {
     let result = [...(data || [])];
-    
-    if (enableLocalSearch && searchTerm) {
+
+    if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
       result = result.filter((row) => {
-        return Object.values(row as any).some((val) => 
+        return Object.values(row as any).some((val) =>
           String(val).toLowerCase().includes(lowerSearch)
         );
       });
@@ -53,13 +52,13 @@ export function DataTable<T>({
     }
 
     return result;
-  }, [data, searchTerm, enableLocalSearch, sortConfig]);
+  }, [data, searchTerm, sortConfig]);
 
   const paginatedData = useMemo(() => {
-    if (!enableLocalPagination) return filteredData;
+    if (!enablePagination) return filteredData;
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredData.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredData, enableLocalPagination, currentPage, itemsPerPage]);
+  }, [filteredData, enablePagination, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
@@ -67,91 +66,98 @@ export function DataTable<T>({
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
+    } else if (sortConfig && sortConfig.key === key && sortConfig.direction === 'desc') {
+      // Third click: remove sorting
+      setSortConfig(null);
+      return;
     }
     setSortConfig({ key, direction });
   };
 
   return (
-    <div className="w-full flex flex-col gap-4">
-      {enableLocalSearch && (
-        <div className="flex justify-between items-center">
-          <div className="relative w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder={searchPlaceholder}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
-        </div>
-      )}
-
-      <div className="rounded-md border bg-card text-card-foreground shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-muted/50 text-muted-foreground border-b">
-              <tr>
-                {columns.map((col, index) => (
-                  <th 
-                    key={index} 
-                    className={`px-4 py-3 font-medium whitespace-nowrap ${col.sortable ? 'cursor-pointer hover:bg-muted/70' : ''}`}
-                    onClick={() => col.sortable && typeof col.accessor === 'string' && handleSort(col.accessor)}
-                  >
-                    <div className="flex items-center gap-1">
-                      {col.header}
-                      {col.sortable && <ArrowUpDown className="w-3 h-3" />}
-                    </div>
-                  </th>
+    <div className="w-full flex flex-col">
+      <table className="w-full text-left border border-gray-200">
+        <thead>
+          <tr className=" border-b bg-gray-200 border-gray-800 text-gray-400 text-xs whitespace-nowrap">
+            {columns.map((col, index) => (
+              <th
+                key={index}
+                className={`p-2 font-medium transition-colors ${col.sortable ? 'cursor-pointer hover:text-white select-none' : ''}`}
+                onClick={() => col.sortable && typeof col.accessor === 'string' && handleSort(col.accessor)}
+              >
+                <div className={`flex items-center gap-2 ${index === columns.length - 1 ? 'justify-end' : ''}`}>
+                  {col.header}
+                  {col.sortable && typeof col.accessor === 'string' && (
+                    <span className="text-gray-500">
+                      {sortConfig?.key === col.accessor ? (
+                        sortConfig.direction === 'asc' ? <ArrowUp size={14} className="text-blue-400" /> : <ArrowDown size={14} className="text-blue-400" />
+                      ) : (
+                        <ArrowUpDown size={14} className="opacity-50" />
+                      )}
+                    </span>
+                  )}
+                </div>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {isLoading ? (
+            Array.from({ length: Math.min(itemsPerPage, 5) }).map((_, rowIndex) => (
+              <tr key={rowIndex} className="border-b border-gray-800">
+                {columns.map((col, colIndex) => (
+                  <td key={colIndex} className="p-2">
+                    <div className="h-4 bg-gray-700/50 rounded animate-pulse w-full"></div>
+                  </td>
                 ))}
               </tr>
-            </thead>
-            <tbody className="divide-y">
-              {paginatedData.length > 0 ? (
-                paginatedData.map((row, rowIndex) => (
-                  <tr key={rowIndex} className="hover:bg-muted/30 transition-colors">
-                    {columns.map((col, colIndex) => (
-                      <td key={colIndex} className="px-4 py-3 whitespace-nowrap">
-                        {typeof col.accessor === 'function' 
-                          ? col.accessor(row) 
-                          : String((row as any)[col.accessor] || '')}
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={columns.length} className="px-4 py-8 text-center text-muted-foreground">
-                    No data available
+            ))
+          ) : paginatedData.length > 0 ? (
+            paginatedData.map((row, rowIndex) => (
+              <tr key={rowIndex} className="border-b border-gray-800 hover:bg-dark-tertiary/30 transition-colors">
+                {columns.map((col, colIndex) => (
+                  <td key={colIndex} className={`p-2 whitespace-nowrap ${colIndex === columns.length - 1 ? 'text-right' : ''}`}>
+                    {typeof col.accessor === 'function'
+                      ? col.accessor(row)
+                      : (
+                        colIndex === 0
+                          ? <span className="text-xs  text-white">{String((row as any)[col.accessor] || '')}</span>
+                          : <span className="text-gray-400 text-xs">{String((row as any)[col.accessor] || '')}</span>
+                      )}
                   </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                ))}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={columns.length} className="p-2 text-center text-gray-500 border-b border-gray-800 h-32">
+                No matching records found.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
 
-      {enableLocalPagination && totalPages > 1 && (
-        <div className="flex items-center justify-between border-t pt-4">
-          <p className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} entries
+      {enablePagination && (
+        <div className="flex items-center justify-between my-3">
+          <p className="text-xs text-gray-400">
+            Showing {filteredData.length === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} entries
           </p>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-1 border rounded-md disabled:opacity-50 hover:bg-muted"
+              className="p-2 border border-gray-700 rounded-md disabled:opacity-50 hover:bg-dark-tertiary text-gray-300 transition-colors"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft size={15} />
             </button>
-            <span className="text-sm font-medium">Page {currentPage} of {totalPages}</span>
+            <span className="text-sm font-medium text-gray-400 px-2">Page <span className="text-white">{currentPage}</span> of {Math.max(1, totalPages)}</span>
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="p-1 border rounded-md disabled:opacity-50 hover:bg-muted"
+              disabled={currentPage >= totalPages || totalPages === 0}
+              className="p-1.5 border border-gray-700 rounded-md disabled:opacity-50 hover:bg-dark-tertiary text-gray-300 transition-colors"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight size={15} />
             </button>
           </div>
         </div>

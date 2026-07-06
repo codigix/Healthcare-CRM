@@ -52,7 +52,7 @@ export default function ExpiringMedicinesPage() {
     try {
       setLoading(true);
       setError("");
-      
+
       const response = await medicineAPI.list(1, 100);
       const medicines = response.data.medicines || [];
 
@@ -120,16 +120,16 @@ export default function ExpiringMedicinesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center my-3 my-3">
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard/pharmacy"
-            className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
+            className="p-2 hover:bg-dark-tertiary rounded transition-colors"
           >
             <ArrowLeft size={24} />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold">Expiring Medicines</h1>
+            <h1 className="text-3xl ">Expiring Medicines</h1>
             <p className="text-gray-400">Track medication expiry dates, quarantine expired lots, and audit shelf lives</p>
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function ExpiringMedicinesPage() {
           onClick={fetchExpiringDrugs}
           className="btn-secondary flex items-center gap-2"
         >
-          <RefreshCw size={18} /> Refresh
+          <RefreshCw size={15} /> Refresh
         </button>
       </div>
 
@@ -146,13 +146,13 @@ export default function ExpiringMedicinesPage() {
           <Loader className="animate-spin text-emerald-500" size={32} />
         </div>
       ) : error ? (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-lg">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
           {error}
         </div>
       ) : items.length === 0 ? (
         <div className="card text-center py-16">
           <Calendar className="mx-auto text-gray-500 mb-4" size={48} />
-          <h3 className="text-xl font-bold text-white mb-2">No Expiry Alert Schedules Found</h3>
+          <h3 className="text-xl  text-white mb-2">No Expiry Alert Schedules Found</h3>
           <p className="text-gray-400 max-w-sm mx-auto">
             All clinical medications in the pharmacy catalog have safe and valid expiration dates.
           </p>
@@ -190,11 +190,11 @@ export default function ExpiringMedicinesPage() {
                       </td>
                       <td className="py-4 px-4 text-gray-300 italic">{item.genericName}</td>
                       <td className="py-4 px-4 text-gray-300">{item.category}</td>
-                      <td className="py-4 px-4 text-center text-gray-300 font-bold">{item.initialQuantity} Units</td>
+                      <td className="py-4 px-4 text-center text-gray-300 ">{item.initialQuantity} Units</td>
                       <td className="py-4 px-4 text-gray-300">
                         {new Date(item.expiryDate!).toLocaleDateString()}
                       </td>
-                      <td className="py-4 px-4 text-center font-bold text-white">
+                      <td className="py-4 px-4 text-center  text-white">
                         {daysLeft < 0 ? (
                           <span className="text-red-500">Expired</span>
                         ) : (
@@ -213,7 +213,7 @@ export default function ExpiringMedicinesPage() {
                         {daysLeft < 0 && item.initialQuantity > 0 ? (
                           <button
                             onClick={() => setDisposalConfirm({ show: true, item })}
-                            className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 mx-auto"
+                            className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-xs font-semibold rounded transition-all flex items-center gap-1 mx-auto"
                           >
                             <Trash2 size={13} /> Dispose Stock
                           </button>
@@ -234,8 +234,8 @@ export default function ExpiringMedicinesPage() {
 
       {disposalConfirm.show && disposalConfirm.item && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[#1a202c] border border-dark-tertiary rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
-            <h2 className="text-lg font-bold mb-2 text-white flex items-center gap-2">
+          <div className="bg-[#1a202c] border border-dark-tertiary rounded p-6 max-w-sm w-full mx-4 shadow-xl">
+            <h2 className="text-lg  mb-2 text-white flex items-center gap-2">
               <Trash2 className="text-red-500" size={20} />
               Dispose Expired Medicine
             </h2>
@@ -246,14 +246,14 @@ export default function ExpiringMedicinesPage() {
               <button
                 onClick={() => setDisposalConfirm({ show: false, item: null })}
                 disabled={disposingId !== null}
-                className="px-4 py-2 bg-dark-tertiary text-white rounded-lg hover:bg-dark-tertiary/70 transition-colors disabled:opacity-50"
+                className="p-2 bg-dark-tertiary text-white rounded hover:bg-dark-tertiary/70 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={() => disposalConfirm.item && handleDispose(disposalConfirm.item)}
                 disabled={disposingId !== null}
-                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow shadow-red-600/25"
+                className="p-2 bg-red-600 hover:bg-red-500 text-white rounded  transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow shadow-red-600/25"
               >
                 {disposingId !== null ? (
                   <>

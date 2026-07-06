@@ -1,92 +1,55 @@
 const mysql = require('mysql2/promise');
-require('dotenv').config();
+const bcrypt = require('bcryptjs');
 
-async function run() {
+const roles = [
+  { role: 'superadmin', name: 'Super Admin User', email: 'superadmin@medixpro.com', dept: 'Super Admin' },
+  { role: 'admin', name: 'Admin User', email: 'admin@medixpro.com', dept: 'Administration' },
+  { role: 'receptionist', name: 'Reception User', email: 'receptionist@medixpro.com', dept: 'Reception' },
+  { role: 'doctor', name: 'Doctor User', email: 'doctor@medixpro.com', dept: 'Clinical' },
+  { role: 'nurse', name: 'Nurse User', email: 'nurse@medixpro.com', dept: 'Nursing' },
+  { role: 'laboratory', name: 'Diagnostics User', email: 'laboratory@medixpro.com', dept: 'Diagnostics' },
+  { role: 'ot', name: 'OT User', email: 'ot@medixpro.com', dept: 'OT' },
+  { role: 'pharmacy', name: 'Pharmacy User', email: 'pharmacy@medixpro.com', dept: 'Pharmacy' },
+  { role: 'inventory', name: 'Inventory User', email: 'inventory@medixpro.com', dept: 'Inventory' },
+  { role: 'finance', name: 'Finance User', email: 'finance@medixpro.com', dept: 'Finance' },
+  { role: 'hr', name: 'HR User', email: 'hr@medixpro.com', dept: 'HR' },
+  { role: 'records', name: 'Medical Records User', email: 'records@medixpro.com', dept: 'Records' },
+  { role: 'crm', name: 'CRM User', email: 'crm@medixpro.com', dept: 'CRM' },
+  { role: 'facilities', name: 'Facilities User', email: 'facilities@medixpro.com', dept: 'Facilities' },
+  { role: 'it', name: 'IT User', email: 'it@medixpro.com', dept: 'IT' },
+  { role: 'executive', name: 'Executive MIS User', email: 'executive@medixpro.com', dept: 'MIS' }
+];
+
+async function seedDepartments() {
   const connection = await mysql.createConnection({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'medixpro',
-    port: parseInt(process.env.DB_PORT || '3306'),
+    host: '127.0.0.1',
+    user: 'medixpro_user',
+    password: 'C0digix$309',
+    database: 'medixpro',
+    port: 3307
   });
 
-  console.log('Connected to database to seed departments.');
+  const password = await bcrypt.hash('password123', 10);
 
-  const departments = [
-    {
-      name: 'Admin',
-      head: 'System Admin',
-      location: 'Building A, Floor 4',
-      staffCount: 2,
-      services: 4,
-      status: 'Active',
-      description: 'Central administrative and systems control department'
-    },
-    {
-      name: 'Doctor',
-      head: 'Dr. Sarah Jenkins',
-      location: 'Building B, Floor 2',
-      staffCount: 12,
-      services: 6,
-      status: 'Active',
-      description: 'Primary patient care, consultations, and specialized medical treatments'
-    },
-    {
-      name: 'Inventory',
-      head: 'Mr. Robert Chen',
-      location: 'Building C, Floor 1',
-      staffCount: 4,
-      services: 3,
-      status: 'Active',
-      description: 'Pharmacy stock, medical equipment, and clinical supplies management'
-    },
-    {
-      name: 'Laboratory',
-      head: 'Dr. Eleanor Vance',
-      location: 'Building C, Floor 2',
-      staffCount: 6,
-      services: 5,
-      status: 'Active',
-      description: 'Diagnostic testing, pathology analysis, and blood bank operations'
-    },
-    {
-      name: 'Receptionist',
-      head: 'Ms. Clara Oswald',
-      location: 'Main Lobby, Ground Floor',
-      staffCount: 5,
-      services: 2,
-      status: 'Active',
-      description: 'Patient inquiries, registration, appointments booking, and billing help'
-    }
-  ];
-
-  try {
-    for (const dept of departments) {
-      // Check if department already exists
-      const [existing] = await connection.query('SELECT id FROM departments WHERE name = ?', [dept.name]);
+  for (const r of roles) {
+    try {
+      const [existing] = await connection.query('SELECT id FROM users WHERE email = ?', [r.email]);
       if (existing.length === 0) {
-        console.log(`Seeding department: ${dept.name}`);
-        const query = `INSERT INTO departments (id, name, head, location, staffCount, services, status, description, createdAt, updatedAt)
-                       VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
-        await connection.query(query, [
-          dept.name,
-          dept.head,
-          dept.location,
-          dept.staffCount,
-          dept.services,
-          dept.status,
-          dept.description
-        ]);
-        console.log(`Department "${dept.name}" created successfully!`);
+        await connection.query(
+          'INSERT INTO users (id, name, email, password, role, department, createdAt, updatedAt) VALUES (UUID(), ?, ?, ?, ?, ?, NOW(), NOW())',
+          [r.name, r.email, password, r.role, r.dept]
+        );
+        console.log(`Created user for ${r.role}`);
       } else {
-        console.log(`Department "${dept.name}" already exists.`);
+        console.log(`User ${r.email} already exists.`);
       }
+    } catch (e) {
+      console.error(`Error creating user ${r.email}:`, e);
     }
-  } catch (error) {
-    console.error('Error seeding departments:', error);
-  } finally {
-    await connection.end();
   }
+
+  await connection.end();
+  console.log('Done seeding users.');
 }
 
-run();
+seedDepartments();

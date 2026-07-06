@@ -3,15 +3,15 @@
 import { useState, useEffect } from "react";
 
 import {
- Search,
- Plus,
- Package,
- AlertCircle,
- MoreVertical,
- Loader,
- Eye,
- Pencil,
- Trash2,
+   Search,
+   Plus,
+   Package,
+   AlertCircle,
+   MoreVertical,
+   Loader,
+   Eye,
+   Pencil,
+   Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { medicineAPI } from "@/lib/api";
@@ -20,437 +20,449 @@ import ViewMedicineModal from "@/components/Pharmacy/ViewMedicineModal";
 import DataTable, { Column } from "@/components/ui/DataTable";
 
 interface Medicine {
- id: string;
- name: string;
- genericName: string;
- category: string;
- initialQuantity: number;
- reorderLevel: number;
- expiryDate: string | null;
- status: string;
- medicineType: string;
- purchasePrice: number;
- sellingPrice: number;
+   id: string;
+   name: string;
+   genericName: string;
+   category: string;
+   initialQuantity: number;
+   reorderLevel: number;
+   expiryDate: string | null;
+   status: string;
+   medicineType: string;
+   purchasePrice: number;
+   sellingPrice: number;
 }
 
 export default function MedicineListPage() {
- const [searchQuery, setSearchQuery] = useState("");
- const [activeTab, setActiveTab] = useState("all");
- const [statusFilter, setStatusFilter] = useState("all");
- const [categoryFilter, setCategoryFilter] = useState("all");
- const [medicines, setMedicines] = useState<Medicine[]>([]);
- const [loading, setLoading] = useState(true);
- const [error, setError] = useState("");
- const [page, setPage] = useState(1);
- const [total, setTotal] = useState(0);
- const [deleteModal, setDeleteModal] = useState<{
- show: boolean;
- id: string | null;
- }>({ show: false, id: null });
- const [stockModal, setStockModal] = useState<{
- show: boolean;
- medicine: Medicine | null;
- }>({ show: false, medicine: null });
- const [viewModal, setViewModal] = useState<{
- show: boolean;
- id: string | null;
- }>({ show: false, id: null });
+   const [searchQuery, setSearchQuery] = useState("");
+   const [activeTab, setActiveTab] = useState("all");
+   const [statusFilter, setStatusFilter] = useState("all");
+   const [categoryFilter, setCategoryFilter] = useState("all");
+   const [medicines, setMedicines] = useState<Medicine[]>([]);
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState("");
+   const [page, setPage] = useState(1);
+   const [total, setTotal] = useState(0);
+   const [deleteModal, setDeleteModal] = useState<{
+      show: boolean;
+      id: string | null;
+   }>({ show: false, id: null });
+   const [stockModal, setStockModal] = useState<{
+      show: boolean;
+      medicine: Medicine | null;
+   }>({ show: false, medicine: null });
+   const [viewModal, setViewModal] = useState<{
+      show: boolean;
+      id: string | null;
+   }>({ show: false, id: null });
 
- const limit = 10;
+   const limit = 10;
 
- useEffect(() => {
- fetchMedicines();
- }, [page, statusFilter, categoryFilter, searchQuery]);
+   useEffect(() => {
+      fetchMedicines();
+   }, [page, statusFilter, categoryFilter, searchQuery]);
 
- useEffect(() => {
- if (typeof window !== "undefined") {
- const params = new URLSearchParams(window.location.search);
- const restockId = params.get("restockId");
- if (restockId) {
- const fetchAndOpenRestock = async () => {
- try {
- const response = await medicineAPI.get(restockId);
- if (response.data) {
- setStockModal({ show: true, medicine: response.data });
- }
- } catch (err) {
- console.error("Failed to fetch medicine for restock modal:", err);
- } finally {
- const newUrl = window.location.pathname;
- window.history.replaceState({}, "", newUrl);
- }
- };
- fetchAndOpenRestock();
- }
- }
- }, []);
+   useEffect(() => {
+      if (typeof window !== "undefined") {
+         const params = new URLSearchParams(window.location.search);
+         const restockId = params.get("restockId");
+         if (restockId) {
+            const fetchAndOpenRestock = async () => {
+               try {
+                  const response = await medicineAPI.get(restockId);
+                  if (response.data) {
+                     setStockModal({ show: true, medicine: response.data });
+                  }
+               } catch (err) {
+                  console.error("Failed to fetch medicine for restock modal:", err);
+               } finally {
+                  const newUrl = window.location.pathname;
+                  window.history.replaceState({}, "", newUrl);
+               }
+            };
+            fetchAndOpenRestock();
+         }
+      }
+   }, []);
 
- const fetchMedicines = async () => {
- try {
- setLoading(true);
- setError("");
- const filters: any = {};
- if (statusFilter !== "all") filters.status = statusFilter;
- if (categoryFilter !== "all") filters.category = categoryFilter;
- if (searchQuery) filters.search = searchQuery;
+   const fetchMedicines = async () => {
+      try {
+         setLoading(true);
+         setError("");
+         const filters: any = {};
+         if (statusFilter !== "all") filters.status = statusFilter;
+         if (categoryFilter !== "all") filters.category = categoryFilter;
+         if (searchQuery) filters.search = searchQuery;
 
- const response = await medicineAPI.list(page, limit, filters);
- setMedicines(response.data.medicines);
- setTotal(response.data.total);
- } catch (err: any) {
- setError("Failed to fetch medicines");
- console.error(err);
- } finally {
- setLoading(false);
- }
- };
+         const response = await medicineAPI.list(page, limit, filters);
+         setMedicines(response.data.medicines);
+         setTotal(response.data.total);
+      } catch (err: any) {
+         setError("Failed to fetch medicines");
+         console.error(err);
+      } finally {
+         setLoading(false);
+      }
+   };
 
- const handleDelete = async (id: string) => {
- try {
- await medicineAPI.delete(id);
- setMedicines(medicines.filter((m) => m.id !== id));
- setDeleteModal({ show: false, id: null });
- } catch (err) {
- setError("Failed to delete medicine");
- }
- };
+   const handleDelete = async (id: string) => {
+      try {
+         await medicineAPI.delete(id);
+         setMedicines(medicines.filter((m) => m.id !== id));
+         setDeleteModal({ show: false, id: null });
+      } catch (err) {
+         setError("Failed to delete medicine");
+      }
+   };
 
- const getStatusColor = (status: string) => {
- switch (status) {
- case "In Stock":
- return "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
- case "Low Stock":
- return "bg-orange-500/10 text-orange-500 border border-orange-500/20";
- case "Out of Stock":
- return "bg-red-500/10 text-red-500 border border-red-500/20";
- default:
- return "bg-gray-500/10 text-gray-400 border border-gray-500/20";
- }
- };
+   const getStatusColor = (status: string) => {
+      switch (status) {
+         case "In Stock":
+            return "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+         case "Low Stock":
+            return "bg-orange-500/10 text-orange-500 border border-orange-500/20";
+         case "Out of Stock":
+            return "bg-red-500/10 text-red-500 border border-red-500/20";
+         default:
+            return "bg-gray-500/10 text-gray-400 border border-gray-500/20";
+      }
+   };
 
- const getCategoryColor = (category: string) => {
- const colors: { [key: string]: string } = {
- Antibiotics: "bg-blue-500/10 text-blue-500 border border-blue-500/20",
- Analgesics:
- "bg-purple-500/10 text-purple-500 border border-purple-500/20",
- Antidiabetics: "bg-pink-500/10 text-pink-500 border border-pink-500/20",
- Antihypertensives:
- "bg-cyan-500/10 text-cyan-500 border border-cyan-500/20",
- Antihistamines:
- "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20",
- Statins: "bg-indigo-500/10 text-indigo-500 border border-indigo-500/20",
- Anxiolytics:
- "bg-orange-500/10 text-orange-500 border border-orange-500/20",
- NSAIDs: "bg-green-500/10 text-green-500 border border-green-500/20",
- };
- return (
- colors[category] ||
- "bg-gray-500/10 text-gray-400 border border-gray-500/20"
- );
- };
+   const getCategoryColor = (category: string) => {
+      const colors: { [key: string]: string } = {
+         Antibiotics: "bg-blue-500/10 text-blue-500 border border-blue-500/20",
+         Analgesics:
+            "bg-purple-500/10 text-purple-500 border border-purple-500/20",
+         Antidiabetics: "bg-pink-500/10 text-pink-500 border border-pink-500/20",
+         Antihypertensives:
+            "bg-cyan-500/10 text-cyan-500 border border-cyan-500/20",
+         Antihistamines:
+            "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20",
+         Statins: "bg-indigo-500/10 text-indigo-500 border border-indigo-500/20",
+         Anxiolytics:
+            "bg-orange-500/10 text-orange-500 border border-orange-500/20",
+         NSAIDs: "bg-green-500/10 text-green-500 border border-green-500/20",
+      };
+      return (
+         colors[category] ||
+         "bg-gray-500/10 text-gray-400 border border-gray-500/20"
+      );
+   };
 
- const getStatusLabel = (medicine: Medicine) => {
- if (medicine.initialQuantity === 0) return "Out of Stock";
- if (medicine.initialQuantity <= (medicine.reorderLevel || 50))
- return "Low Stock";
- return "In Stock";
- };
+   const getStatusLabel = (medicine: Medicine) => {
+      if (medicine.initialQuantity === 0) return "Out of Stock";
+      if (medicine.initialQuantity <= (medicine.reorderLevel || 50))
+         return "Low Stock";
+      return "In Stock";
+   };
 
- const filteredMedicines = medicines.filter((medicine) => {
- const medicineType = medicine.medicineType || "";
- const matchesTab =
- activeTab === "all" ||
- (activeTab === "prescription" && medicineType === "Prescription") ||
- (activeTab === "otc" && medicineType === "OTC") ||
- (activeTab === "controlled" && medicineType === "Controlled");
- return matchesTab;
- });
+   const filteredMedicines = medicines.filter((medicine) => {
+      const medicineType = medicine.medicineType || "";
+      const matchesTab =
+         activeTab === "all" ||
+         (activeTab === "prescription" && medicineType === "Prescription") ||
+         (activeTab === "otc" && medicineType === "OTC") ||
+         (activeTab === "controlled" && medicineType === "Controlled");
+      return matchesTab;
+   });
 
- const totalMedicines = total;
- const lowStockItems = medicines.filter(
- (m) => getStatusLabel(m) === "Low Stock"
- ).length;
- const expiringSoon = medicines.filter((m) => {
- if (!m.expiryDate) return false;
- const daysUntilExpiry = Math.floor(
- (new Date(m.expiryDate).getTime() - new Date().getTime()) /
- (1000 * 60 * 60 * 24)
- );
- return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
- }).length;
- const categories = Array.from(
- new Set(medicines.map((m) => m.category))
- ).length;
+   const totalMedicines = total;
+   const lowStockItems = medicines.filter(
+      (m) => getStatusLabel(m) === "Low Stock"
+   ).length;
+   const expiringSoon = medicines.filter((m) => {
+      if (!m.expiryDate) return false;
+      const daysUntilExpiry = Math.floor(
+         (new Date(m.expiryDate).getTime() - new Date().getTime()) /
+         (1000 * 60 * 60 * 24)
+      );
+      return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
+   }).length;
+   const categories = Array.from(
+      new Set(medicines.map((m) => m.category))
+   ).length;
 
-    const columns_0: Column<any>[] = [
-      { header: "ID", accessor: (medicine) => (<>\n<span className="text-gray-300 text-sm">
-     {medicine.id.slice(0, 8)}
-     </span>\n</>) },
-      { header: "Medicine Name", accessor: (medicine) => (<>\n<div className="font-medium text-white">
-     {medicine.name}
-     </div>\n\n<div className="text-mdtext-gray-400">
-     {medicine.genericName}
-     </div>\n</>) },
-      { header: "Category", accessor: (medicine) => (<>\n<span
-     className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(
-     medicine.category
-     )}`}
-     >
-     {medicine.category}
-     </span>\n</>) },
-      { header: "Stock", accessor: (medicine) => (<>\n<span className="text-white">
-     {medicine.initialQuantity} units
-     </span>\n</>) },
-      { header: "Status", accessor: (medicine) => (<>\n<span
-     className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-     getStatusLabel(medicine)
-     )}`}
-     >
-     {getStatusLabel(medicine)}
-     </span>\n</>) },
-      { header: "Actions", accessor: (medicine) => (<>\n<div className="flex gap-2">
-     <button
-     onClick={() => setViewModal({ show: true, id: medicine.id })}
-     className="p-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded transition-colors"
-     title="View Specifications & Batches"
-     >
-     <Eye size={15} />
-     </button>
-     <Link href={`/pharmacy/edit-medicine/${medicine.id}`}>
-     <button
-     className="p-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded transition-colors"
-     title="Edit Medicine"
-     >
-     <Pencil size={15} />
-     </button>
-     </Link>
-     <button
-     onClick={() =>
-     setDeleteModal({ show: true, id: medicine.id })
-     }
-     className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded transition-colors"
-     title="Delete Medicine"
-     >
-     <Trash2 size={15} />
-     </button>
-     </div>\n</>) },
-    ];
+   const columns_0: Column<any>[] = [
+      {
+         header: "ID", accessor: (medicine) => (<>\n<span className="text-gray-300 text-sm">
+            {medicine.id.slice(0, 8)}
+         </span>\n</>)
+      },
+      {
+         header: "Medicine Name", accessor: (medicine) => (<>\n<div className="font-medium text-white">
+            {medicine.name}
+         </div>\n\n<div className="text-mdtext-gray-400">
+               {medicine.genericName}
+            </div>\n</>)
+      },
+      {
+         header: "Category", accessor: (medicine) => (<>\n<span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryColor(
+               medicine.category
+            )}`}
+         >
+            {medicine.category}
+         </span>\n</>)
+      },
+      {
+         header: "Stock", accessor: (medicine) => (<>\n<span className="text-white">
+            {medicine.initialQuantity} units
+         </span>\n</>)
+      },
+      {
+         header: "Status", accessor: (medicine) => (<>\n<span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+               getStatusLabel(medicine)
+            )}`}
+         >
+            {getStatusLabel(medicine)}
+         </span>\n</>)
+      },
+      {
+         header: "Actions", accessor: (medicine) => (<>\n<div className="flex gap-2">
+            <button
+               onClick={() => setViewModal({ show: true, id: medicine.id })}
+               className="p-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded transition-colors"
+               title="View Specifications & Batches"
+            >
+               <Eye size={15} />
+            </button>
+            <Link href={`/pharmacy/edit-medicine/${medicine.id}`}>
+               <button
+                  className="p-1.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 rounded transition-colors"
+                  title="Edit Medicine"
+               >
+                  <Pencil size={15} />
+               </button>
+            </Link>
+            <button
+               onClick={() =>
+                  setDeleteModal({ show: true, id: medicine.id })
+               }
+               className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded transition-colors"
+               title="Delete Medicine"
+            >
+               <Trash2 size={15} />
+            </button>
+         </div>\n</>)
+      },
+   ];
 
 
- return (
- <>
- <div className="space-y-6">
- <div className="flex justify-between items-center">
- <div>
- <h1 className="text-3xl font-bold mb-2">Medicine List</h1>
- <p className="text-gray-400">
- Manage and view all medicines in the pharmacy inventory
- </p>
- </div>
- <div className="flex gap-3">
- <button
- onClick={() => setStockModal({ show: true, medicine: null })}
- className="btn-secondary bg-emerald-600 hover:bg-emerald-500 text-white font-bold border-none flex items-center gap-2"
- >
- <Plus size={20} />
- Add Stock
- </button>
- <Link href="/pharmacy/add-medicine">
- <button className="btn-primary flex items-center gap-2">
- <Plus size={20} />
- Add New Medicine
- </button>
- </Link>
- </div>
- </div>
+   return (
+      <>
+         <div className="space-y-6">
+            <div className="flex justify-between items-center my-3 my-3">
+               <div>
+                  <h1 className="text-3xl  mb-2">Medicine List</h1>
+                  <p className="text-gray-400">
+                     Manage and view all medicines in the pharmacy inventory
+                  </p>
+               </div>
+               <div className="flex gap-3">
+                  <button
+                     onClick={() => setStockModal({ show: true, medicine: null })}
+                     className="btn-secondary bg-emerald-600 hover:bg-emerald-500 text-white  border-none flex items-center gap-2"
+                  >
+                     <Plus size={20} />
+                     Add Stock
+                  </button>
+                  <Link href="/pharmacy/add-medicine">
+                     <button className="btn-primary flex items-center gap-2">
+                        <Plus size={20} />
+                        Add New Medicine
+                     </button>
+                  </Link>
+               </div>
+            </div>
 
- <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
- <div className="card">
- <div className="flex items-center gap-3">
- <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
- <Package className="text-blue-500" size={24} />
- </div>
- <div>
- <div className="text-2xl font-bold">
- {totalMedicines.toLocaleString()}
- </div>
- <div className="text-mdtext-gray-400">Total Medicines</div>
- <div className="text-xs text-emerald-500">
- +24 added this month
- </div>
- </div>
- </div>
- </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+               <div className="card">
+                  <div className="flex items-center gap-2">
+                     <div className="w-12 h-12 bg-blue-500/10 rounded flex items-center justify-center">
+                        <Package className="text-blue-500" size={24} />
+                     </div>
+                     <div>
+                        <div className="text-2xl ">
+                           {totalMedicines.toLocaleString()}
+                        </div>
+                        <div className="text-mdtext-gray-400">Total Medicines</div>
+                        <div className="text-xs text-emerald-500">
+                           +24 added this month
+                        </div>
+                     </div>
+                  </div>
+               </div>
 
- <div className="card">
- <div className="flex items-center gap-3">
- <div className="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center">
- <AlertCircle className="text-orange-500" size={24} />
- </div>
- <div>
- <div className="text-2xl font-bold">{lowStockItems}</div>
- <div className="text-mdtext-gray-400">Low Stock Items</div>
- <div className="text-xs text-orange-500">
- Need restocking soon
- </div>
- </div>
- </div>
- </div>
+               <div className="card">
+                  <div className="flex items-center gap-2">
+                     <div className="w-12 h-12 bg-orange-500/10 rounded flex items-center justify-center">
+                        <AlertCircle className="text-orange-500" size={24} />
+                     </div>
+                     <div>
+                        <div className="text-2xl ">{lowStockItems}</div>
+                        <div className="text-mdtext-gray-400">Low Stock Items</div>
+                        <div className="text-xs text-orange-500">
+                           Need restocking soon
+                        </div>
+                     </div>
+                  </div>
+               </div>
 
- <div className="card">
- <div className="flex items-center gap-3">
- <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
- <AlertCircle className="text-red-500" size={24} />
- </div>
- <div>
- <div className="text-2xl font-bold">{expiringSoon}</div>
- <div className="text-mdtext-gray-400">Expiring Soon</div>
- <div className="text-xs text-red-500">Within next 30 days</div>
- </div>
- </div>
- </div>
+               <div className="card">
+                  <div className="flex items-center gap-2">
+                     <div className="w-12 h-12 bg-red-500/10 rounded flex items-center justify-center">
+                        <AlertCircle className="text-red-500" size={24} />
+                     </div>
+                     <div>
+                        <div className="text-2xl ">{expiringSoon}</div>
+                        <div className="text-mdtext-gray-400">Expiring Soon</div>
+                        <div className="text-xs text-red-500">Within next 30 days</div>
+                     </div>
+                  </div>
+               </div>
 
- <div className="card">
- <div className="flex items-center gap-3">
- <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
- <Package className="text-purple-500" size={24} />
- </div>
- <div>
- <div className="text-2xl font-bold">{categories}</div>
- <div className="text-mdtext-gray-400">Categories</div>
- <div className="text-xs text-gray-500">Medicine categories</div>
- </div>
- </div>
- </div>
- </div>
+               <div className="card">
+                  <div className="flex items-center gap-2">
+                     <div className="w-12 h-12 bg-purple-500/10 rounded flex items-center justify-center">
+                        <Package className="text-purple-500" size={24} />
+                     </div>
+                     <div>
+                        <div className="text-2xl ">{categories}</div>
+                        <div className="text-mdtext-gray-400">Categories</div>
+                        <div className="text-xs text-gray-500">Medicine categories</div>
+                     </div>
+                  </div>
+               </div>
+            </div>
 
- <div className="card">
- <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
- {/* Search Input Container */}
- <div className="flex items-center gap-2 px-3 py-2 bg-card/5 border border-white/10 rounded-lg flex-1 w-full">
- <Search size={18} className="text-gray-400" />
- <input
- type="text"
- placeholder="Search medicines..."
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- className="bg-transparent flex-1 outline-none text-xs text-white placeholder-gray-500"
- />
- </div>
+            <div className="card">
+               <div className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
+                  {/* Search Input Container */}
+                  <div className="flex items-center gap-2 p-2 bg-card/5 border border-white/10 rounded flex-1 w-full">
+                     <Search size={15} className="text-gray-400" />
+                     <input
+                        type="text"
+                        placeholder="Search medicines..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="bg-transparent flex-1 outline-none text-xs text-white placeholder-gray-500"
+                     />
+                  </div>
 
- {/* Filter Selects Container */}
- <div className="flex gap-3 w-full md:w-auto">
- <select
- value={categoryFilter}
- onChange={(e) => setCategoryFilter(e.target.value)}
- className="bg-dark-secondary border border-dark-tertiary rounded-lg px-3 py-2 text-xs text-gray-300 outline-none focus:border-emerald-500 min-w-[140px]"
- >
- <option value="all">All Categories</option>
- <option value="Antibiotics">Antibiotics</option>
- <option value="Analgesics">Analgesics</option>
- <option value="Antidiabetics">Antidiabetics</option>
- <option value="Antihypertensives">Antihypertensives</option>
- <option value="Antihistamines">Antihistamines</option>
- <option value="Statins">Statins</option>
- <option value="Anxiolytics">Anxiolytics</option>
- <option value="NSAIDs">NSAIDs</option>
- </select>
+                  {/* Filter Selects Container */}
+                  <div className="flex gap-3 w-full md:w-auto">
+                     <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="bg-dark-secondary border border-dark-tertiary rounded p-2 text-xs text-gray-300 outline-none focus:border-emerald-500 min-w-[140px]"
+                     >
+                        <option value="all">All Categories</option>
+                        <option value="Antibiotics">Antibiotics</option>
+                        <option value="Analgesics">Analgesics</option>
+                        <option value="Antidiabetics">Antidiabetics</option>
+                        <option value="Antihypertensives">Antihypertensives</option>
+                        <option value="Antihistamines">Antihistamines</option>
+                        <option value="Statins">Statins</option>
+                        <option value="Anxiolytics">Anxiolytics</option>
+                        <option value="NSAIDs">NSAIDs</option>
+                     </select>
 
- <select
- value={statusFilter}
- onChange={(e) => setStatusFilter(e.target.value)}
- className="bg-dark-secondary border border-dark-tertiary rounded-lg px-3 py-2 text-xs text-gray-300 outline-none focus:border-emerald-500 min-w-[120px]"
- >
- <option value="all">All Status</option>
- <option value="In Stock">In Stock</option>
- <option value="Low Stock">Low Stock</option>
- <option value="Out of Stock">Out of Stock</option>
- </select>
- </div>
- </div>
+                     <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="bg-dark-secondary border border-dark-tertiary rounded p-2 text-xs text-gray-300 outline-none focus:border-emerald-500 min-w-[120px]"
+                     >
+                        <option value="all">All Status</option>
+                        <option value="In Stock">In Stock</option>
+                        <option value="Low Stock">Low Stock</option>
+                        <option value="Out of Stock">Out of Stock</option>
+                     </select>
+                  </div>
+               </div>
 
- {loading ? (
- <div className="flex items-center justify-center py-12">
- <Loader className="animate-spin text-emerald-500" size={32} />
- </div>
- ) : error ? (
- <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-lg">
- {error}
- </div>
- ) : filteredMedicines.length === 0 ? (
- <div className="text-center py-12 text-gray-400">
- No medicines found
- </div>
- ) : (
- <div className="overflow-x-auto">
- <DataTable columns={columns_0} data={filteredMedicines} enableLocalSearch enableLocalPagination />
- </div>
- )}
+               {loading ? (
+                  <div className="flex items-center justify-center py-12">
+                     <Loader className="animate-spin text-emerald-500" size={32} />
+                  </div>
+               ) : error ? (
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
+                     {error}
+                  </div>
+               ) : filteredMedicines.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                     No medicines found
+                  </div>
+               ) : (
+                  <div className="overflow-x-auto">
+                     <DataTable columns={columns_0} data={filteredMedicines} enableLocalSearch enableLocalPagination />
+                  </div>
+               )}
 
- <div className="flex justify-between items-center mt-6 pt-4 border-t border-dark-tertiary">
- <p className="text-gray-400 text-sm">
- Showing {(page - 1) * limit + 1} to{" "}
- {Math.min(page * limit, totalMedicines)} of {totalMedicines}{" "}
- medicines
- </p>
- <div className="flex gap-2">
- <button
- onClick={() => setPage(Math.max(1, page - 1))}
- disabled={page === 1}
- className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
- >
- Previous
- </button>
- <button
- onClick={() => setPage(page + 1)}
- disabled={page * limit >= totalMedicines}
- className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
- >
- Next
- </button>
- </div>
- </div>
- </div>
- </div>
+               <div className="flex justify-between items-center my-3 my-3 mt-6 pt-4 border-t border-dark-tertiary">
+                  <p className="text-gray-400 text-sm">
+                     Showing {(page - 1) * limit + 1} to{" "}
+                     {Math.min(page * limit, totalMedicines)} of {totalMedicines}{" "}
+                     medicines
+                  </p>
+                  <div className="flex gap-2">
+                     <button
+                        onClick={() => setPage(Math.max(1, page - 1))}
+                        disabled={page === 1}
+                        className="p-2 bg-dark-tertiary rounded hover:bg-dark-tertiary/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                     >
+                        Previous
+                     </button>
+                     <button
+                        onClick={() => setPage(page + 1)}
+                        disabled={page * limit >= totalMedicines}
+                        className="p-2 bg-dark-tertiary rounded hover:bg-dark-tertiary/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                     >
+                        Next
+                     </button>
+                  </div>
+               </div>
+            </div>
+         </div>
 
- {deleteModal.show && (
- <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
- <div className="bg-dark-secondary border border-dark-tertiary rounded-lg p-6 max-w-sm">
- <h2 className="text-lg font-bold mb-2">Delete Medicine</h2>
- <p className="text-gray-400 mb-6">
- Are you sure you want to delete this medicine? This action cannot
- be undone.
- </p>
- <div className="flex gap-3 justify-end">
- <button
- onClick={() => setDeleteModal({ show: false, id: null })}
- className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 transition-colors"
- >
- Cancel
- </button>
- <button
- onClick={() => deleteModal.id && handleDelete(deleteModal.id)}
- className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
- >
- Delete
- </button>
- </div>
- </div>
- </div>
- )}
+         {deleteModal.show && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+               <div className="bg-dark-secondary border border-dark-tertiary rounded p-6 max-w-sm">
+                  <h2 className="text-lg  mb-2">Delete Medicine</h2>
+                  <p className="text-gray-400 mb-6">
+                     Are you sure you want to delete this medicine? This action cannot
+                     be undone.
+                  </p>
+                  <div className="flex gap-3 justify-end">
+                     <button
+                        onClick={() => setDeleteModal({ show: false, id: null })}
+                        className="p-2 bg-dark-tertiary rounded hover:bg-dark-tertiary/70 transition-colors"
+                     >
+                        Cancel
+                     </button>
+                     <button
+                        onClick={() => deleteModal.id && handleDelete(deleteModal.id)}
+                        className="p-2 bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 transition-colors"
+                     >
+                        Delete
+                     </button>
+                  </div>
+               </div>
+            </div>
+         )}
 
- <AddStockModal
- isOpen={stockModal.show}
- onClose={() => setStockModal({ show: false, medicine: null })}
- medicine={stockModal.medicine}
- onSuccess={fetchMedicines}
- />
+         <AddStockModal
+            isOpen={stockModal.show}
+            onClose={() => setStockModal({ show: false, medicine: null })}
+            medicine={stockModal.medicine}
+            onSuccess={fetchMedicines}
+         />
 
- <ViewMedicineModal
- isOpen={viewModal.show}
- onClose={() => setViewModal({ show: false, id: null })}
- medicineId={viewModal.id}
- />
- </>
- );
+         <ViewMedicineModal
+            isOpen={viewModal.show}
+            onClose={() => setViewModal({ show: false, id: null })}
+            medicineId={viewModal.id}
+         />
+      </>
+   );
 }

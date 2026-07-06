@@ -30,7 +30,7 @@ export default function InventoryExpiryAlertsPage() {
       setError("");
       // List items under the Inventory department
       const response = await inventoryAPI.list(1, 100);
-      
+
       // Filter for items that have an expiryDate
       const itemsData = response.data.items || [];
       const expiringList = itemsData
@@ -95,16 +95,16 @@ export default function InventoryExpiryAlertsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center my-3 my-3">
         <div className="flex items-center gap-4">
           <Link
             href="/inventory"
-            className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors"
+            className="p-2 hover:bg-dark-tertiary rounded transition-colors"
           >
             <ArrowLeft size={24} />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold">Expiry Alerts</h1>
+            <h1 className="text-3xl ">Expiry Alerts</h1>
             <p className="text-gray-400">Monitor expiration schedules for consumables, test kits, and sterile supplies</p>
           </div>
         </div>
@@ -112,7 +112,7 @@ export default function InventoryExpiryAlertsPage() {
           onClick={fetchExpiringItems}
           className="btn-secondary flex items-center gap-2"
         >
-          <RefreshCw size={18} /> Refresh
+          <RefreshCw size={15} /> Refresh
         </button>
       </div>
 
@@ -121,13 +121,13 @@ export default function InventoryExpiryAlertsPage() {
           <Loader className="animate-spin text-emerald-500" size={32} />
         </div>
       ) : error ? (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-lg">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
           {error}
         </div>
       ) : items.length === 0 ? (
         <div className="card text-center py-16">
           <CalendarRange className="mx-auto text-gray-500 mb-4" size={48} />
-          <h3 className="text-xl font-bold text-white mb-2">No Expiry Schedules Found</h3>
+          <h3 className="text-xl  text-white mb-2">No Expiry Schedules Found</h3>
           <p className="text-gray-400 max-w-md mx-auto">
             Great news! No inventory items currently have registered expiration dates or alerts triggered.
           </p>
@@ -169,7 +169,7 @@ export default function InventoryExpiryAlertsPage() {
                       <td className="py-4 px-4 text-gray-300">
                         {new Date(item.expiryDate!).toLocaleDateString()}
                       </td>
-                      <td className="py-4 px-4 font-bold text-white">
+                      <td className="py-4 px-4  text-white">
                         {daysLeft < 0 ? (
                           <span className="text-red-500">Expired</span>
                         ) : (

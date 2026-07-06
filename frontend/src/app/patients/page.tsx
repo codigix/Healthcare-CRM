@@ -63,11 +63,11 @@ export default function PatientsPage() {
 
       if (isDoctor && user) {
         const filtered = fetchedPatients.filter((patient: any) => {
-          return (user.doctorId && patient.doctorId === user.doctorId) || 
-                 (patient.doctor && user.name && (
-                   patient.doctor.toLowerCase().includes(user.name.toLowerCase()) || 
-                   user.name.toLowerCase().includes(patient.doctor.toLowerCase())
-                 ));
+          return (user.doctorId && patient.doctorId === user.doctorId) ||
+            (patient.doctor && user.name && (
+              patient.doctor.toLowerCase().includes(user.name.toLowerCase()) ||
+              user.name.toLowerCase().includes(patient.doctor.toLowerCase())
+            ));
         });
         setTotal(filtered.length);
       } else {
@@ -93,10 +93,10 @@ export default function PatientsPage() {
 
   const displayedPatients = patients.filter((patient) => {
     if (isDoctor && user) {
-      const matchesDoctor = 
-        (user.doctorId && patient.doctorId === user.doctorId) || 
+      const matchesDoctor =
+        (user.doctorId && patient.doctorId === user.doctorId) ||
         (patient.doctor && user.name && (
-          patient.doctor.toLowerCase().includes(user.name.toLowerCase()) || 
+          patient.doctor.toLowerCase().includes(user.name.toLowerCase()) ||
           user.name.toLowerCase().includes(patient.doctor.toLowerCase())
         ));
       if (!matchesDoctor) return false;
@@ -107,9 +107,9 @@ export default function PatientsPage() {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center my-3 my-3">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Patients</h1>
+            <h1 className="text-3xl  mb-2">Patients</h1>
             <p className="text-gray-400">Manage your patients and their medical records.</p>
           </div>
           {canManagePatients && (
@@ -122,12 +122,12 @@ export default function PatientsPage() {
 
         <div className="card">
           <div className="mb-6">
-            <h2 className="text-xl font-bold mb-2">Patients List</h2>
+            <h2 className="text-xl  mb-2">Patients List</h2>
             <p className="text-gray-400 text-sm">A list of all patients in your clinic with their details.</p>
           </div>
 
           <div className="flex items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-2 bg-dark-tertiary rounded-lg px-4 flex-1 max-w-md">
+            <div className="flex items-center gap-2 bg-dark-tertiary rounded px-4 flex-1 max-w-md">
               <Search size={20} className="text-gray-400" />
               <input
                 type="text"
@@ -140,7 +140,7 @@ export default function PatientsPage() {
                 className="bg-transparent py-3 flex-1 outline-none"
               />
             </div>
-            <button className="p-3 bg-dark-tertiary hover:bg-dark-tertiary/80 rounded-lg transition-colors">
+            <button className="p-3 bg-dark-tertiary hover:bg-dark-tertiary/80 rounded transition-colors">
               <Filter size={20} />
             </button>
           </div>
@@ -163,49 +163,48 @@ export default function PatientsPage() {
                   {displayedPatients.map((patient) => {
                     const displayAge = patient.age && patient.age > 0 ? patient.age : calculateAge(patient.dob);
                     return (
-                    <tr key={patient.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 font-semibold">
-                            {patient.name.charAt(0).toUpperCase()}
-                          </div>
-                          <Link href={`/patients/${patient.id}`} className="font-medium hover:text-emerald-400 transition-colors">
-                            {patient.name}
-                          </Link>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-gray-300">
-                        {displayAge > 0 ? displayAge : '-'} • {patient.gender || '-'}
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          patient.status === 'Inactive' 
-                            ? 'bg-yellow-500/20 text-yellow-500' 
-                            : 'bg-emerald-500/20 text-emerald-500'
-                        }`}>
-                          {patient.status || 'Active'}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 text-gray-300">{patient.lastVisit ? patient.lastVisit : '-'}</td>
-                      {canManagePatients && (
+                      <tr key={patient.id} className="border-b border-dark-tertiary hover:bg-dark-tertiary/50 transition-colors">
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-2">
-                            <Link href={`/patients/edit/${patient.id}`} title="Edit Patient">
-                              <button className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-colors border border-emerald-500/20 flex items-center justify-center">
-                                <Edit size={15} />
-                              </button>
+                            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 font-semibold">
+                              {patient.name.charAt(0).toUpperCase()}
+                            </div>
+                            <Link href={`/patients/${patient.id}`} className="font-medium hover:text-emerald-400 transition-colors">
+                              {patient.name}
                             </Link>
-                            <button
-                              onClick={() => handleDelete(patient.id)}
-                              title="Delete Patient"
-                              className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors border border-red-500/20 flex items-center justify-center"
-                            >
-                              <Trash2 size={15} />
-                            </button>
                           </div>
                         </td>
-                      )}
-                    </tr>
+                        <td className="py-4 px-4 text-gray-300">
+                          {displayAge > 0 ? displayAge : '-'} • {patient.gender || '-'}
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${patient.status === 'Inactive'
+                            ? 'bg-yellow-500/20 text-yellow-500'
+                            : 'bg-emerald-500/20 text-emerald-500'
+                            }`}>
+                            {patient.status || 'Active'}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4 text-gray-300">{patient.lastVisit ? patient.lastVisit : '-'}</td>
+                        {canManagePatients && (
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-2">
+                              <Link href={`/patients/edit/${patient.id}`} title="Edit Patient">
+                                <button className="p-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded transition-colors border border-emerald-500/20 flex items-center justify-center">
+                                  <Edit size={15} />
+                                </button>
+                              </Link>
+                              <button
+                                onClick={() => handleDelete(patient.id)}
+                                title="Delete Patient"
+                                className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded transition-colors border border-red-500/20 flex items-center justify-center"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </td>
+                        )}
+                      </tr>
                     );
                   })}
                 </tbody>
@@ -214,7 +213,7 @@ export default function PatientsPage() {
           )}
 
           {!loading && displayedPatients.length > 0 && (
-            <div className="flex justify-between items-center mt-6 pt-4 border-t border-dark-tertiary">
+            <div className="flex justify-between items-center my-3 my-3 mt-6 pt-4 border-t border-dark-tertiary">
               <p className="text-gray-400 text-sm">
                 Showing {displayedPatients.length > 0 ? (page - 1) * 10 + 1 : 0} to{" "}
                 {Math.min(page * 10, isDoctor ? displayedPatients.length : total)} of {isDoctor ? displayedPatients.length : total} patients
@@ -223,14 +222,14 @@ export default function PatientsPage() {
                 <button
                   disabled={page === 1}
                   onClick={() => setPage(page - 1)}
-                  className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 bg-dark-tertiary rounded hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Previous
                 </button>
                 <button
                   disabled={page * 10 >= total}
                   onClick={() => setPage(page + 1)}
-                  className="px-4 py-2 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 bg-dark-tertiary rounded hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Next
                 </button>

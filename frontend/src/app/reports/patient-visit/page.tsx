@@ -163,20 +163,20 @@ export default function PatientVisitReportsPage() {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center my-3 my-3">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Patient Visit Report</h1>
+            <h1 className="text-3xl  mb-2">Patient Visit Report</h1>
             <p className="text-gray-400">
               Track patient visits, demographics, and health trends
             </p>
           </div>
           <div className="flex gap-2">
             <button className="btn-secondary flex items-center gap-2">
-              <RefreshCw size={18} />
+              <RefreshCw size={15} />
               Refresh
             </button>
             <button className="btn-primary flex items-center gap-2">
-              <Download size={18} />
+              <Download size={15} />
               Export
             </button>
           </div>
@@ -192,11 +192,10 @@ export default function PatientVisitReportsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-3 font-medium transition-colors ${
-                activeTab === tab.id
-                  ? "text-emerald-500 border-b-2 border-emerald-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
+              className={`p-2 font-medium transition-colors ${activeTab === tab.id
+                ? "text-emerald-500 border-b-2 border-emerald-500"
+                : "text-gray-400 hover:text-gray-300"
+                }`}
             >
               {tab.label}
             </button>
@@ -212,7 +211,7 @@ export default function PatientVisitReportsPage() {
               type="text"
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="px-4 py-2 bg-dark-tertiary rounded-lg text-white border border-dark-secondary focus:border-emerald-500 outline-none"
+              className="p-2 bg-dark-tertiary rounded text-white border border-dark-secondary focus:border-emerald-500 outline-none"
             />
           </div>
           <div>
@@ -222,7 +221,7 @@ export default function PatientVisitReportsPage() {
             <select
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
-              className="px-4 py-2 bg-dark-tertiary rounded-lg text-white border border-dark-secondary focus:border-emerald-500 outline-none"
+              className="p-2 bg-dark-tertiary rounded text-white border border-dark-secondary focus:border-emerald-500 outline-none"
             >
               <option>All Departments</option>
               <option>Cardiology</option>
@@ -238,7 +237,7 @@ export default function PatientVisitReportsPage() {
             <select
               value={doctor}
               onChange={(e) => setDoctor(e.target.value)}
-              className="px-4 py-2 bg-dark-tertiary rounded-lg text-white border border-dark-secondary focus:border-emerald-500 outline-none"
+              className="p-2 bg-dark-tertiary rounded text-white border border-dark-secondary focus:border-emerald-500 outline-none"
             >
               <option>All Doctors</option>
               <option>Dr. Smith</option>
@@ -255,7 +254,7 @@ export default function PatientVisitReportsPage() {
               {visitStats.map((stat, index) => (
                 <div key={index} className={`card ${stat.bgColor}`}>
                   <p className="text-gray-400 text-sm">{stat.label}</p>
-                  <h3 className={`text-2xl font-bold ${stat.color} my-2`}>
+                  <h3 className={`text-2xl  ${stat.color} my-2`}>
                     {stat.value}
                   </h3>
                   <p className="text-xs text-gray-500">{stat.change}</p>
@@ -362,7 +361,7 @@ export default function PatientVisitReportsPage() {
             </div>
 
             <div className="card">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center my-3 my-3 mb-4">
                 <div className="flex items-center gap-2">
                   <Users size={20} className="text-blue-500" />
                   <h2 className="text-lg font-semibold">
@@ -438,10 +437,10 @@ export default function PatientVisitReportsPage() {
         {(activeTab === "demographics" ||
           activeTab === "visit-trends" ||
           activeTab === "conditions") && (
-          <div className="card p-12 text-center">
-            <p className="text-gray-400 text-lg">Coming soon...</p>
-          </div>
-        )}
+            <div className="card p-12 text-center">
+              <p className="text-gray-400 text-lg">Coming soon...</p>
+            </div>
+          )}
       </div>
     </>
   );

@@ -93,7 +93,7 @@ export default function ConsultationPage() {
       const singleVal = parseInt(dosage.replace(/[^0-9]/g, ""));
       if (!isNaN(singleVal)) dailyTotal = singleVal;
     }
-    
+
     let days = 5;
     const durationNum = parseInt(duration.replace(/[^0-9]/g, ""));
     if (!isNaN(durationNum)) {
@@ -105,7 +105,7 @@ export default function ConsultationPage() {
         days = durationNum;
       }
     }
-    
+
     return dailyTotal > 0 ? dailyTotal * days : "";
   };
 
@@ -185,7 +185,7 @@ export default function ConsultationPage() {
         const aptRes = await appointmentAPI.get(id);
         const aptData = aptRes.data;
         setAppointment(aptData);
-        
+
         // Map notes if the appointment was edited previously or pre-filled
         if (aptData.notes) {
           try {
@@ -221,7 +221,7 @@ export default function ConsultationPage() {
           setAllergies(patData.allergies || "No known drug allergies");
 
           // 3. Fetch Past Appointments for clinical timeline
-          const pastAptsRes = await appointmentAPI.list(1, 20, { 
+          const pastAptsRes = await appointmentAPI.list(1, 20, {
             patientId: aptData.patientId,
             status: "Completed"
           });
@@ -268,7 +268,7 @@ export default function ConsultationPage() {
   // Handle adding prescription medication
   const handleAddMedicine = () => {
     if (!medName.trim()) return;
-    
+
     const newMed: MedicineItem = {
       name: medName.trim(),
       dosage: medDosage || "N/A",
@@ -328,7 +328,7 @@ export default function ConsultationPage() {
       };
 
       await appointmentAPI.complete(id, payload);
-      
+
       // Proactively update patient medical history if history changed
       if (patient && (medicalHistory !== patient.history)) {
         await patientAPI.update(patient.id, { history: medicalHistory });
@@ -391,7 +391,7 @@ export default function ConsultationPage() {
           reportedAt: parsed.reportedAt || null
         };
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // Fallback for legacy format
     const parts = detailsStr ? detailsStr.split("\n\n") : [];
@@ -420,16 +420,16 @@ export default function ConsultationPage() {
     <div className="space-y-6 pb-20">
       {/* Sticky Consultation Control Bar */}
       <div className="sticky top-0 z-30 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-dark-secondary border border-dark-tertiary/60 p-4 rounded-xl shadow-lg backdrop-blur-md">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Link href="/appointments">
-            <button className="p-2 hover:bg-dark-tertiary/40 text-gray-400 hover:text-white rounded-lg transition-colors border border-dark-tertiary/40 bg-dark-tertiary/10">
-              <ArrowLeft size={18} />
+            <button className="p-2 hover:bg-dark-tertiary/40 text-gray-400 hover:text-white rounded transition-colors border border-dark-tertiary/40 bg-dark-tertiary/10">
+              <ArrowLeft size={15} />
             </button>
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-white leading-none">Doctor Consultation Desk</h1>
-              <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase">
+              <h1 className="text-lg  text-white leading-none">Doctor Consultation Desk</h1>
+              <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 rounded font-mono text-[10px]  uppercase">
                 {appointment?.tokenNumber || "GEN-000"}
               </span>
             </div>
@@ -448,11 +448,10 @@ export default function ConsultationPage() {
                 setAdmissionRecommended(false);
                 setTriageSelected(true);
               }}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                triageSelected && !admissionRecommended
-                  ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/15"
-                  : "text-gray-400 hover:text-gray-200 hover:bg-dark-tertiary/20"
-              }`}
+              className={`px-4 py-1.5 rounded text-xs  transition-all ${triageSelected && !admissionRecommended
+                ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/15"
+                : "text-gray-400 hover:text-gray-200 hover:bg-dark-tertiary/20"
+                }`}
             >
               OPD Outpatient
             </button>
@@ -462,11 +461,10 @@ export default function ConsultationPage() {
                 setAdmissionRecommended(true);
                 setTriageSelected(true);
               }}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                triageSelected && admissionRecommended
-                  ? "bg-red-500 text-white shadow-md shadow-red-500/15"
-                  : "text-gray-400 hover:text-gray-200 hover:bg-dark-tertiary/20"
-              }`}
+              className={`px-4 py-1.5 rounded text-xs  transition-all ${triageSelected && admissionRecommended
+                ? "bg-red-500 text-white shadow-md shadow-red-500/15"
+                : "text-gray-400 hover:text-gray-200 hover:bg-dark-tertiary/20"
+                }`}
             >
               IPD Admission
             </button>
@@ -475,7 +473,7 @@ export default function ConsultationPage() {
           <button
             onClick={handleCompleteConsultation}
             disabled={submitting}
-            className="px-5 py-2.5 text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg transition-all shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/30 flex items-center gap-2 border border-emerald-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 text-sm  bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded transition-all shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/30 flex items-center gap-2 border border-emerald-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <>
@@ -494,14 +492,14 @@ export default function ConsultationPage() {
 
       {/* Error & Success Toasts */}
       {errorMsg && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg flex items-center gap-3 text-sm animate-pulse">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-2 rounded flex items-center gap-2 text-sm animate-pulse">
           <AlertCircle size={20} className="shrink-0" />
           <p>{errorMsg}</p>
         </div>
       )}
 
       {successMsg && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-lg flex items-center gap-3 text-sm">
+        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-2 rounded flex items-center gap-2 text-sm">
           <Check size={20} className="shrink-0" />
           <p>{successMsg}</p>
         </div>
@@ -516,7 +514,7 @@ export default function ConsultationPage() {
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
             </span>
           </div>
-          
+
           <div className="space-y-2">
             <h2 className="text-xl font-extrabold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent font-outfit tracking-tight">
               Patient Triage Classification Required
@@ -524,14 +522,14 @@ export default function ConsultationPage() {
             <div className="flex justify-center">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-dark-tertiary/45 border border-dark-tertiary/80 rounded-full text-[11px] text-gray-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                Active Case: <strong className="text-white font-bold">{patient?.name || "Patient"}</strong>
+                Active Case: <strong className="text-white ">{patient?.name || "Patient"}</strong>
               </div>
             </div>
             <p className="text-[11px] text-gray-400 max-w-md mx-auto leading-relaxed">
               Attending clinician, please select the care classification for this encounter to configure the correct clinical forms, prescriptions, and billing pathways.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
             {/* OPD Option Card */}
             <div
@@ -542,11 +540,11 @@ export default function ConsultationPage() {
               className="bg-dark-secondary/60 hover:bg-emerald-500/[0.02] border border-dark-tertiary hover:border-emerald-500/30 p-4 rounded-xl flex flex-col justify-between transition-all duration-300 group hover:scale-[1.01] hover:shadow-[0_4px_20px_rgb(16,185,129,0.04)] cursor-pointer text-center space-y-3"
             >
               <div className="space-y-2 py-2">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 mx-auto group-hover:scale-110 transition-transform duration-200">
-                  <User size={18} />
+                <div className="w-10 h-10 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400 mx-auto group-hover:scale-110 transition-transform duration-200">
+                  <User size={15} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">OPD Outpatient</p>
+                  <p className="text-sm  text-white group-hover:text-emerald-400 transition-colors">OPD Outpatient</p>
                 </div>
               </div>
 
@@ -569,11 +567,11 @@ export default function ConsultationPage() {
               className="bg-dark-secondary/60 hover:bg-red-500/[0.02] border border-dark-tertiary hover:border-red-500/30 p-4 rounded-xl flex flex-col justify-between transition-all duration-300 group hover:scale-[1.01] hover:shadow-[0_4px_20px_rgb(239,68,68,0.04)] cursor-pointer text-center space-y-3"
             >
               <div className="space-y-2 py-2">
-                <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 mx-auto group-hover:scale-110 transition-transform duration-200">
-                  <Hotel size={18} />
+                <div className="w-10 h-10 rounded bg-red-500/10 flex items-center justify-center text-red-400 mx-auto group-hover:scale-110 transition-transform duration-200">
+                  <Hotel size={15} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white group-hover:text-red-400 transition-colors">IPD Admission</p>
+                  <p className="text-sm  text-white group-hover:text-red-400 transition-colors">IPD Admission</p>
                 </div>
               </div>
 
@@ -590,442 +588,353 @@ export default function ConsultationPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
-        
-        {/* LEFT COLUMN: Patient Context Panel */}
-        <div className="lg:col-span-1 space-y-6">
-          
-          {/* Section 1: Patient Information Card */}
-          <div className="card bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
-            <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
-              <User size={18} className="text-emerald-400" />
-              <h2 className="text-base font-bold text-white font-outfit">Patient Information</h2>
-            </div>
 
-            <div className="space-y-3.5">
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-bold">Patient Name</p>
-                <p className="text-sm text-white font-bold mt-0.5">{patient?.name || "Unknown"}</p>
+          {/* LEFT COLUMN: Patient Context Panel */}
+          <div className="lg:col-span-1 space-y-6">
+
+            {/* Section 1: Patient Information Card */}
+            <div className="card bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
+              <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
+                <User size={15} className="text-emerald-400" />
+                <h2 className="text-base  text-white font-outfit">Patient Information</h2>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3.5">
                 <div>
-                  <p className="text-[11px] uppercase tracking-wider text-gray-500 font-bold">UHID / ID</p>
-                  <p className="text-xs text-gray-300 font-mono mt-0.5 truncate" title={patient?.id}>
-                    P-{patient?.id ? patient.id.slice(0, 8).toUpperCase() : "N/A"}
+                  <p className="text-[11px] uppercase tracking-wider text-gray-500 ">Patient Name</p>
+                  <p className="text-sm text-white  mt-0.5">{patient?.name || "Unknown"}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-gray-500 ">UHID / ID</p>
+                    <p className="text-xs text-gray-300 font-mono mt-0.5 truncate" title={patient?.id}>
+                      P-{patient?.id ? patient.id.slice(0, 8).toUpperCase() : "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-gray-500 ">Blood Group</p>
+                    <p className="text-xs text-emerald-400  mt-0.5">{patient?.bloodGroup || "Not Specified"}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-gray-500 ">Age / Gender</p>
+                    <p className="text-xs text-gray-300 font-semibold mt-0.5">
+                      {calculateAge(patient?.dob)} yrs / {patient?.gender || "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wider text-gray-500 ">Phone Number</p>
+                    <p className="text-xs text-gray-300 font-semibold mt-0.5">{patient?.phone || "N/A"}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wider text-gray-500  mb-1">
+                    Chronic History & Conditions
+                  </label>
+                  <textarea
+                    value={medicalHistory}
+                    onChange={(e) => setMedicalHistory(e.target.value)}
+                    placeholder="Record chronic conditions, surgical history, etc."
+                    rows={3}
+                    className="w-full text-xs bg-dark-tertiary/20 hover:bg-dark-tertiary/35 border border-dark-tertiary/65 focus:border-emerald-500/60 rounded px-2.5 py-1.5 outline-none text-gray-300 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wider text-gray-500  mb-1">
+                    Drug & Clinical Allergies
+                  </label>
+                  <input
+                    type="text"
+                    value={allergies}
+                    onChange={(e) => setAllergies(e.target.value)}
+                    placeholder="e.g. Penicillin, Sulfa, Peanuts"
+                    className="w-full text-xs bg-dark-tertiary/20 hover:bg-dark-tertiary/35 border border-dark-tertiary/65 focus:border-emerald-500/60 rounded px-2.5 py-1.5 outline-none text-gray-300 transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Appointment Detail Context */}
+            <div className="card bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
+              <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
+                <FileText size={15} className="text-emerald-400" />
+                <h2 className="text-base  text-white font-outfit">Encounter Information</h2>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wider text-gray-500 ">Encounter Date</p>
+                  <p className="text-gray-300 mt-1 font-semibold">
+                    {appointment?.date ? new Date(appointment.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric"
+                    }) : "Today"}
                   </p>
                 </div>
+
                 <div>
-                  <p className="text-[11px] uppercase tracking-wider text-gray-500 font-bold">Blood Group</p>
-                  <p className="text-xs text-emerald-400 font-bold mt-0.5">{patient?.bloodGroup || "Not Specified"}</p>
+                  <p className="text-[11px] uppercase tracking-wider text-gray-500 ">Visit Type</p>
+                  <p className="text-gray-300 mt-1 font-semibold">{appointment?.visitType || appointment?.type || "Standard Check-up"}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[11px] uppercase tracking-wider text-gray-500 font-bold">Age / Gender</p>
-                  <p className="text-xs text-gray-300 font-semibold mt-0.5">
-                    {calculateAge(patient?.dob)} yrs / {patient?.gender || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[11px] uppercase tracking-wider text-gray-500 font-bold">Phone Number</p>
-                  <p className="text-xs text-gray-300 font-semibold mt-0.5">{patient?.phone || "N/A"}</p>
-                </div>
+              <div className="text-xs">
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 ">Attending Clinician</p>
+                <p className="text-gray-300 mt-1 font-semibold">Dr. {appointment?.doctorName || user?.name}</p>
               </div>
 
-              <div>
-                <label className="block text-[11px] uppercase tracking-wider text-gray-500 font-bold mb-1">
-                  Chronic History & Conditions
-                </label>
-                <textarea
-                  value={medicalHistory}
-                  onChange={(e) => setMedicalHistory(e.target.value)}
-                  placeholder="Record chronic conditions, surgical history, etc."
-                  rows={3}
-                  className="w-full text-xs bg-dark-tertiary/20 hover:bg-dark-tertiary/35 border border-dark-tertiary/65 focus:border-emerald-500/60 rounded px-2.5 py-1.5 outline-none text-gray-300 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] uppercase tracking-wider text-gray-500 font-bold mb-1">
-                  Drug & Clinical Allergies
-                </label>
-                <input
-                  type="text"
-                  value={allergies}
-                  onChange={(e) => setAllergies(e.target.value)}
-                  placeholder="e.g. Penicillin, Sulfa, Peanuts"
-                  className="w-full text-xs bg-dark-tertiary/20 hover:bg-dark-tertiary/35 border border-dark-tertiary/65 focus:border-emerald-500/60 rounded px-2.5 py-1.5 outline-none text-gray-300 transition-colors"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Section 2: Appointment Detail Context */}
-          <div className="card bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
-            <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
-              <FileText size={18} className="text-emerald-400" />
-              <h2 className="text-base font-bold text-white font-outfit">Encounter Information</h2>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-bold">Encounter Date</p>
-                <p className="text-gray-300 mt-1 font-semibold">
-                  {appointment?.date ? new Date(appointment.date).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric"
-                  }) : "Today"}
+              <div className="text-xs border-t border-dark-tertiary/45 pt-3">
+                <p className="text-[11px] uppercase tracking-wider text-gray-500 ">Reason for Visit</p>
+                <p className="text-gray-300 mt-1.5 font-medium bg-dark-tertiary/20 border border-dark-tertiary/40 px-2.5 py-2 rounded leading-relaxed">
+                  {appointment?.visitReason || "Routine consultation requested by patient."}
                 </p>
               </div>
+            </div>
 
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-gray-500 font-bold">Visit Type</p>
-                <p className="text-gray-300 mt-1 font-semibold">{appointment?.visitType || appointment?.type || "Standard Check-up"}</p>
+            {/* Section 3: Previous Encounters */}
+            <div className="card bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
+              <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
+                <Clock size={15} className="text-emerald-400" />
+                <h2 className="text-base  text-white font-outfit">Previous Encounters</h2>
               </div>
-            </div>
 
-            <div className="text-xs">
-              <p className="text-[11px] uppercase tracking-wider text-gray-500 font-bold">Attending Clinician</p>
-              <p className="text-gray-300 mt-1 font-semibold">Dr. {appointment?.doctorName || user?.name}</p>
-            </div>
-
-            <div className="text-xs border-t border-dark-tertiary/45 pt-3">
-              <p className="text-[11px] uppercase tracking-wider text-gray-500 font-bold">Reason for Visit</p>
-              <p className="text-gray-300 mt-1.5 font-medium bg-dark-tertiary/20 border border-dark-tertiary/40 px-2.5 py-2 rounded leading-relaxed">
-                {appointment?.visitReason || "Routine consultation requested by patient."}
-              </p>
-            </div>
-          </div>
-
-          {/* Section 3: Previous Encounters */}
-          <div className="card bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
-            <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
-              <Clock size={18} className="text-emerald-400" />
-              <h2 className="text-base font-bold text-white font-outfit">Previous Encounters</h2>
-            </div>
-
-            {pastVisits.length === 0 ? (
-              <p className="text-xs text-gray-500 text-center py-4">No completed encounters recorded in MEDIXPRO.</p>
-            ) : (
-              <div className="space-y-4 max-h-[250px] overflow-y-auto pr-1">
-                {pastVisits.map((visit) => (
-                  <div key={visit.id} className="border-l-2 border-emerald-500/30 pl-3.5 relative space-y-1">
-                    <span className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-white font-bold">
-                        {new Date(visit.date).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric"
-                        })}
-                      </span>
-                      <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase bg-emerald-500/10 px-1.5 rounded">
-                        {visit.tokenNumber || "GEN"}
-                      </span>
-                    </div>
-                    {renderPreviousNotes(visit.notes)}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Section 4: Patient Diagnostic Lab Reports */}
-          <div className="card bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
-            <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
-              <ClipboardList size={18} className="text-emerald-400" />
-              <h2 className="text-base font-bold text-white font-outfit">Diagnostic & Lab Reports</h2>
-            </div>
-
-            {labs.length === 0 ? (
-              <p className="text-xs text-gray-500 text-center py-4">No laboratory test requests or completed reports found.</p>
-            ) : (
-              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
-                {labs.map((lab) => {
-                  const parsed = parseLabDetails(lab.details);
-                  const isCompleted = lab.status?.toLowerCase() === "completed";
-                  return (
-                    <div
-                      key={lab.id}
-                      className="p-3 bg-dark-tertiary/20 border border-dark-tertiary/50 rounded-lg hover:border-emerald-500/20 transition-all space-y-2 text-xs"
-                    >
-                      <div className="flex justify-between items-start gap-2">
-                        <span className="font-bold text-white leading-tight">
-                          {parsed.request.replace("Recommended Laboratory Tests: ", "")}
+              {pastVisits.length === 0 ? (
+                <p className="text-xs text-gray-500 text-center py-4">No completed encounters recorded in MEDIXPRO.</p>
+              ) : (
+                <div className="space-y-4 max-h-[250px] overflow-y-auto pr-1">
+                  {pastVisits.map((visit) => (
+                    <div key={visit.id} className="border-l-2 border-emerald-500/30 pl-3.5 relative space-y-1">
+                      <span className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <div className="flex justify-between items-center my-3 my-3 text-xs">
+                        <span className="text-white ">
+                          {new Date(visit.date).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric"
+                          })}
                         </span>
-                        <span
-                          className={`px-1.5 py-0.5 rounded text-[9px] font-bold shrink-0 border uppercase tracking-wider ${
-                            isCompleted
+                        <span className="text-[10px] font-mono  text-emerald-400 uppercase bg-emerald-500/10 px-1.5 rounded">
+                          {visit.tokenNumber || "GEN"}
+                        </span>
+                      </div>
+                      {renderPreviousNotes(visit.notes)}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Section 4: Patient Diagnostic Lab Reports */}
+            <div className="card bg-dark-secondary border border-dark-tertiary p-5 rounded-xl space-y-4">
+              <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
+                <ClipboardList size={15} className="text-emerald-400" />
+                <h2 className="text-base  text-white font-outfit">Diagnostic & Lab Reports</h2>
+              </div>
+
+              {labs.length === 0 ? (
+                <p className="text-xs text-gray-500 text-center py-4">No laboratory test requests or completed reports found.</p>
+              ) : (
+                <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1">
+                  {labs.map((lab) => {
+                    const parsed = parseLabDetails(lab.details);
+                    const isCompleted = lab.status?.toLowerCase() === "completed";
+                    return (
+                      <div
+                        key={lab.id}
+                        className="p-3 bg-dark-tertiary/20 border border-dark-tertiary/50 rounded hover:border-emerald-500/20 transition-all space-y-2 text-xs"
+                      >
+                        <div className="flex justify-between items-start gap-2">
+                          <span className=" text-white leading-tight">
+                            {parsed.request.replace("Recommended Laboratory Tests: ", "")}
+                          </span>
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[9px]  shrink-0 border uppercase tracking-wider ${isCompleted
                               ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                               : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                          }`}
-                        >
-                          {lab.status}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-[10px] text-gray-400 pt-1 border-t border-dark-tertiary/30">
-                        <span>Ordered: {new Date(lab.date).toLocaleDateString()}</span>
-                        {isCompleted && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedLabReport(lab);
-                              setShowLabReportModal(true);
-                            }}
-                            className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 active:scale-95 transition-all"
+                              }`}
                           >
-                            <Eye size={11} />
-                            View Findings
-                          </button>
+                            {lab.status}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-gray-400 pt-1 border-t border-dark-tertiary/30">
+                          <span>Ordered: {new Date(lab.date).toLocaleDateString()}</span>
+                          {isCompleted && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedLabReport(lab);
+                                setShowLabReportModal(true);
+                              }}
+                              className="text-emerald-400 hover:text-emerald-300  flex items-center gap-1 active:scale-95 transition-all"
+                            >
+                              <Eye size={11} />
+                              View Findings
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+          </div>
+
+          {/* RIGHT COLUMN: Clinical Notes & Prescription Wizard */}
+          <div className="lg:col-span-2 space-y-6">
+
+            {/* Card 1: Consultation Clinical Notes */}
+            <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded-xl space-y-4">
+              <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
+                <Activity size={15} className="text-emerald-400" />
+                <h2 className="text-base  text-white font-outfit">Clinical Examination & Diagnosis</h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs  text-gray-400 mb-1.5">Symptoms & Chief Complaints</label>
+                  <textarea
+                    value={symptoms}
+                    onChange={(e) => setSymptoms(e.target.value)}
+                    placeholder="Record symptoms (e.g. high fever, dry cough for 3 days)"
+                    rows={4}
+                    className="w-full text-xs bg-dark-tertiary/10 border border-dark-tertiary/80 focus:border-emerald-500/60 rounded p-2 outline-none text-white transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs  text-gray-400 mb-1.5">Clinical Observations</label>
+                  <textarea
+                    value={observations}
+                    onChange={(e) => setObservations(e.target.value)}
+                    placeholder="Record clinical examinations, vitals, general appearance"
+                    rows={4}
+                    className="w-full text-xs bg-dark-tertiary/10 border border-dark-tertiary/80 focus:border-emerald-500/60 rounded p-2 outline-none text-white transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs  text-emerald-400 mb-1.5">
+                    Diagnosis / Assessment <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={diagnosis}
+                    onChange={(e) => setDiagnosis(e.target.value)}
+                    placeholder="Enter primary and secondary diagnoses (e.g. Acute Viral Bronchitis)"
+                    rows={3}
+                    className="w-full text-xs bg-dark-tertiary/10 border border-emerald-500/30 focus:border-emerald-500 rounded p-2 outline-none text-white transition-colors"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs  text-gray-400 mb-1.5">Advice & Instructions</label>
+                  <textarea
+                    value={advice}
+                    onChange={(e) => setAdvice(e.target.value)}
+                    placeholder="Clinical instructions, dietary advice, activity restrictions"
+                    rows={3}
+                    className="w-full text-xs bg-dark-tertiary/10 border border-dark-tertiary/80 focus:border-emerald-500/60 rounded p-2 outline-none text-white transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Digital Prescription Desk */}
+            <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded-xl space-y-4">
+              <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
+                <Heart size={15} className="text-emerald-400" />
+                <h2 className="text-base  text-white font-outfit">Interactive Digital Prescription Desk</h2>
+              </div>
+
+              {/* Medicine builder inputs */}
+              <div className="bg-dark-tertiary/20 p-4 rounded-xl border border-dark-tertiary/50 space-y-4">
+                <h3 className="text-xs  text-emerald-400 uppercase tracking-wide">Add Medication</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                  {/* Search Medicine name */}
+                  <div className="md:col-span-3 relative">
+                    <label className="block text-[10px] text-gray-500 uppercase  mb-1">Medicine Name</label>
+                    <div className="flex items-center gap-2 bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1">
+                      <Search size={12} className="text-gray-500" />
+                      <input
+                        type="text"
+                        placeholder="e.g. Paracetamol"
+                        value={medName}
+                        onChange={(e) => {
+                          setMedName(e.target.value);
+                          setShowMedSuggestions(true);
+                        }}
+                        onFocus={() => setShowMedSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowMedSuggestions(false), 200)}
+                        className="bg-transparent text-xs w-full outline-none text-white py-0.5"
+                      />
+                    </div>
+
+                    {/* Autocomplete dropdown suggestions */}
+                    {showMedSuggestions && (
+                      <div
+                        onMouseDown={(e) => e.preventDefault()}
+                        className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded shadow-xl z-20 max-h-40 overflow-y-auto"
+                      >
+                        {dbMedicines
+                          .filter(m => !medName.trim() || m.name.toLowerCase().includes(medName.toLowerCase()))
+                          .slice(0, 30)
+                          .map((med) => (
+                            <button
+                              key={med.id}
+                              type="button"
+                              onClick={() => {
+                                setMedName(med.name);
+                                setShowMedSuggestions(false);
+                              }}
+                              className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-emerald-500 hover:text-white transition-colors border-b border-dark-tertiary/30 last:border-0"
+                            >
+                              {med.name} <span className="text-[10px] text-gray-500 hover:text-emerald-200">({med.category || "General"})</span>
+                            </button>
+                          ))}
+                        {dbMedicines.filter(m => !medName.trim() || m.name.toLowerCase().includes(medName.toLowerCase())).length === 0 && (
+                          <div className="p-2 text-xs text-gray-500 italic">No matches found, press enter to add custom name</div>
                         )}
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-        </div>
-
-        {/* RIGHT COLUMN: Clinical Notes & Prescription Wizard */}
-        <div className="lg:col-span-2 space-y-6">
-          
-          {/* Card 1: Consultation Clinical Notes */}
-          <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded-xl space-y-4">
-            <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
-              <Activity size={18} className="text-emerald-400" />
-              <h2 className="text-base font-bold text-white font-outfit">Clinical Examination & Diagnosis</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1.5">Symptoms & Chief Complaints</label>
-                <textarea
-                  value={symptoms}
-                  onChange={(e) => setSymptoms(e.target.value)}
-                  placeholder="Record symptoms (e.g. high fever, dry cough for 3 days)"
-                  rows={4}
-                  className="w-full text-xs bg-dark-tertiary/10 border border-dark-tertiary/80 focus:border-emerald-500/60 rounded-lg px-3 py-2 outline-none text-white transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1.5">Clinical Observations</label>
-                <textarea
-                  value={observations}
-                  onChange={(e) => setObservations(e.target.value)}
-                  placeholder="Record clinical examinations, vitals, general appearance"
-                  rows={4}
-                  className="w-full text-xs bg-dark-tertiary/10 border border-dark-tertiary/80 focus:border-emerald-500/60 rounded-lg px-3 py-2 outline-none text-white transition-colors"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-emerald-400 mb-1.5">
-                  Diagnosis / Assessment <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={diagnosis}
-                  onChange={(e) => setDiagnosis(e.target.value)}
-                  placeholder="Enter primary and secondary diagnoses (e.g. Acute Viral Bronchitis)"
-                  rows={3}
-                  className="w-full text-xs bg-dark-tertiary/10 border border-emerald-500/30 focus:border-emerald-500 rounded-lg px-3 py-2 outline-none text-white transition-colors"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1.5">Advice & Instructions</label>
-                <textarea
-                  value={advice}
-                  onChange={(e) => setAdvice(e.target.value)}
-                  placeholder="Clinical instructions, dietary advice, activity restrictions"
-                  rows={3}
-                  className="w-full text-xs bg-dark-tertiary/10 border border-dark-tertiary/80 focus:border-emerald-500/60 rounded-lg px-3 py-2 outline-none text-white transition-colors"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: Digital Prescription Desk */}
-          <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded-xl space-y-4">
-            <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
-              <Heart size={18} className="text-emerald-400" />
-              <h2 className="text-base font-bold text-white font-outfit">Interactive Digital Prescription Desk</h2>
-            </div>
-
-            {/* Medicine builder inputs */}
-            <div className="bg-dark-tertiary/20 p-4 rounded-xl border border-dark-tertiary/50 space-y-4">
-              <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-wide">Add Medication</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-                {/* Search Medicine name */}
-                <div className="md:col-span-3 relative">
-                  <label className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Medicine Name</label>
-                  <div className="flex items-center gap-2 bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1">
-                    <Search size={12} className="text-gray-500" />
-                    <input
-                      type="text"
-                      placeholder="e.g. Paracetamol"
-                      value={medName}
-                      onChange={(e) => {
-                        setMedName(e.target.value);
-                        setShowMedSuggestions(true);
-                      }}
-                      onFocus={() => setShowMedSuggestions(true)}
-                      onBlur={() => setTimeout(() => setShowMedSuggestions(false), 200)}
-                      className="bg-transparent text-xs w-full outline-none text-white py-0.5"
-                    />
+                    )}
                   </div>
 
-                  {/* Autocomplete dropdown suggestions */}
-                  {showMedSuggestions && (
-                    <div 
-                      onMouseDown={(e) => e.preventDefault()}
-                      className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-xl z-20 max-h-40 overflow-y-auto"
-                    >
-                      {dbMedicines
-                        .filter(m => !medName.trim() || m.name.toLowerCase().includes(medName.toLowerCase()))
-                        .slice(0, 30)
-                        .map((med) => (
-                          <button
-                            key={med.id}
-                            type="button"
-                            onClick={() => {
-                              setMedName(med.name);
-                              setShowMedSuggestions(false);
-                            }}
-                            className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-emerald-500 hover:text-white transition-colors border-b border-dark-tertiary/30 last:border-0"
-                          >
-                            {med.name} <span className="text-[10px] text-gray-500 hover:text-emerald-200">({med.category || "General"})</span>
-                          </button>
-                        ))}
-                      {dbMedicines.filter(m => !medName.trim() || m.name.toLowerCase().includes(medName.toLowerCase())).length === 0 && (
-                        <div className="px-3 py-2 text-xs text-gray-500 italic">No matches found, press enter to add custom name</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Dosage Schedule Selector */}
-                <div className="md:col-span-2 relative">
-                  <label className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Dosage Schedule</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 1-0-1"
-                    value={medDosage}
-                    onChange={(e) => setMedDosage(e.target.value)}
-                    onFocus={() => setShowDosageSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowDosageSuggestions(false), 200)}
-                    className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
-                  />
-                  {showDosageSuggestions && (
-                    <div 
-                      onMouseDown={(e) => e.preventDefault()}
-                      className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-xl z-20 max-h-40 overflow-y-auto"
-                    >
-                      {dosagePresets
-                        .filter(preset => !medDosage.trim() || preset.toLowerCase().includes(medDosage.toLowerCase()))
-                        .map((preset) => (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => {
-                              setMedDosage(preset);
-                              setShowDosageSuggestions(false);
-                            }}
-                            className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-emerald-500 hover:text-white transition-colors border-b border-dark-tertiary/30 last:border-0"
-                          >
-                            {preset}
-                          </button>
-                        ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Duration */}
-                <div className="md:col-span-2 relative">
-                  <label className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Duration</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 5 days"
-                    value={medDuration}
-                    onChange={(e) => setMedDuration(e.target.value)}
-                    onFocus={() => setShowDurationSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowDurationSuggestions(false), 200)}
-                    className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
-                  />
-                  {showDurationSuggestions && (
-                    <div 
-                      onMouseDown={(e) => e.preventDefault()}
-                      className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-xl z-20 max-h-40 overflow-y-auto"
-                    >
-                      {durationPresets
-                        .filter(preset => !medDuration.trim() || preset.toLowerCase().includes(medDuration.toLowerCase()))
-                        .map((preset) => (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => {
-                              setMedDuration(preset);
-                              setShowDurationSuggestions(false);
-                            }}
-                            className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-emerald-500 hover:text-white transition-colors border-b border-dark-tertiary/30 last:border-0"
-                          >
-                            {preset}
-                          </button>
-                        ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Total Qty (Tablets) */}
-                <div className="md:col-span-2">
-                  <label className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Total Qty (Tabs)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={medQty || ""}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value);
-                      setMedQty(isNaN(val) ? 0 : val);
-                    }}
-                    className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
-                  />
-                </div>
-
-                {/* Instructions */}
-                <div className="md:col-span-3 flex items-end gap-2 relative">
-                  <div className="w-full relative">
-                    <label className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Instructions</label>
+                  {/* Dosage Schedule Selector */}
+                  <div className="md:col-span-2 relative">
+                    <label className="block text-[10px] text-gray-500 uppercase  mb-1">Dosage Schedule</label>
                     <input
                       type="text"
-                      placeholder="e.g. After food"
-                      value={medInstructions}
-                      onChange={(e) => setMedInstructions(e.target.value)}
-                      onFocus={() => setShowInstructionsSuggestions(true)}
-                      onBlur={() => setTimeout(() => setShowInstructionsSuggestions(false), 200)}
+                      placeholder="e.g. 1-0-1"
+                      value={medDosage}
+                      onChange={(e) => setMedDosage(e.target.value)}
+                      onFocus={() => setShowDosageSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowDosageSuggestions(false), 200)}
                       className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
                     />
-                    {showInstructionsSuggestions && (
-                      <div 
+                    {showDosageSuggestions && (
+                      <div
                         onMouseDown={(e) => e.preventDefault()}
-                        className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded-lg shadow-xl z-20 max-h-40 overflow-y-auto"
+                        className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded shadow-xl z-20 max-h-40 overflow-y-auto"
                       >
-                        {instructionPresets
-                          .filter(preset => !medInstructions.trim() || preset.toLowerCase().includes(medInstructions.toLowerCase()))
+                        {dosagePresets
+                          .filter(preset => !medDosage.trim() || preset.toLowerCase().includes(medDosage.toLowerCase()))
                           .map((preset) => (
                             <button
                               key={preset}
                               type="button"
                               onClick={() => {
-                                setMedInstructions(preset);
-                                setShowInstructionsSuggestions(false);
+                                setMedDosage(preset);
+                                setShowDosageSuggestions(false);
                               }}
                               className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-emerald-500 hover:text-white transition-colors border-b border-dark-tertiary/30 last:border-0"
                             >
@@ -1035,193 +944,278 @@ export default function ConsultationPage() {
                       </div>
                     )}
                   </div>
-                  
-                  <button
-                    type="button"
-                    onClick={handleAddMedicine}
-                    className="p-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors shadow shadow-emerald-500/20 hover:shadow-emerald-500/40 flex items-center justify-center shrink-0 active:scale-95"
-                    title="Add medicine"
-                  >
-                    <Plus size={16} />
-                  </button>
-                </div>
-              </div>
-            </div>
 
-            {/* Added Medicines Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-dark-tertiary text-left">
-                    <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider">#</th>
-                    <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider">Medicine Name</th>
-                    <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider">Dosage Schedule</th>
-                    <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider">Duration</th>
-                    <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider">Total Qty</th>
-                    <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider">Instructions</th>
-                    <th className="py-2.5 px-3 text-xs text-gray-500 font-bold uppercase tracking-wider text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {medicines.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="text-center py-6 text-xs text-gray-500 italic">
-                        No medications prescribed yet.
-                      </td>
-                    </tr>
-                  ) : (
-                    medicines.map((med, index) => (
-                      <tr
-                        key={index}
-                        className="border-b border-dark-tertiary/45 hover:bg-dark-tertiary/10 transition-colors"
+                  {/* Duration */}
+                  <div className="md:col-span-2 relative">
+                    <label className="block text-[10px] text-gray-500 uppercase  mb-1">Duration</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 5 days"
+                      value={medDuration}
+                      onChange={(e) => setMedDuration(e.target.value)}
+                      onFocus={() => setShowDurationSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowDurationSuggestions(false), 200)}
+                      className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
+                    />
+                    {showDurationSuggestions && (
+                      <div
+                        onMouseDown={(e) => e.preventDefault()}
+                        className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded shadow-xl z-20 max-h-40 overflow-y-auto"
                       >
-                        <td className="py-3 px-3 text-xs text-gray-400 font-bold font-mono">{index + 1}</td>
-                        <td className="py-3 px-3 text-xs text-white font-bold">{med.name}</td>
-                        <td className="py-3 px-3 text-xs text-gray-300 font-mono font-semibold">
-                          <span className="bg-dark-tertiary border border-dark-tertiary/80 text-gray-300 px-2 py-0.5 rounded text-[10px]">
-                            {med.dosage}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-xs text-gray-300 font-semibold">{med.duration}</td>
-                        <td className="py-3 px-3 text-xs text-emerald-400 font-bold font-mono">{med.qty || 10}</td>
-                        <td className="py-3 px-3 text-xs text-gray-400 font-medium">
-                          <span className="bg-purple-500/10 text-purple-400 border border-purple-500/15 px-2 py-0.5 rounded text-[10px]">
-                            {med.instructions}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-xs text-right">
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveMedicine(index)}
-                            className="p-1 bg-dark-tertiary/30 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded transition-all active:scale-95"
-                            title="Remove Medication"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Card 3: Diagnostic Lab & Admissions referral */}
-          <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded-xl space-y-6">
-            <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
-              <CheckSquare size={18} className="text-emerald-400" />
-              <h2 className="text-base font-bold text-white font-outfit">Diagnostic referrals & Follow-up Plans</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* Lab Recommendations Column */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-dark-tertiary/40 pb-2">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400">Laboratory Recommendations</label>
-                    <p className="text-[10px] text-gray-500 mt-0.5">Toggle if diagnostic clinical tests are required.</p>
+                        {durationPresets
+                          .filter(preset => !medDuration.trim() || preset.toLowerCase().includes(medDuration.toLowerCase()))
+                          .map((preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => {
+                                setMedDuration(preset);
+                                setShowDurationSuggestions(false);
+                              }}
+                              className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-emerald-500 hover:text-white transition-colors border-b border-dark-tertiary/30 last:border-0"
+                            >
+                              {preset}
+                            </button>
+                          ))}
+                      </div>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setLabTestsActive(!labTestsActive)}
-                    className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      labTestsActive ? "bg-emerald-500" : "bg-dark-tertiary"
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        labTestsActive ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    ></span>
-                  </button>
-                </div>
 
-                {labTestsActive && (
-                  <div className="space-y-3 animate-fadeIn">
-                    <div className="grid grid-cols-2 gap-3">
-                      {labTestPresets.map((test) => (
-                        <button
-                          key={test}
-                          type="button"
-                          onClick={() => handleToggleLabTest(test)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs border transition-all ${
-                            selectedLabTests.includes(test)
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/40 shadow-sm shadow-emerald-500/5 font-bold"
-                              : "bg-dark-tertiary/10 text-gray-400 border-dark-tertiary hover:bg-dark-tertiary/20 hover:text-gray-300"
-                          }`}
-                        >
-                          {selectedLabTests.includes(test) ? (
-                            <CheckSquare size={14} className="text-emerald-400 shrink-0" />
-                          ) : (
-                            <Square size={14} className="text-gray-500 shrink-0" />
-                          )}
-                          {test}
-                        </button>
-                      ))}
-                    </div>
+                  {/* Total Qty (Tablets) */}
+                  <div className="md:col-span-2">
+                    <label className="block text-[10px] text-gray-500 uppercase  mb-1">Total Qty (Tabs)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={medQty || ""}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        setMedQty(isNaN(val) ? 0 : val);
+                      }}
+                      className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
+                    />
+                  </div>
 
-                    <div className="pt-1">
-                      <label className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Other / Custom Lab Tests</label>
+                  {/* Instructions */}
+                  <div className="md:col-span-3 flex items-end gap-2 relative">
+                    <div className="w-full relative">
+                      <label className="block text-[10px] text-gray-500 uppercase  mb-1">Instructions</label>
                       <input
                         type="text"
-                        value={otherLabTests}
-                        onChange={(e) => setOtherLabTests(e.target.value)}
-                        placeholder="e.g. Thyroid Profile, HbA1c, Urine Routine"
-                        className="w-full text-xs bg-dark-tertiary/15 hover:bg-dark-tertiary/30 border border-dark-tertiary/80 focus:border-emerald-500/60 rounded px-2.5 py-1.5 outline-none text-gray-300 transition-colors"
+                        placeholder="e.g. After food"
+                        value={medInstructions}
+                        onChange={(e) => setMedInstructions(e.target.value)}
+                        onFocus={() => setShowInstructionsSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowInstructionsSuggestions(false), 200)}
+                        className="bg-dark-secondary/60 border border-dark-tertiary rounded px-2.5 py-1.5 text-xs w-full text-white outline-none focus:border-emerald-500/50"
                       />
+                      {showInstructionsSuggestions && (
+                        <div
+                          onMouseDown={(e) => e.preventDefault()}
+                          className="absolute left-0 right-0 mt-1 bg-dark-secondary border border-dark-tertiary rounded shadow-xl z-20 max-h-40 overflow-y-auto"
+                        >
+                          {instructionPresets
+                            .filter(preset => !medInstructions.trim() || preset.toLowerCase().includes(medInstructions.toLowerCase()))
+                            .map((preset) => (
+                              <button
+                                key={preset}
+                                type="button"
+                                onClick={() => {
+                                  setMedInstructions(preset);
+                                  setShowInstructionsSuggestions(false);
+                                }}
+                                className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-emerald-500 hover:text-white transition-colors border-b border-dark-tertiary/30 last:border-0"
+                              >
+                                {preset}
+                              </button>
+                            ))}
+                        </div>
+                      )}
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={handleAddMedicine}
+                      className="p-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded transition-colors shadow shadow-emerald-500/20 hover:shadow-emerald-500/40 flex items-center justify-center shrink-0 active:scale-95"
+                      title="Add medicine"
+                    >
+                      <Plus size={16} />
+                    </button>
                   </div>
-                )}
+                </div>
               </div>
 
-              {/* Follow-up & Admission Column */}
-              <div className="space-y-4 border-t md:border-t-0 md:border-l border-dark-tertiary/45 pt-4 md:pt-0 md:pl-6">
-                
-                {/* OPD Mode: Render Follow-up Visit selector */}
-                {!admissionRecommended ? (
-                  <div className="space-y-2 animate-fadeIn">
-                    <label className="block text-xs font-bold text-gray-400 mb-1.5">
-                      Follow-up Recommendation
-                    </label>
-                    <div className="flex items-center gap-2 bg-dark-tertiary/15 border border-dark-tertiary/80 rounded px-3 py-1.5">
-                      <Calendar size={13} className="text-gray-400" />
-                      <input
-                        type="date"
-                        value={followUpDate}
-                        onChange={(e) => setFollowUpDate(e.target.value)}
-                        className="bg-transparent text-xs w-full text-white outline-none focus:outline-none"
-                      />
-                    </div>
-                    <p className="text-[10px] text-gray-500 mt-1">Specify the next outpatient follow-up date for this OPD consult.</p>
-                  </div>
-                ) : (
-                  /* IPD Mode: Render critical referral instructions directly */
-                  <div className="bg-red-500/5 p-3.5 rounded-lg border border-red-500/15 space-y-2.5 animate-fadeIn">
-                    <div className="flex items-center gap-1.5">
-                      <AlertCircle size={12} className="text-red-400" />
-                      <span className="text-[10px] text-red-400 font-bold uppercase tracking-wide">Critical Referral Instructions</span>
-                    </div>
-                    <textarea
-                      value={admissionNotes}
-                      onChange={(e) => setAdmissionNotes(e.target.value)}
-                      placeholder="State clinical reason for admission, department, ward choice, emergency level."
-                      rows={3}
-                      className="w-full text-xs bg-dark-secondary/80 hover:bg-dark-secondary border border-red-500/15 focus:border-red-500 rounded px-2.5 py-1.5 outline-none text-white transition-colors resize-none"
-                    />
-                    <p className="text-[10px] text-gray-500">This patient will be routed directly to the Admission Requests desk for room and bed allotment.</p>
-                  </div>
-                )}
-
+              {/* Added Medicines Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-dark-tertiary text-left">
+                      <th className="py-2.5 px-3 text-xs text-gray-500  uppercase tracking-wider">#</th>
+                      <th className="py-2.5 px-3 text-xs text-gray-500  uppercase tracking-wider">Medicine Name</th>
+                      <th className="py-2.5 px-3 text-xs text-gray-500  uppercase tracking-wider">Dosage Schedule</th>
+                      <th className="py-2.5 px-3 text-xs text-gray-500  uppercase tracking-wider">Duration</th>
+                      <th className="py-2.5 px-3 text-xs text-gray-500  uppercase tracking-wider">Total Qty</th>
+                      <th className="py-2.5 px-3 text-xs text-gray-500  uppercase tracking-wider">Instructions</th>
+                      <th className="py-2.5 px-3 text-xs text-gray-500  uppercase tracking-wider text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {medicines.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="text-center py-6 text-xs text-gray-500 italic">
+                          No medications prescribed yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      medicines.map((med, index) => (
+                        <tr
+                          key={index}
+                          className="border-b border-dark-tertiary/45 hover:bg-dark-tertiary/10 transition-colors"
+                        >
+                          <td className="py-3 px-3 text-xs text-gray-400  font-mono">{index + 1}</td>
+                          <td className="py-3 px-3 text-xs text-white ">{med.name}</td>
+                          <td className="py-3 px-3 text-xs text-gray-300 font-mono font-semibold">
+                            <span className="bg-dark-tertiary border border-dark-tertiary/80 text-gray-300 px-2 py-0.5 rounded text-[10px]">
+                              {med.dosage}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-xs text-gray-300 font-semibold">{med.duration}</td>
+                          <td className="py-3 px-3 text-xs text-emerald-400  font-mono">{med.qty || 10}</td>
+                          <td className="py-3 px-3 text-xs text-gray-400 font-medium">
+                            <span className="bg-purple-500/10 text-purple-400 border border-purple-500/15 px-2 py-0.5 rounded text-[10px]">
+                              {med.instructions}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-xs text-right">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveMedicine(index)}
+                              className="p-1 bg-dark-tertiary/30 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded transition-all active:scale-95"
+                              title="Remove Medication"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
-
             </div>
+
+            {/* Card 3: Diagnostic Lab & Admissions referral */}
+            <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded-xl space-y-6">
+              <div className="flex items-center gap-2 border-b border-dark-tertiary pb-3">
+                <CheckSquare size={15} className="text-emerald-400" />
+                <h2 className="text-base  text-white font-outfit">Diagnostic referrals & Follow-up Plans</h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {/* Lab Recommendations Column */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-dark-tertiary/40 pb-2">
+                    <div>
+                      <label className="block text-xs  text-gray-400">Laboratory Recommendations</label>
+                      <p className="text-[10px] text-gray-500 mt-0.5">Toggle if diagnostic clinical tests are required.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setLabTestsActive(!labTestsActive)}
+                      className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${labTestsActive ? "bg-emerald-500" : "bg-dark-tertiary"
+                        }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${labTestsActive ? "translate-x-5" : "translate-x-0"
+                          }`}
+                      ></span>
+                    </button>
+                  </div>
+
+                  {labTestsActive && (
+                    <div className="space-y-3 animate-fadeIn">
+                      <div className="grid grid-cols-2 gap-3">
+                        {labTestPresets.map((test) => (
+                          <button
+                            key={test}
+                            type="button"
+                            onClick={() => handleToggleLabTest(test)}
+                            className={`flex items-center gap-2 p-2 rounded text-left text-xs border transition-all ${selectedLabTests.includes(test)
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/40 shadow-sm shadow-emerald-500/5 "
+                              : "bg-dark-tertiary/10 text-gray-400 border-dark-tertiary hover:bg-dark-tertiary/20 hover:text-gray-300"
+                              }`}
+                          >
+                            {selectedLabTests.includes(test) ? (
+                              <CheckSquare size={14} className="text-emerald-400 shrink-0" />
+                            ) : (
+                              <Square size={14} className="text-gray-500 shrink-0" />
+                            )}
+                            {test}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="pt-1">
+                        <label className="block text-[10px] text-gray-500 uppercase  mb-1">Other / Custom Lab Tests</label>
+                        <input
+                          type="text"
+                          value={otherLabTests}
+                          onChange={(e) => setOtherLabTests(e.target.value)}
+                          placeholder="e.g. Thyroid Profile, HbA1c, Urine Routine"
+                          className="w-full text-xs bg-dark-tertiary/15 hover:bg-dark-tertiary/30 border border-dark-tertiary/80 focus:border-emerald-500/60 rounded px-2.5 py-1.5 outline-none text-gray-300 transition-colors"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Follow-up & Admission Column */}
+                <div className="space-y-4 border-t md:border-t-0 md:border-l border-dark-tertiary/45 pt-4 md:pt-0 md:pl-6">
+
+                  {/* OPD Mode: Render Follow-up Visit selector */}
+                  {!admissionRecommended ? (
+                    <div className="space-y-2 animate-fadeIn">
+                      <label className="block text-xs  text-gray-400 mb-1.5">
+                        Follow-up Recommendation
+                      </label>
+                      <div className="flex items-center gap-2 bg-dark-tertiary/15 border border-dark-tertiary/80 rounded px-3 py-1.5">
+                        <Calendar size={13} className="text-gray-400" />
+                        <input
+                          type="date"
+                          value={followUpDate}
+                          onChange={(e) => setFollowUpDate(e.target.value)}
+                          className="bg-transparent text-xs w-full text-white outline-none focus:outline-none"
+                        />
+                      </div>
+                      <p className="text-[10px] text-gray-500 mt-1">Specify the next outpatient follow-up date for this OPD consult.</p>
+                    </div>
+                  ) : (
+                    /* IPD Mode: Render critical referral instructions directly */
+                    <div className="bg-red-500/5 p-3.5 rounded border border-red-500/15 space-y-2.5 animate-fadeIn">
+                      <div className="flex items-center gap-1.5">
+                        <AlertCircle size={12} className="text-red-400" />
+                        <span className="text-[10px] text-red-400  uppercase tracking-wide">Critical Referral Instructions</span>
+                      </div>
+                      <textarea
+                        value={admissionNotes}
+                        onChange={(e) => setAdmissionNotes(e.target.value)}
+                        placeholder="State clinical reason for admission, department, ward choice, emergency level."
+                        rows={3}
+                        className="w-full text-xs bg-dark-secondary/80 hover:bg-dark-secondary border border-red-500/15 focus:border-red-500 rounded px-2.5 py-1.5 outline-none text-white transition-colors resize-none"
+                      />
+                      <p className="text-[10px] text-gray-500">This patient will be routed directly to the Admission Requests desk for room and bed allotment.</p>
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
+            </div>
+
           </div>
 
         </div>
-
-      </div>
       )}
 
       {/* Modal for viewing patient's diagnostic lab reports */}
@@ -1239,11 +1233,11 @@ export default function ConsultationPage() {
             <div className="space-y-4 text-gray-300">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-[10px] text-gray-500 uppercase font-bold">Patient Name</p>
-                  <p className="text-sm text-white font-bold mt-0.5">{selectedLabReport.patientName}</p>
+                  <p className="text-[10px] text-gray-500 uppercase ">Patient Name</p>
+                  <p className="text-sm text-white  mt-0.5">{selectedLabReport.patientName}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-500 uppercase font-bold">Reported Date</p>
+                  <p className="text-[10px] text-gray-500 uppercase ">Reported Date</p>
                   <p className="text-xs text-white font-semibold mt-0.5">
                     {parsed.reportedAt ? new Date(parsed.reportedAt).toLocaleString() : new Date(selectedLabReport.date).toLocaleDateString()}
                   </p>
@@ -1251,25 +1245,25 @@ export default function ConsultationPage() {
               </div>
 
               <div>
-                <p className="text-[10px] text-gray-500 uppercase font-bold">Requested Tests</p>
-                <p className="text-xs text-white font-semibold mt-0.5 bg-dark-tertiary/40 p-2.5 rounded-lg border border-dark-tertiary/20">
+                <p className="text-[10px] text-gray-500 uppercase ">Requested Tests</p>
+                <p className="text-xs text-white font-semibold mt-0.5 bg-dark-tertiary/40 p-2.5 rounded border border-dark-tertiary/20">
                   {parsed.request.replace("Recommended Laboratory Tests: ", "")}
                 </p>
               </div>
 
               <div>
-                <p className="text-[10px] text-gray-500 uppercase font-bold">Clinical Observations / Findings</p>
-                <div className="text-xs text-gray-300 leading-relaxed bg-dark-tertiary/20 p-4 rounded-lg border border-dark-tertiary/20 min-h-[100px] whitespace-pre-line">
+                <p className="text-[10px] text-gray-500 uppercase ">Clinical Observations / Findings</p>
+                <div className="text-xs text-gray-300 leading-relaxed bg-dark-tertiary/20 p-4 rounded border border-dark-tertiary/20 min-h-[100px] whitespace-pre-line">
                   {parsed.observations || "No clinical observations entered."}
                 </div>
               </div>
 
               {parsed.fileData && (
-                <div className="bg-emerald-500/[0.02] border border-emerald-500/20 p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="bg-emerald-500/[0.02] border border-emerald-500/20 p-4 rounded flex flex-col sm:flex-row items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <FileText size={20} className="text-emerald-400" />
                     <div>
-                      <p className="text-xs font-bold text-white max-w-[200px] truncate" title={parsed.fileName}>{parsed.fileName || "report-attachment"}</p>
+                      <p className="text-xs  text-white max-w-[200px] truncate" title={parsed.fileName}>{parsed.fileName || "report-attachment"}</p>
                       <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mt-0.5">{parsed.fileType?.split("/")[1] || "File"}</p>
                     </div>
                   </div>
@@ -1297,7 +1291,7 @@ export default function ConsultationPage() {
                           newTab.document.close();
                         }
                       }}
-                      className="flex-1 sm:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow shadow-emerald-500/10"
+                      className="flex-1 sm:flex-none p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded text-xs  flex items-center justify-center gap-1.5 transition-colors shadow shadow-emerald-500/10"
                     >
                       <ExternalLink size={13} />
                       View Attachment
@@ -1305,7 +1299,7 @@ export default function ConsultationPage() {
                     <a
                       href={parsed.fileData}
                       download={parsed.fileName || "lab-report"}
-                      className="flex-1 sm:flex-none px-4 py-2 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-dark-tertiary/50"
+                      className="flex-1 sm:flex-none p-2 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-dark-tertiary/50"
                     >
                       <Download size={13} />
                       Download
@@ -1315,7 +1309,7 @@ export default function ConsultationPage() {
               )}
 
               {parsed.fileData && parsed.fileType?.startsWith("image/") && (
-                <div className="border border-dark-tertiary rounded-lg p-2 bg-dark-secondary/30 flex items-center justify-center max-h-[220px] overflow-hidden">
+                <div className="border border-dark-tertiary rounded p-2 bg-dark-secondary/30 flex items-center justify-center max-h-[220px] overflow-hidden">
                   <img
                     src={parsed.fileData}
                     alt={parsed.fileName || "attachment"}
@@ -1331,7 +1325,7 @@ export default function ConsultationPage() {
                     setShowLabReportModal(false);
                     setSelectedLabReport(null);
                   }}
-                  className="px-5 py-2 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded-lg text-xs font-bold transition-colors"
+                  className="px-5 py-2 bg-dark-tertiary hover:bg-dark-tertiary/70 text-white rounded text-xs  transition-colors"
                 >
                   Close Findings
                 </button>

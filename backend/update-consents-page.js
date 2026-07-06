@@ -138,7 +138,7 @@ export default function ConsentsAndFormsPage() {
         <SearchableSelect 
           value={selectedPatientId}
           onChange={(e: any) => setSelectedPatientId(e.target.value)}
-          className="w-full md:w-96 bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none"
+          className="w-full md:w-96 bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none"
         >
           <option value="">-- Search and Select Patient --</option>
           {patients.map(p => (
@@ -157,7 +157,7 @@ export default function ConsentsAndFormsPage() {
               <FileSignature className="w-7 h-7 text-pink-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-100 flex items-center gap-3">
+              <h1 className="text-xl  text-slate-100 flex items-center gap-2">
                 Consents & Forms
                 {selectedPatient && <span className="px-2.5 py-1 bg-slate-800 border border-slate-700 text-slate-300 text-xs  rounded-md">ID: {selectedPatient.id}</span>}
               </h1>
@@ -175,13 +175,13 @@ export default function ConsentsAndFormsPage() {
             <button className="flex-1 md:flex-none items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white p-2.5 rounded text-sm font-medium transition-colors border border-slate-700 flex">
               <UploadCloud className="w-4 h-4" /> Upload Signed
             </button>
-            <button className="items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-2.5 rounded text-sm font-medium transition-colors border border-slate-700 hidden sm:flex">
+            <button className="items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white p-2.5 rounded text-sm font-medium transition-colors border border-slate-700 hidden sm:flex">
               <Download className="w-4 h-4" />
             </button>
-            <button className="items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-2.5 rounded text-sm font-medium transition-colors border border-slate-700 hidden sm:flex">
+            <button className="items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white p-2.5 rounded text-sm font-medium transition-colors border border-slate-700 hidden sm:flex">
               <Printer className="w-4 h-4" />
             </button>
-            <button onClick={() => selectedPatientId && fetchConsents(selectedPatientId)} className="items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-2.5 rounded text-sm font-medium transition-colors border border-slate-700 hidden sm:flex">
+            <button onClick={() => selectedPatientId && fetchConsents(selectedPatientId)} className="items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white p-2.5 rounded text-sm font-medium transition-colors border border-slate-700 hidden sm:flex">
               <RefreshCcw className="w-4 h-4" />
             </button>
           </div>
@@ -195,7 +195,7 @@ export default function ConsentsAndFormsPage() {
           <div key={i} className="bg-slate-900 border border-slate-800 rounded p-4 flex flex-col justify-center relative overflow-hidden group">
             <div className={\`absolute right-0 top-0 w-16 h-16 bg-\${stat.color}-500/10 rounded-bl-full translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-500\`}></div>
             <p className="text-sm font-medium text-slate-400 mb-1 relative z-10">{stat.label}</p>
-            <p className={\`text-xl font-bold text-\${stat.color}-400 relative z-10\`}>{stat.value}</p>
+            <p className={\`text-xl  text-\${stat.color}-400 relative z-10\`}>{stat.value}</p>
           </div>
         ))}
       </div>
@@ -208,7 +208,7 @@ export default function ConsentsAndFormsPage() {
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input type="text" placeholder="Search forms..." className="w-full bg-slate-950 border border-slate-800 rounded py-2 pl-9 pr-4 text-sm focus:border-pink-500/50 outline-none text-slate-200" />
           </div>
-          <SearchableSelect className="bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none flex-1 lg:flex-none">
+          <SearchableSelect className="bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none flex-1 lg:flex-none">
             <option>Consent Type (All)</option>
             <option>General Hospital Consent</option>
             <option>Surgery Consent</option>
@@ -280,7 +280,7 @@ export default function ConsentsAndFormsPage() {
 
             <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900/50 rounded-t-xl">
               <div>
-                <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2"><Plus className="w-5 h-5 text-pink-400" /> Generate New Consent Form</h2>
+                <h2 className="text-xl  text-slate-100 flex items-center gap-2"><Plus className="w-5 h-5 text-pink-400" /> Generate New Consent Form</h2>
                 <p className="text-xs text-slate-400 mt-1">Select template, fill details, and collect signatures digitally.</p>
               </div>
               <button onClick={() => setIsAddModalOpen(false)} className="p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-200 rounded transition-colors">
@@ -311,7 +311,7 @@ export default function ConsentsAndFormsPage() {
                       <SearchableSelect 
                         value={newConsent.type}
                         onChange={(e: any) => setNewConsent({...newConsent, type: e.target.value})}
-                        className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none"
+                        className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none"
                       >
                         <option value="">Select Category</option>
                         <option value="General Hospital Consent">General Hospital Consent</option>
@@ -327,7 +327,7 @@ export default function ConsentsAndFormsPage() {
                         type="text"
                         value={newConsent.department}
                         onChange={(e) => setNewConsent({...newConsent, department: e.target.value})}
-                        className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none" 
+                        className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none" 
                       />
                     </div>
                     <div>
@@ -335,7 +335,7 @@ export default function ConsentsAndFormsPage() {
                       <SearchableSelect 
                         value={newConsent.visitType}
                         onChange={(e: any) => setNewConsent({...newConsent, visitType: e.target.value})}
-                        className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none"
+                        className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none"
                       >
                         <option value="OPD">OPD</option>
                         <option value="IPD">IPD</option>
@@ -357,7 +357,7 @@ export default function ConsentsAndFormsPage() {
                        placeholder="e.g. Patient, Guardian"
                        value={newConsent.signedBy}
                        onChange={(e) => setNewConsent({...newConsent, signedBy: e.target.value})}
-                       className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none" 
+                       className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none" 
                      />
                   </div>
                   <div>
@@ -367,7 +367,7 @@ export default function ConsentsAndFormsPage() {
                        placeholder="e.g. Receptionist"
                        value={newConsent.witness}
                        onChange={(e) => setNewConsent({...newConsent, witness: e.target.value})}
-                       className="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none" 
+                       className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-slate-300 focus:border-pink-500/50 outline-none" 
                      />
                   </div>
                 </div>
@@ -375,10 +375,10 @@ export default function ConsentsAndFormsPage() {
 
               {/* Actions */}
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
-                <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded text-sm font-medium transition-colors">
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="p-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded text-sm font-medium transition-colors">
                   Cancel
                 </button>
-                <button type="submit" className="px-4 py-2 bg-pink-600 text-white hover:bg-pink-500 rounded text-sm font-medium transition-colors shadow-lg shadow-pink-500/20 flex items-center gap-2">
+                <button type="submit" className="p-2 bg-pink-600 text-white hover:bg-pink-500 rounded text-sm font-medium transition-colors shadow-lg shadow-pink-500/20 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4" /> Save Consent
                 </button>
               </div>

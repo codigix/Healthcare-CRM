@@ -54,7 +54,7 @@ export default function AdmissionRequestsPage() {
       if (detailsStr && detailsStr.startsWith("{")) {
         return JSON.parse(detailsStr);
       }
-    } catch (e) {}
+    } catch (e) { }
 
     // Fallback parsing for legacy text format
     const cleanNotes = detailsStr
@@ -73,7 +73,7 @@ export default function AdmissionRequestsPage() {
   const handleAllocateRoom = (record: AdmissionRecord) => {
     const parsed = parseDetails(record.details);
     const doctorNameToShow = record.doctorName || parsed.attendingDoctorName || "Unassigned";
-    
+
     // Redirect receptionist with rich clinical context
     router.push(
       `/room-allotment/new?patientId=${record.patientId || ""}&patientName=${encodeURIComponent(record.patientName)}&notes=${encodeURIComponent(parsed.clinicalNotes || "")}&recordId=${record.id}&doctor=${encodeURIComponent(doctorNameToShow)}&department=${encodeURIComponent(parsed.requestedDepartment || "")}&roomType=${encodeURIComponent(parsed.recommendedRoomType || "")}&reason=${encodeURIComponent(parsed.admissionReason || "")}&priority=${encodeURIComponent(parsed.priority || "Routine")}`
@@ -134,9 +134,9 @@ export default function AdmissionRequestsPage() {
         <div>
           <div className="flex items-center gap-2">
             <Activity className="text-emerald-400 animate-pulse" size={24} />
-            <h1 className="text-3xl font-bold text-white font-outfit">Clinical Admission Requests</h1>
+            <h1 className="text-3xl  text-white font-outfit">Clinical Admission Requests</h1>
           </div>
-          <p className="text-gray-400 mt-1">Receptionist Desk • Review, manage, and allot beds for inpatient recommendations</p>
+          <p className="text-gray-400 mt-1 text-xs">Receptionist Desk • Review, manage, and allot beds for inpatient recommendations</p>
         </div>
       </div>
 
@@ -149,15 +149,14 @@ export default function AdmissionRequestsPage() {
               setStatusFilter(tab.label);
               setPage(1);
             }}
-            className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all relative ${
-              statusFilter === tab.label
-                ? "border-emerald-500 text-emerald-400 font-bold"
-                : "border-transparent text-gray-400 hover:text-white"
-            }`}
+            className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all relative ${statusFilter === tab.label
+              ? "border-emerald-500 text-emerald-400 "
+              : "border-transparent text-gray-400 hover:text-white"
+              }`}
           >
             {tab.label}
             {tab.count > 0 && (
-              <span className="ml-2 bg-dark-tertiary px-2 py-0.5 rounded-full text-xs text-gray-300 font-bold">
+              <span className="ml-2 bg-dark-tertiary px-2 py-0.5 rounded-full text-xs text-gray-300 ">
                 {tab.count}
               </span>
             )}
@@ -167,8 +166,8 @@ export default function AdmissionRequestsPage() {
 
       <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded-xl shadow-lg">
         {/* Search bar */}
-        <div className="flex items-center gap-2 bg-dark-tertiary/40 border border-dark-tertiary/20 rounded-lg px-4 mb-6 max-w-md">
-          <Search size={18} className="text-gray-400" />
+        <div className="flex items-center gap-2 bg-dark-tertiary/40 border border-dark-tertiary/20 rounded px-4 mb-6 max-w-md">
+          <Search size={15} className="text-gray-400" />
           <input
             type="text"
             placeholder="Search by patient name..."
@@ -190,7 +189,7 @@ export default function AdmissionRequestsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-dark-tertiary/80 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                <tr className="border-b border-dark-tertiary/80 text-gray-400 text-xs  uppercase tracking-wider">
                   <th className="py-4 px-4">Date</th>
                   <th className="py-4 px-4">Patient details</th>
                   <th className="py-4 px-4">Priority</th>
@@ -212,15 +211,14 @@ export default function AdmissionRequestsPage() {
                   paginatedRecords.map((record) => {
                     const parsed = parseDetails(record.details);
                     const isEmergency = parsed.priority?.toLowerCase() === "emergency";
-                    
+
                     return (
                       <tr
                         key={record.id}
-                        className={`hover:bg-dark-tertiary/15 transition-colors group ${
-                          isEmergency && record.status?.toLowerCase() === "pending review" 
-                            ? "bg-rose-500/[0.02]" 
-                            : ""
-                        }`}
+                        className={`hover:bg-dark-tertiary/15 transition-colors group ${isEmergency && record.status?.toLowerCase() === "pending review"
+                          ? "bg-rose-500/[0.02]"
+                          : ""
+                          }`}
                       >
                         <td className="py-4 px-4 text-gray-300 text-xs whitespace-nowrap">
                           {new Date(record.date).toLocaleDateString("en-US", {
@@ -237,7 +235,7 @@ export default function AdmissionRequestsPage() {
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
                               </span>
                             )}
-                            <span className="text-white font-bold text-sm block group-hover:text-emerald-400 transition-colors">
+                            <span className="text-white  text-sm block group-hover:text-emerald-400 transition-colors">
                               {record.patientName}
                             </span>
                           </div>
@@ -246,7 +244,7 @@ export default function AdmissionRequestsPage() {
                           </span>
                         </td>
                         <td className="py-4 px-4 whitespace-nowrap">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getPriorityStyle(parsed.priority)}`}>
+                          <span className={`px-2 py-0.5 rounded text-[10px]  border ${getPriorityStyle(parsed.priority)}`}>
                             {parsed.priority || "Routine"}
                           </span>
                         </td>
@@ -259,7 +257,7 @@ export default function AdmissionRequestsPage() {
                           </span>
                         </td>
                         <td className="py-4 px-4">
-                          <span className="bg-dark-tertiary border border-dark-tertiary/80 text-gray-300 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                          <span className="bg-dark-tertiary border border-dark-tertiary/80 text-gray-300 px-2 py-0.5 rounded text-[10px]  uppercase tracking-wider">
                             {parsed.recommendedRoomType || "General"}
                           </span>
                         </td>
@@ -272,7 +270,7 @@ export default function AdmissionRequestsPage() {
                           </p>
                         </td>
                         <td className="py-4 px-4 whitespace-nowrap">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${getStatusStyle(record.status)}`}>
+                          <span className={`px-2.5 py-1 rounded-full text-[10px]  border ${getStatusStyle(record.status)}`}>
                             {record.status === "Pending" ? "Pending Review" : record.status}
                           </span>
                         </td>
@@ -280,14 +278,14 @@ export default function AdmissionRequestsPage() {
                           {["pending review", "pending"].includes(record.status?.toLowerCase()) ? (
                             <button
                               onClick={() => handleAllocateRoom(record)}
-                              className="px-3 py-1.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all shadow-md shadow-emerald-500/10 flex items-center gap-1.5 ml-auto active:scale-95 group-hover:shadow-emerald-500/25"
+                              className="px-3 py-1.5 text-xs  bg-emerald-500 hover:bg-emerald-600 text-white rounded transition-all shadow-md shadow-emerald-500/10 flex items-center gap-1.5 ml-auto active:scale-95 group-hover:shadow-emerald-500/25"
                             >
                               <Bed size={13} />
                               Allocate Bed
                               <ChevronRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                             </button>
                           ) : (
-                            <span className="text-[10px] text-gray-500 font-bold italic pr-2">Assigned</span>
+                            <span className="text-[10px] text-gray-500  italic pr-2">Assigned</span>
                           )}
                         </td>
                       </tr>
@@ -299,7 +297,7 @@ export default function AdmissionRequestsPage() {
           </div>
         )}
 
-        <div className="flex justify-between items-center mt-6 pt-4 border-t border-dark-tertiary">
+        <div className="flex justify-between items-center my-3 my-3 mt-6 pt-4 border-t border-dark-tertiary">
           <p className="text-gray-400 text-xs">
             Showing {filteredRecords.length > 0 ? (page - 1) * 10 + 1 : 0} to{" "}
             {Math.min(page * 10, totalFiltered)} of {totalFiltered} requests
@@ -308,14 +306,14 @@ export default function AdmissionRequestsPage() {
             <button
               disabled={page === 1}
               onClick={() => setPage(page - 1)}
-              className="px-3.5 py-1.5 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-semibold text-white"
+              className="px-3.5 py-1.5 bg-dark-tertiary rounded hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-semibold text-white"
             >
               Previous
             </button>
             <button
               disabled={page * 10 >= totalFiltered}
               onClick={() => setPage(page + 1)}
-              className="px-3.5 py-1.5 bg-dark-tertiary rounded-lg hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-semibold text-white"
+              className="px-3.5 py-1.5 bg-dark-tertiary rounded hover:bg-dark-tertiary/70 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs font-semibold text-white"
             >
               Next
             </button>

@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useAuthStore, useUIStore } from "@/lib/store";
-import { 
-  Bell, User, Settings, Moon, Sun, 
-  Info, CheckCircle, AlertTriangle, AlertCircle, 
-  Trash2, X, CheckCheck, BellOff 
+import {
+  Bell, User, Settings, Moon, Sun,
+  Info, CheckCircle, AlertTriangle, AlertCircle,
+  Trash2, X, CheckCheck, BellOff
 } from "lucide-react";
 import { notificationAPI } from "@/lib/api";
 import ComprehensiveSystemTour from "@/components/ComprehensiveSystemTour";
@@ -45,7 +45,7 @@ export default function Topbar() {
   const handleMarkAsRead = async (id: string) => {
     try {
       await notificationAPI.markAsRead(id);
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, isRead: true } : n)
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
@@ -143,14 +143,14 @@ export default function Topbar() {
       <div className="flex items-center gap-4 relative">
         {/* Notification Bell Button */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => setShowNotifications(!showNotifications)}
-            suppressHydrationWarning 
-            className={`p-2 hover:bg-dark-tertiary rounded-lg transition-all relative ${showNotifications ? "bg-dark-tertiary text-white" : "text-gray-400 hover:text-white"}`}
+            suppressHydrationWarning
+            className={`p-2 hover:bg-dark-tertiary rounded transition-all relative ${showNotifications ? "bg-dark-tertiary text-white" : "text-gray-400 hover:text-white"}`}
           >
             <Bell size={20} />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
+              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[9px]  rounded-full flex items-center justify-center animate-pulse">
                 {unreadCount}
               </span>
             )}
@@ -158,8 +158,8 @@ export default function Topbar() {
 
           {/* Invisible background overlay to close dropdown */}
           {showNotifications && (
-            <div 
-              className="fixed inset-0 z-40" 
+            <div
+              className="fixed inset-0 z-40"
               onClick={() => setShowNotifications(false)}
             />
           )}
@@ -167,13 +167,13 @@ export default function Topbar() {
           {/* Premium Glassmorphic Dropdown */}
           {showNotifications && (
             <div className="absolute right-0 mt-2.5 w-80 bg-dark-secondary/95 border border-dark-tertiary shadow-2xl rounded-xl overflow-hidden z-50 backdrop-blur-md animate-fadeIn flex flex-col max-h-[460px] max-w-[90vw]">
-              
+
               {/* Header */}
               <div className="flex items-center justify-between p-3.5 border-b border-dark-tertiary/60">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-white">Notifications</span>
+                  <span className=" text-sm text-white">Notifications</span>
                   {unreadCount > 0 && (
-                    <span className="bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                    <span className="bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded text-[10px] ">
                       {unreadCount} New
                     </span>
                   )}
@@ -196,27 +196,27 @@ export default function Topbar() {
                     <div className="p-3 bg-dark-tertiary/20 rounded-full text-gray-500">
                       <BellOff size={22} />
                     </div>
-                    <div className="text-xs font-bold text-gray-300">All caught up!</div>
+                    <div className="text-xs  text-gray-300">All caught up!</div>
                     <p className="text-[10px] text-gray-500 max-w-[200px]">No new notifications at the moment.</p>
                   </div>
                 ) : (
                   notifications.map((notif) => {
                     const styles = getNotificationStyles(notif.type);
                     return (
-                      <div 
+                      <div
                         key={notif.id}
                         onClick={() => !notif.isRead && handleMarkAsRead(notif.id)}
                         className={`p-3.5 flex gap-3 transition-colors relative cursor-pointer hover:bg-dark-tertiary/20 group ${!notif.isRead ? "bg-dark-tertiary/5 border-l-2 border-emerald-500" : ""}`}
                       >
                         {/* Type Icon Badge */}
-                        <div className={`w-7 h-7 rounded-lg ${styles.bgColor} border ${styles.borderColor} flex items-center justify-center shrink-0 mt-0.5`}>
+                        <div className={`w-7 h-7 rounded ${styles.bgColor} border ${styles.borderColor} flex items-center justify-center shrink-0 mt-0.5`}>
                           {styles.icon}
                         </div>
 
                         {/* Text Details */}
                         <div className="flex-1 min-w-0 pr-4">
                           <div className="flex items-center justify-between gap-1.5">
-                            <span className={`text-xs font-bold truncate ${!notif.isRead ? "text-white" : "text-gray-400"}`}>
+                            <span className={`text-xs  truncate ${!notif.isRead ? "text-white" : "text-gray-400"}`}>
                               {notif.title}
                             </span>
                             <span className="text-[9px] text-gray-500 shrink-0">
@@ -234,7 +234,7 @@ export default function Topbar() {
                         </div>
 
                         {/* Individual Delete Action */}
-                        <button 
+                        <button
                           onClick={(e) => handleDeleteNotification(notif.id, e)}
                           className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-gray-600 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 hover:bg-dark-tertiary/30"
                           title="Delete notification"
@@ -262,23 +262,23 @@ export default function Topbar() {
         <button
           onClick={toggleTheme}
           suppressHydrationWarning
-          className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors text-gray-400 hover:text-white"
+          className="p-2 hover:bg-dark-tertiary rounded transition-colors text-gray-400 hover:text-white"
         >
           {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
-        <button suppressHydrationWarning className="p-2 hover:bg-dark-tertiary rounded-lg transition-colors text-gray-400 hover:text-white">
+        <button suppressHydrationWarning className="p-2 hover:bg-dark-tertiary rounded transition-colors text-gray-400 hover:text-white">
           <Settings size={20} />
         </button>
 
-        <div className="flex items-center gap-3 pl-4 border-l border-dark-tertiary">
+        <div className="flex items-center gap-2 pl-4 border-l border-dark-tertiary">
           <div>
             <div className="text-mdfont-semibold">{user?.name}</div>
             <div className="text-xs text-gray-400">
               {user?.department ? user.department.toUpperCase() : user?.role?.toUpperCase()}
             </div>
           </div>
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold">
+          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center ">
             {user?.name?.charAt(0) || "U"}
           </div>
         </div>

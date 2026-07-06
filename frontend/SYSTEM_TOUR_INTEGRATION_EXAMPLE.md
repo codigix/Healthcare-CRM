@@ -171,7 +171,7 @@ export default function DashboardPage() {
         <div data-tour="dashboard-header">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+              <h1 className="text-3xl  mb-2">Dashboard</h1>
               <p className="text-gray-400">Here's an overview of your clinic's performance.</p>
             </div>
             {/* Add SystemTourExample here */}
@@ -326,7 +326,7 @@ export default function MyPage() {
     <>
       <button 
         onClick={() => setOpen(true)}
-        className="px-4 py-2 bg-blue-600 text-white rounded"
+        className="p-2 bg-blue-600 text-white rounded"
       >
         Start Tour
       </button>
