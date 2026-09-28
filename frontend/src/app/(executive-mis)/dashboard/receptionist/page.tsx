@@ -82,14 +82,14 @@ export default function ReceptionistDashboard() {
     return (
         <div className="space-y-6 text-gray-800 bg-[#f8fafc] -m-6 p-6 min-h-screen font-sans">
             {/* Header */}
-            <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+            <div className="flex justify-between items-center bg-white p-4 rounded shadow-sm border border-gray-100">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800">Reception Dashboard</h1>
                     <p className="text-sm text-gray-500">Manage patient flow, appointments, registrations & front office operations</p>
                 </div>
                 <div className="flex gap-4 items-center">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
                         <input type="text" placeholder="Search (Ctrl + K)" className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm w-64 outline-none focus:border-blue-500" />
                     </div>
                     <div className="text-sm text-gray-500 font-medium">
@@ -101,11 +101,11 @@ export default function ReceptionistDashboard() {
             {/* Top Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {topCards.map((c, i) => (
-                    <div key={i} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group">
+                    <div key={i} className="bg-white p-4 rounded shadow-sm border border-gray-100 relative overflow-hidden group">
                         <div className="flex justify-between items-start mb-2">
                             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{c.title}</h3>
                             <div className={`p-2 rounded-lg ${c.bg} ${c.color}`}>
-                                <c.icon size={18} />
+                                <c.icon size={15} />
                             </div>
                         </div>
                         <div className="flex items-baseline gap-2">
@@ -124,22 +124,22 @@ export default function ReceptionistDashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
+
                 {/* Left Column */}
                 <div className="lg:col-span-6 space-y-6">
                     {/* Today's Queue */}
-                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div className="bg-white p-5 rounded shadow-sm border border-gray-100">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold text-gray-800">Today's Queue</h2>
                             <div className="flex gap-4 border-b border-gray-200 w-full ml-4">
-                                <button 
+                                <button
                                     className={`pb-2 text-sm font-semibold transition-colors relative ${queueTab === 'opd' ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
                                     onClick={() => setQueueTab('opd')}
                                 >
                                     OPD Queue
                                     {queueTab === 'opd' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-md"></div>}
                                 </button>
-                                <button 
+                                <button
                                     className={`pb-2 text-sm font-semibold transition-colors relative ${queueTab === 'billing' ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
                                     onClick={() => setQueueTab('billing')}
                                 >
@@ -162,7 +162,7 @@ export default function ReceptionistDashboard() {
                                 <tbody>
                                     {queueTab === 'opd' && queue.opd.map((q: any, i: number) => (
                                         <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
-                                            <td className="py-3 font-medium text-gray-800">{q.tokenNumber || `OPD-${150+i}`}</td>
+                                            <td className="py-3 font-medium text-gray-800">{q.tokenNumber || `OPD-${150 + i}`}</td>
                                             <td className="py-3">{q.patient?.name}</td>
                                             <td className="py-3">{q.department || q.doctor?.specialization}</td>
                                             <td className="py-3">{q.doctor?.name}</td>
@@ -183,7 +183,7 @@ export default function ReceptionistDashboard() {
                     </div>
 
                     {/* Bed Availability */}
-                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div className="bg-white p-5 rounded shadow-sm border border-gray-100">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold text-gray-800">Bed Availability</h2>
                         </div>
@@ -224,7 +224,7 @@ export default function ReceptionistDashboard() {
                 {/* Right Column */}
                 <div className="lg:col-span-6 space-y-6">
                     {/* Today's Appointments */}
-                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div className="bg-white p-5 rounded shadow-sm border border-gray-100">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold text-gray-800">Today's Appointments</h2>
                             <Link href="/appointments" className="text-blue-600 text-sm font-semibold hover:underline">View all</Link>
@@ -264,7 +264,7 @@ export default function ReceptionistDashboard() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Chart: Walk-in vs Appt */}
-                        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                        <div className="bg-white p-5 rounded shadow-sm border border-gray-100">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-base font-bold text-gray-800">Patient Walk-in vs Appointments</h2>
                                 <select className="text-xs border border-gray-200 rounded p-1 text-gray-500 outline-none"><option>This Week</option></select>
@@ -288,7 +288,7 @@ export default function ReceptionistDashboard() {
                         </div>
 
                         {/* Chart: OPD by Dept */}
-                        <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                        <div className="bg-white p-5 rounded shadow-sm border border-gray-100">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-base font-bold text-gray-800">OPD by Department</h2>
                             </div>
@@ -307,7 +307,7 @@ export default function ReceptionistDashboard() {
                                     </div>
                                 </div>
                                 <div className="w-1/2 pl-4 flex flex-col justify-center gap-2">
-                                    {opdByDepartment.slice(0,5).map((d: any, i: number) => (
+                                    {opdByDepartment.slice(0, 5).map((d: any, i: number) => (
                                         <div key={i} className="flex items-center justify-between text-xs">
                                             <div className="flex items-center gap-1.5 truncate">
                                                 <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
@@ -315,7 +315,7 @@ export default function ReceptionistDashboard() {
                                             </div>
                                             <div className="flex gap-1.5 shrink-0 ml-2">
                                                 <span className="font-semibold text-gray-800">{d.value}</span>
-                                                <span className="text-gray-400">({totalOpd ? ((d.value/totalOpd)*100).toFixed(1) : 0}%)</span>
+                                                <span className="text-gray-400">({totalOpd ? ((d.value / totalOpd) * 100).toFixed(1) : 0}%)</span>
                                             </div>
                                         </div>
                                     ))}
@@ -331,7 +331,7 @@ export default function ReceptionistDashboard() {
                 {/* Bottom Row */}
                 <div className="lg:col-span-12 grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* Recent Registrations */}
-                    <div className="lg:col-span-5 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div className="lg:col-span-5 bg-white p-5 rounded shadow-sm border border-gray-100">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-bold text-gray-800">Recent Registrations</h2>
                             <Link href="/patients" className="text-blue-600 text-sm font-semibold hover:underline">View all</Link>
@@ -349,7 +349,7 @@ export default function ReceptionistDashboard() {
                                 <tbody>
                                     {recentRegistrations.map((p: any, i: number) => (
                                         <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
-                                            <td className="py-2.5 font-medium text-gray-800 text-xs">REG-{dayjs(p.createdAt).format('YYYY')}-{p.id.substring(0,4).toUpperCase()}</td>
+                                            <td className="py-2.5 font-medium text-gray-800 text-xs">REG-{dayjs(p.createdAt).format('YYYY')}-{p.id.substring(0, 4).toUpperCase()}</td>
                                             <td className="py-2.5 font-medium text-gray-800">{p.name}</td>
                                             <td className="py-2.5">{p.phone}</td>
                                             <td className="py-2.5">{dayjs(p.createdAt).format('hh:mm A')}</td>
@@ -361,7 +361,7 @@ export default function ReceptionistDashboard() {
                     </div>
 
                     {/* Payment Collection */}
-                    <div className="lg:col-span-3 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div className="lg:col-span-3 bg-white p-5 rounded shadow-sm border border-gray-100">
                         <div className="flex justify-between items-start mb-4">
                             <div>
                                 <h2 className="text-base font-bold text-gray-800">Payment Collection <span className="text-gray-400 font-normal">(Today)</span></h2>
@@ -391,7 +391,7 @@ export default function ReceptionistDashboard() {
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="lg:col-span-4 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div className="lg:col-span-4 bg-white p-5 rounded shadow-sm border border-gray-100">
                         <h2 className="text-base font-bold text-gray-800 mb-4">Quick Actions</h2>
                         <div className="grid grid-cols-2 gap-3">
                             {[
@@ -415,14 +415,14 @@ export default function ReceptionistDashboard() {
 
                 {/* Footer Stats Grid */}
                 <div className="lg:col-span-12 grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div className="bg-white p-4 rounded shadow-sm border border-gray-100 flex items-center gap-4">
                         <div className="p-3 bg-blue-50 text-blue-500 rounded-full"><Users size={20} /></div>
                         <div>
                             <div className="text-xs text-gray-400 font-semibold uppercase">Total Patients (Today)</div>
                             <div className="text-xl font-bold text-gray-800">{footerStats.totalPatients}</div>
                         </div>
                     </div>
-                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div className="bg-white p-4 rounded shadow-sm border border-gray-100 flex items-center gap-4">
                         <div className="p-3 bg-indigo-50 text-indigo-500 rounded-full"><UserCircle size={20} /></div>
                         <div>
                             <div className="text-xs text-gray-400 font-semibold uppercase">Male</div>
@@ -432,7 +432,7 @@ export default function ReceptionistDashboard() {
                             </div>
                         </div>
                     </div>
-                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div className="bg-white p-4 rounded shadow-sm border border-gray-100 flex items-center gap-4">
                         <div className="p-3 bg-pink-50 text-pink-500 rounded-full"><UserCircle size={20} /></div>
                         <div>
                             <div className="text-xs text-gray-400 font-semibold uppercase">Female</div>
@@ -442,14 +442,14 @@ export default function ReceptionistDashboard() {
                             </div>
                         </div>
                     </div>
-                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div className="bg-white p-4 rounded shadow-sm border border-gray-100 flex items-center gap-4">
                         <div className="p-3 bg-orange-50 text-orange-500 rounded-full"><Clock size={20} /></div>
                         <div>
                             <div className="text-xs text-gray-400 font-semibold uppercase">Average Wait Time</div>
                             <div className="text-xl font-bold text-gray-800">{footerStats.avgWaitTime} <span className="text-xs text-gray-500 font-normal">mins</span></div>
                         </div>
                     </div>
-                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div className="bg-white p-4 rounded shadow-sm border border-gray-100 flex items-center gap-4">
                         <div className="p-3 bg-green-50 text-green-500 rounded-full"><Users size={20} /></div>
                         <div>
                             <div className="text-xs text-gray-400 font-semibold uppercase">Active Staff</div>

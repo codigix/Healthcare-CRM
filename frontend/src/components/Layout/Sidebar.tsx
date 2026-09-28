@@ -147,10 +147,9 @@ const menuItems = [
     href: "/appointments",
     moduleId: "appointments",
     subItems: [
-      { label: "All Appointments", href: "/appointments/all" },
+      { label: "Dashboard", href: "/appointments" },
       { label: "Add Appointment", href: "/appointments/add" },
       { label: "Calendar View", href: "/appointments/calendar" },
-      { label: "Appointment Requests", href: "/appointments/requests" },
     ],
   },
   {
@@ -1244,12 +1243,8 @@ export default function Sidebar() {
         href: "/patients",
         subItems: [
           { label: "Patient Registration", href: "/patients/add" },
-          { label: "Patient Search", href: "/patients" },
-          { label: "Demographics", href: "/patients/demographics" },
-          { label: "Consents & Forms", href: "/patients/consents" },
-          { label: "Patient Documents", href: "/patients/documents" },
-          { label: "Patient Photo Capture", href: "/patients/photo" },
-          { label: "Patient ID Card", href: "/patients/id-card" },
+          { label: "Patients List", href: "/patients" },
+
         ]
       },
       {
@@ -1257,14 +1252,9 @@ export default function Sidebar() {
         label: "Appointments",
         href: "/appointments",
         subItems: [
+          { label: "Appointment List", href: "/appointments" },
           { label: "Book Appointment", href: "/appointments/add" },
-          { label: "Appointment Schedule", href: "/appointments/calendar" },
-          { label: "Doctor Availability", href: "/appointments/availability" },
-          { label: "Today's Queue", href: "/appointments/queue" },
-          { label: "Check-In", href: "/appointments/check-in" },
-          { label: "Walk-In Patients", href: "/appointments/walk-in" },
-          { label: "Follow-up Appointments", href: "/appointments/follow-up" },
-          { label: "Telemedicine Appointments", href: "/appointments/telemedicine" },
+
         ]
       },
       {

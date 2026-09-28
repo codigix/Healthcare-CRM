@@ -206,11 +206,10 @@ export default function ExecutiveDashboard() {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                                    activeTab === tab.id
+                                className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.id
                                         ? "bg-dark-secondary text-emerald-400 shadow-sm"
                                         : "text-gray-400 hover:text-gray-200 hover:bg-dark-tertiary/50"
-                                }`}
+                                    }`}
                             >
                                 <Icon size={16} />
                                 {tab.label}
@@ -245,12 +244,12 @@ export default function ExecutiveDashboard() {
                                         <AreaChart data={revenueTrends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                             <defs>
                                                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                                 </linearGradient>
                                                 <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                                                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                                                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                                                 </linearGradient>
                                             </defs>
                                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -306,7 +305,7 @@ export default function ExecutiveDashboard() {
                                                     </td>
                                                     <td className="py-4 px-4 text-right">
                                                         <button className="text-gray-400 hover:text-emerald-400 transition-colors p-1">
-                                                            <ArrowUpRight size={18} />
+                                                            <ArrowUpRight size={15} />
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -340,7 +339,7 @@ export default function ExecutiveDashboard() {
                                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                 ))}
                                             </Pie>
-                                            <Tooltip 
+                                            <Tooltip
                                                 contentStyle={{ backgroundColor: "#1e1e1e", borderColor: "rgba(255,255,255,0.1)", borderRadius: "8px" }}
                                                 formatter={(value: number) => [`${value}%`, 'Share']}
                                             />
@@ -353,7 +352,7 @@ export default function ExecutiveDashboard() {
                             {/* Resource Utilization */}
                             <div className="bg-dark-tertiary/20 p-5 roundedrder border-dark-tertiary flex flex-col gap-5">
                                 <h3 className="text-lg font-bold text-white mb-2">Resource Utilization</h3>
-                                
+
                                 <div className="space-y-5">
                                     <div>
                                         <div className="flex justify-between items-end mb-2">
@@ -367,7 +366,7 @@ export default function ExecutiveDashboard() {
                                             <div className="bg-blue-500 h-2 rounded-full" style={{ width: '76%' }}></div>
                                         </div>
                                     </div>
-                                    
+
                                     <div>
                                         <div className="flex justify-between items-end mb-2">
                                             <div>
@@ -393,9 +392,9 @@ export default function ExecutiveDashboard() {
                                             <div className="bg-emerald-500 h-2 rounded-full" style={{ width: '88%' }}></div>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="mt-4 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-lg flex items-start gap-3">
-                                        <Award className="text-yellow-500 shrink-0 mt-0.5" size={18} />
+                                        <Award className="text-yellow-500 shrink-0 mt-0.5" size={15} />
                                         <div>
                                             <p className="text-sm font-medium text-yellow-400">Action Required</p>
                                             <p className="text-xs text-gray-400 mt-1">ICU occupancy is critical (>90%). Consider activating overflow protocols or expediting step-down transfers.</p>
@@ -439,7 +438,7 @@ export default function ExecutiveDashboard() {
                             
                             <div className="mt-6 p-5 border border-emerald-500/20 bg-emerald-500/5 rounded
                                 <h4 className="font-semibold text-emerald-400 mb-2 flex items-center gap-2">
-                                    <Target size={18} />
+                                    <Target size={15} />
                                     Executive Summary
                                 </h4>
                                 <p className="text-sm text-gray-400 leading-relaxed">
@@ -448,10 +447,10 @@ export default function ExecutiveDashboard() {
                                     in reducing readmission rates. Recommend re-allocating Q4 budget to the post-discharge care management team.
                                 </p>
                             </div>
-                        </div>
-                    )}
-                </div>
             </div>
+                    )}
         </div>
+            </div >
+        </div >
     );
 }
