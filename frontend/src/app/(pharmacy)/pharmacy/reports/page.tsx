@@ -5,6 +5,7 @@ import { medicineAPI, prescriptionAPI } from "@/lib/api";
 import { Pill, ArrowLeft, RefreshCw, Loader, TrendingUp, Heart, FileSpreadsheet, ClipboardCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, AreaChart, Area } from "recharts";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 export default function PharmacyReportsPage() {
     const [loading, setLoading] = useState(true);
@@ -86,9 +87,7 @@ export default function PharmacyReportsPage() {
             </div>
 
             {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <Loader className="animate-spin text-emerald-500" size={32} />
-                </div>
+                <TableSkeleton rows={6} cols={5} />
             ) : error ? (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
                     {error}

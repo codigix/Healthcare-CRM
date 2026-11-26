@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { inventoryAPI } from "@/lib/api";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface InventoryItem {
    id: string;
@@ -264,9 +265,7 @@ export default function InventoryPage() {
                </div>
 
                {loading ? (
-                  <div className="flex items-center justify-center py-12">
-                     <Loader className="animate-spin text-emerald-500" size={32} />
-                  </div>
+                  <TableSkeleton rows={6} cols={5} />
                ) : error ? (
                   <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
                      {error}
@@ -279,7 +278,7 @@ export default function InventoryPage() {
                      </p>
 
                      <div className="overflow-x-auto">
-                        <DataTable columns={columns_0} data={filteredItems} enableLocalSearch enableLocalPagination />
+                        <DataTable columns={columns_0} data={filteredItems} enableLocalPagination isLoading={loading} />
                      </div>
 
                      <div className="flex justify-between items-center my-3 my-3 mt-6 pt-4 border-t border-dark-tertiary">

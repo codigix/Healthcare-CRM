@@ -71,6 +71,7 @@ export default function LoginPage() {
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
     const [dummyUsers, setDummyUsers] = useState<any[]>([]);
+    const [dummyLoaded, setDummyLoaded] = useState(false);
 
     useEffect(() => {
         const fetchDummyLogins = async () => {
@@ -79,6 +80,8 @@ export default function LoginPage() {
                 setDummyUsers(response.data);
             } catch (err) {
                 console.error("Failed to fetch dummy logins", err);
+            } finally {
+                setDummyLoaded(true);
             }
         };
         fetchDummyLogins();
@@ -435,6 +438,8 @@ export default function LoginPage() {
                         </form>
                     )}
 
+                    {/* Hidden when the server provides no demo accounts (e.g. production). */}
+                    {(!dummyLoaded || dummyUsers.length > 0) && (
                     <div className="mt-8 pt-6 border-t border-white/[0.05]">
                         <p className="text-gray-300 text-sm font-semibold mb-4 text-center">
                             Quick Department Logins
@@ -469,6 +474,7 @@ export default function LoginPage() {
                             <p className="text-gray-500 text-xs text-center animate-pulse">Loading dummy logins...</p>
                         )}
                     </div>
+                    )}
                 </div>
             </div>
         </div>

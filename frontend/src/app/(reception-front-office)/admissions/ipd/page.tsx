@@ -301,10 +301,11 @@ export default function IPDAdmissionsPage() {
                         customStyles={{
                             headRow: { style: { backgroundColor: '#fcfcfc', borderBottomWidth: '1px', borderBottomColor: '#f1f5f9', minHeight: '46px' } },
                             headCells: { style: { fontSize: '11px', fontWeight: 700, color: '#334155' } },
-                            rows: { style: { minHeight: '60px', '&:hover': { backgroundColor: '#f8fafc', cursor: 'pointer' } } },
+                            rows: { style: { minHeight: '60px' }, highlightOnHoverStyle: { backgroundColor: '#f8fafc', cursor: 'pointer' } },
                             cells: { style: { fontSize: '12px' } }
                         }}
-                    />
+                    highlightOnHover
+/>
                 </div>
 
             </div>

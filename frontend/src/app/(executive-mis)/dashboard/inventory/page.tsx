@@ -78,8 +78,8 @@ export default function InventoryDashboard() {
          }
       };
       fetchIssues();
-      const timer = setTimeout(() => setLoading(false), 800);
-      return () => clearTimeout(timer);
+      // The cards use built-in sample data; only the blood-issues table waits for the API.
+      setLoading(false);
    }, []);
 
    const columns_1: Column<any>[] = [
@@ -339,7 +339,7 @@ export default function InventoryDashboard() {
                      </Link>
                   </div>
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_1} data={bloodIssues.slice(0, 5)} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_1} data={bloodIssues.slice(0, 5)} enableLocalSearch enableLocalPagination isLoading={loading} />
                   </div>
                </div>
             </>

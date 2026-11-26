@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { prescriptionAPI, patientAPI, doctorAPI } from "@/lib/api";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface Medication {
    name: string;
@@ -376,12 +377,10 @@ export default function AllPrescriptionsPage() {
                </div>
 
                {loading ? (
-                  <div className="text-center py-12 text-gray-400">
-                     Loading prescriptions...
-                  </div>
+                  <TableSkeleton rows={6} cols={5} />
                ) : (
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={filteredPrescriptions} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={filteredPrescriptions} enableLocalPagination isLoading={loading} />
                   </div>
                )}
 

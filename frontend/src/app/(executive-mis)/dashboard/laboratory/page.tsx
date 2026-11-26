@@ -29,9 +29,9 @@ const testVolumeData = [
 export default function LaboratoryDashboard() {
     const [loading, setLoading] = useState(true);
 
+    // This dashboard uses built-in sample data, so there is nothing to wait for.
     useEffect(() => {
-        const timer = setTimeout(() => setLoading(false), 800);
-        return () => clearTimeout(timer);
+        setLoading(false);
     }, []);
 
     return (

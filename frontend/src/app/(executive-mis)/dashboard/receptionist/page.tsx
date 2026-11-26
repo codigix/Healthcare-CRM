@@ -34,6 +34,7 @@ import {
 } from "recharts";
 import dayjs from "dayjs";
 import Link from "next/link";
+import { DashboardSkeleton } from "@/components/UI/Skeleton";
 
 const formatCurrency = (val: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
@@ -58,11 +59,7 @@ export default function ReceptionistDashboard() {
         fetchDashboard();
     }, []);
 
-    if (loading) return (
-        <div className="flex justify-center items-center h-[80vh]">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-        </div>
-    );
+    if (loading) return <DashboardSkeleton />;
 
     if (!data) return <div className="text-white">Failed to load dashboard</div>;
 

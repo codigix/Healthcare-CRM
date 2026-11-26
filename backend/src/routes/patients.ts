@@ -290,34 +290,6 @@ async function ensureDemographicsSchema() {
       )
     `);
     
-    const [patients]: any = await connection.query("SELECT id FROM patients WHERE email = 'rahul.sharma@email.com' LIMIT 1");
-    let pid = null;
-    if (patients.length > 0) {
-      pid = patients[0].id;
-    } else {
-      const [anyPatient]: any = await connection.query('SELECT id FROM patients LIMIT 1');
-      if (anyPatient.length > 0) {
-        pid = anyPatient[0].id;
-      }
-    }
-    
-    if (pid) {
-      await connection.query(`
-        UPDATE patients SET 
-          mrn = 'MRN00012345', abhaId = 'ABHA-1234-5678-9012', firstName = 'Rahul', middleName = 'Kumar', lastName = 'Sharma', gender = 'Male', dob = '1989-03-15', birthPlace = 'New Delhi, India', nationality = 'Indian', religion = 'Hindu', maritalStatus = 'Married', occupation = 'Software Engineer', education = 'Bachelor of Technology', primaryLanguage = 'Hindi', secondaryLanguage = 'English', motherTongue = 'Hindi', phone = '+91 98765 43210', alternateMobile = '+91 91234 56789', email = 'rahul.sharma@email.com', landline = '011-4567 8900', preferredContact = 'WhatsApp', emergencyContactName = 'Sunita Sharma', emergencyContactRel = 'Wife', emergencyContactMobile = '+91 99887 76655', emergencyContactAltMobile = '+91 88776 65544', emergencyContactAddress = 'C-45, Green Park, New Delhi - 110016', address = 'C-45, Green Park', city = 'New Delhi', district = 'New Delhi', state = 'Delhi', country = 'India', pincode = '110016', sameAsCurrentAddress = 1, hasInsurance = 1, insuranceProvider = 'Star Health Insurance', policyNumber = 'SHI/1234/5678/2024', tpaName = 'Health India TPA Pvt. Ltd.', policyValidTill = '2024-12-31'
-        WHERE id = ?
-      `, [pid]);
-
-      const [mp]: any = await connection.query('SELECT id FROM medical_profiles WHERE patientId = ?', [pid]);
-      if (mp.length === 0) {
-        await connection.query(`
-          INSERT INTO medical_profiles (id, patientId, bloodGroup, drugAllergies, foodAllergies, chronicDiseases, currentMedications, smokingStatus, alcoholConsumption, tobaccoUsage, organDonor, pregnancyStatus, specialNeeds, medicalAlertText)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, [
-          `cuid_${Math.random().toString(36).substring(7)}`, pid, 'B+', 'Penicillin', 'Peanuts', 'None', 'Omega 3, Vitamin D', 'No', 'Occasional', 'No', 1, 'N/A', 'No', 'Allergic to Penicillin drugs'
-        ]);
-      }
-    }
   } catch (e) {
     console.error('Error ensuring schema:', e);
   } finally {
@@ -416,8 +388,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import prisma from '../prisma';
 
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -432,12 +403,19 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         data.name = `${data.title ? data.title + ' ' : ''}${data.firstName || ''} ${data.lastName || ''}`.trim();
     }
     
-    // Make sure dob is a date
-    if (data.dob) {
-        data.dob = new Date(data.dob);
+    // Reject empty submissions instead of silently creating an "Unknown" patient.
+    if (typeof data.name !== 'string' || !data.name.trim()) {
+      return res.status(400).json({ error: 'Patient name (or first/last name) is required' });
     }
-    if (data.policyValidTill) {
-        data.policyValidTill = new Date(data.policyValidTill);
+
+    // Make sure dates are real dates (an invalid one used to surface as a 500).
+    for (const field of ['dob', 'policyValidTill'] as const) {
+      if (!data[field]) continue;
+      const parsed = new Date(data[field]);
+      if (Number.isNaN(parsed.getTime())) {
+        return res.status(400).json({ error: `Invalid date for ${field}` });
+      }
+      data[field] = parsed;
     }
 
     const newPatient = await prisma.patient.create({

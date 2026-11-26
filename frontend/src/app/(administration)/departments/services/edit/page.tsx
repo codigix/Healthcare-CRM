@@ -52,7 +52,7 @@ export default function EditServicePage() {
     const fetchServiceAndDepartments = async () => {
         try {
             const [serviceRes, deptRes] = await Promise.all([
-                fetch(`http://localhost:5000/api/departments/services/${serviceId}`, {
+                fetch(`${API_URL}/departments/services/${serviceId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
@@ -107,7 +107,7 @@ export default function EditServicePage() {
 
         try {
             const res = await fetch(
-                `http://localhost:5000/api/departments/services/${serviceId}`,
+                `${API_URL}/departments/services/${serviceId}`,
                 {
                     method: "PUT",
                     headers: {

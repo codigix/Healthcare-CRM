@@ -7,6 +7,7 @@ import { Plus, Edit2, Trash2, Download, Search } from 'lucide-react';
 import Modal from '@/components/UI/Modal';
 import InvoiceForm from '@/components/Forms/InvoiceForm';
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface Invoice {
    id: string;
@@ -184,10 +185,10 @@ export default function InvoicesPage() {
                </div>
 
                {loading ? (
-                  <div className="text-center py-8 text-gray-400">Loading...</div>
+                  <TableSkeleton rows={6} cols={5} />
                ) : (
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={invoices} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={invoices} enableLocalSearch enableLocalPagination isLoading={loading} />
                   </div>
                )}
 

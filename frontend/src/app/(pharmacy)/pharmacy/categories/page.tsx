@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { medicineAPI } from "@/lib/api";
 import { Pill, ArrowLeft, RefreshCw, Loader, Eye, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface CategorySummary {
     name: string;
@@ -85,9 +86,7 @@ export default function MedicineCategoriesPage() {
             </div>
 
             {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <Loader className="animate-spin text-emerald-500" size={32} />
-                </div>
+                <TableSkeleton rows={6} cols={5} />
             ) : error ? (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
                     {error}

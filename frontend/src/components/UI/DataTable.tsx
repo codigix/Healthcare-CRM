@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 export interface Column<T> {
@@ -14,6 +14,10 @@ interface DataTableProps<T> {
   data: T[];
   searchTerm?: string;
   enablePagination?: boolean;
+  /** Same as enablePagination: paginate the rows in the browser (default on). */
+  enableLocalPagination?: boolean;
+  /** Show a search box above the table that filters the rows in the browser. */
+  enableLocalSearch?: boolean;
   itemsPerPage?: number;
   isLoading?: boolean;
 }
@@ -23,17 +27,24 @@ export function DataTable<T>({
   data,
   searchTerm = "",
   enablePagination = true,
+  enableLocalPagination,
+  enableLocalSearch = false,
   itemsPerPage = 10,
   isLoading = false,
 }: DataTableProps<T>) {
+  const paginate = enableLocalPagination ?? enablePagination;
   const [currentPage, setCurrentPage] = useState(1);
+  const [localSearch, setLocalSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
+  // A search term passed by the page wins; otherwise use the built-in search box.
+  const activeSearch = searchTerm || (enableLocalSearch ? localSearch : "");
 
   const filteredData = useMemo(() => {
     let result = [...(data || [])];
 
-    if (searchTerm) {
-      const lowerSearch = searchTerm.toLowerCase();
+    if (activeSearch) {
+      const lowerSearch = activeSearch.toLowerCase();
       result = result.filter((row) => {
         return Object.values(row as any).some((val) =>
           String(val).toLowerCase().includes(lowerSearch)
@@ -52,13 +63,18 @@ export function DataTable<T>({
     }
 
     return result;
-  }, [data, searchTerm, sortConfig]);
+  }, [data, activeSearch, sortConfig]);
+
+  // Go back to the first page whenever the search changes.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeSearch]);
 
   const paginatedData = useMemo(() => {
-    if (!enablePagination) return filteredData;
+    if (!paginate) return filteredData;
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredData.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredData, enablePagination, currentPage, itemsPerPage]);
+  }, [filteredData, paginate, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
@@ -76,6 +92,18 @@ export function DataTable<T>({
 
   return (
     <div className="w-full flex flex-col">
+      {enableLocalSearch && (
+        <div className="mb-3">
+          <input
+            type="text"
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            placeholder="Search..."
+            aria-label="Search table"
+            className="w-full max-w-xs rounded-lg border border-dark-tertiary bg-dark-primary px-3 py-2 text-xs text-gray-200 placeholder:text-gray-500 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+        </div>
+      )}
       <table className="w-full text-left border border-gray-200">
         <thead>
           <tr className=" border-b bg-gray-200 border-gray-800 text-gray-400 text-xs whitespace-nowrap">
@@ -107,7 +135,7 @@ export function DataTable<T>({
               <tr key={rowIndex} className="border-b border-gray-800">
                 {columns.map((col, colIndex) => (
                   <td key={colIndex} className="p-2">
-                    <div className="h-4 bg-gray-700/50 rounded animate-pulse w-full"></div>
+                    <div aria-hidden="true" className="skeleton h-4 w-full rounded"></div>
                   </td>
                 ))}
               </tr>
@@ -138,7 +166,7 @@ export function DataTable<T>({
         </tbody>
       </table>
 
-      {enablePagination && (
+      {paginate && (
         <div className="flex items-center justify-between my-3">
           <p className="text-xs text-gray-400">
             Showing {filteredData.length === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} entries

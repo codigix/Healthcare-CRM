@@ -6,6 +6,7 @@ import { ArrowLeft, RefreshCw, Loader, Pill, ClipboardCheck, TrendingUp, Sparkle
 import Link from "next/link";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, AreaChart, Area } from "recharts";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface UsageItem {
    name: string;
@@ -120,9 +121,7 @@ export default function MedicineUsageReportsPage() {
          </div>
 
          {loading ? (
-            <div className="flex justify-center items-center h-64">
-               <Loader className="animate-spin text-emerald-500" size={32} />
-            </div>
+            <TableSkeleton rows={6} cols={5} />
          ) : error ? (
             <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
                {error}

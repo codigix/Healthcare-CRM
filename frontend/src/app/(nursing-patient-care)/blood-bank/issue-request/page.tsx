@@ -6,6 +6,7 @@ import { bloodBankAPI, patientAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import ActionModal from "@/components/UI/ActionModal";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface IssuedBlood {
    id: string;
@@ -211,10 +212,7 @@ export default function IssueRequestPage() {
             </h2>
 
             {loading ? (
-               <div className="flex items-center justify-center py-16 text-gray-400">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mr-3" />
-                  Loading requests...
-               </div>
+               <TableSkeleton rows={6} cols={5} />
             ) : myRequests.length === 0 ? (
                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                   <Droplet size={40} className="mb-3 opacity-20" />
@@ -223,7 +221,7 @@ export default function IssueRequestPage() {
                </div>
             ) : (
                <div className="overflow-x-auto">
-                  <DataTable columns={columns_0} data={myRequests} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_0} data={myRequests} enableLocalSearch enableLocalPagination isLoading={loading} />
                </div>
             )}
          </div>

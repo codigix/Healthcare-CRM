@@ -8,6 +8,7 @@ import {
     Download, ChevronDown, User, Printer, Mail, Check, AlertCircle, X,
     Eye, RefreshCw, Send, PhoneCall, Smartphone, FileText
 } from "lucide-react";
+import { DetailPageSkeleton } from "@/components/UI/Skeleton";
 
 export default function PatientIdCard() {
     const searchParams = useSearchParams();
@@ -50,7 +51,7 @@ export default function PatientIdCard() {
         setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading ID Card data...</div>;
+    if (loading) return <DetailPageSkeleton />;
     if (!patientData) return <div className="p-8 text-center text-red-500">No patient data found.</div>;
 
     const p = patientData.personal || {};

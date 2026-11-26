@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { bloodBankAPI } from "@/lib/api";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface BloodUnit {
    id: string;
@@ -334,12 +335,10 @@ export default function BloodStockPage() {
                </div>
 
                {loading ? (
-                  <div className="text-center py-8 text-gray-400">
-                     Loading blood units...
-                  </div>
+                  <TableSkeleton rows={6} cols={5} />
                ) : (
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={bloodStock} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={bloodStock} enableLocalPagination isLoading={loading} />
                   </div>
                )}
             </div>

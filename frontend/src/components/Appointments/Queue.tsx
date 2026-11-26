@@ -150,7 +150,7 @@ export default function Queue() {
                     customStyles={{
                         headRow: { style: { backgroundColor: '#f8fafc', borderBottomWidth: '1px', borderBottomColor: '#f1f5f9', minHeight: '48px' } },
                         headCells: { style: { fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' } },
-                        rows: { style: { minHeight: '56px', '&:hover': { backgroundColor: '#f8fafc' } } },
+                        rows: { style: { minHeight: '56px' }, highlightOnHoverStyle: { backgroundColor: '#f8fafc' } },
                         cells: { style: { fontSize: '13px' } }
                     }}
                     highlightOnHover

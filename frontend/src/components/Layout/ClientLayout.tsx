@@ -20,6 +20,16 @@ function NavigationEvents() {
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
  const pathname = usePathname();
  const isNavigating = useUIStore((state) => state.isNavigating);
+ const setIsNavigating = useUIStore((state) => state.setIsNavigating);
+
+ // Safety net: never leave the page stuck on the loading screen
+ // (failed or interrupted navigation, same-page link click, etc.).
+ useEffect(() => {
+ if (!isNavigating) return;
+ // Long enough for a first-time page compile in dev (observed up to ~20 s).
+ const timer = setTimeout(() => setIsNavigating(false), 30000);
+ return () => clearTimeout(timer);
+ }, [isNavigating, setIsNavigating]);
 
  // Do not wrap the login page or the base redirecting page in the DashboardLayout
  if (pathname === '/login' || pathname === '/') {
@@ -36,16 +46,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
  <div className="h-full w-1/3 bg-emerald-500 transition-all duration-300 animate-[pulse_1s_ease-in-out_infinite] rounded-r-full" />
  </div>
  )}
- <DashboardLayout>
- {isNavigating ? (
- <div className="flex flex-col items-center justify-center h-full w-full min-h-[50vh] text-gray-400 gap-4">
- <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
- <p className="text-lg font-medium animate-pulse">Loading data...</p>
- </div>
- ) : (
- children
- )}
- </DashboardLayout>
+ {/* The current page stays on screen while the next one loads (top progress bar +
+ sidebar spinner show the click was received); the next page then appears with
+ its real UI immediately. Only data regions inside pages show placeholders. */}
+ <DashboardLayout>{children}</DashboardLayout>
  </>
  );
 }

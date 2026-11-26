@@ -1,12 +1,19 @@
 import { Router, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { AuthRequest, authMiddleware } from '../middleware/auth';
+import { AuthRequest, authMiddleware, JWT_SECRET } from '../middleware/auth';
 import pool from '../db';
 
 const router = Router();
 
+// Roles / departments that carry administrator privileges.
+const ADMIN_LEVEL = ['superadmin', 'super admin', 'admin', 'administration', 'administrator'];
+
 router.get('/dummy-logins', async (req: AuthRequest, res: Response) => {
+  // Demo accounts must not be advertised on a live system.
+  if (process.env.NODE_ENV === 'production') {
+    return res.json([]);
+  }
   let connection;
   try {
     connection = await pool.getConnection();
@@ -35,6 +42,34 @@ router.post('/register', async (req: AuthRequest, res: Response) => {
   let connection;
   try {
     const { name, email, password, role, department, phone, specialization, experience, avatar } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email and password are required' });
+    }
+
+    // Admin-level accounts can only be created by an already signed-in admin.
+    // Checked on both role and department because the login token's role is
+    // derived from the department.
+    const wantsAdminAccount = [role, department].some(
+      (v) => typeof v === 'string' && ADMIN_LEVEL.includes(v.trim().toLowerCase())
+    );
+    if (wantsAdminAccount) {
+      let callerIsAdmin = false;
+      const bearer = req.headers.authorization?.split(' ')[1];
+      if (bearer) {
+        try {
+          const caller = jwt.verify(bearer, JWT_SECRET) as { role?: string; department?: string };
+          callerIsAdmin = [caller.role, caller.department].some(
+            (v) => typeof v === 'string' && ADMIN_LEVEL.includes(v.trim().toLowerCase())
+          );
+        } catch {
+          callerIsAdmin = false;
+        }
+      }
+      if (!callerIsAdmin) {
+        return res.status(403).json({ error: 'Admin and Super Admin accounts can only be created by an administrator' });
+      }
+    }
 
     connection = await pool.getConnection();
     
@@ -83,7 +118,7 @@ router.post('/register', async (req: AuthRequest, res: Response) => {
     const resolvedRoleToken = user[0].department ? user[0].department.toLowerCase() : user[0].role;
     const token = jwt.sign(
       { id: user[0].id, email: user[0].email, role: resolvedRoleToken, department: user[0].department, doctorId },
-      process.env.JWT_SECRET || 'secret',
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -135,7 +170,7 @@ router.post('/login', async (req: AuthRequest, res: Response) => {
     const resolvedRole = user.department ? user.department.toLowerCase() : user.role;
     const token = jwt.sign(
       { id: user.id, email: user.email, role: resolvedRole, department: user.department, doctorId },
-      process.env.JWT_SECRET || 'secret',
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
 

@@ -20,6 +20,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
         // Hydrate user session if token exists but user profile is null (e.g., on page refresh)
         if (storedToken && !user) {
+            let attempts = 0;
             const hydrateSession = async () => {
                 try {
                     const { authAPI } = await import("@/lib/api");
@@ -27,9 +28,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     setAuth(response.data, storedToken);
                 } catch (error) {
                     console.error("Failed to re-hydrate user session:", error);
-                    localStorage.removeItem("token");
-                    logout();
-                    router.push("/login");
+                    const status = (error as { response?: { status?: number } })?.response?.status;
+                    if (status === 401 || status === 403 || status === 404) {
+                        // The server says this login is not valid any more.
+                        localStorage.removeItem("token");
+                        logout();
+                        router.push("/login");
+                    } else if (++attempts < 3) {
+                        // Temporary problem (server busy, network): keep the session and retry.
+                        setTimeout(hydrateSession, 2000 * attempts);
+                    }
                 }
             };
             hydrateSession();

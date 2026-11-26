@@ -368,7 +368,7 @@ export default function MedicineTemplatesPage() {
                         </div>
                      ) : (
                         <div className="overflow-x-auto">
-                           <DataTable columns={columns_0} data={templates} enableLocalSearch enableLocalPagination />
+                           <DataTable columns={columns_0} data={templates} enableLocalPagination isLoading={loading} />
                         </div>
                      )}
 

@@ -5,6 +5,7 @@ import { inventoryAPI } from "@/lib/api";
 import { ArrowLeft, RefreshCw, Loader, TrendingUp, DollarSign, PackageOpen, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 const COLORS = ["#1abc9c", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
@@ -97,9 +98,7 @@ export default function InventoryReportsPage() {
             </div>
 
             {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <Loader className="animate-spin text-emerald-500" size={32} />
-                </div>
+                <TableSkeleton rows={6} cols={5} />
             ) : error ? (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
                     {error}

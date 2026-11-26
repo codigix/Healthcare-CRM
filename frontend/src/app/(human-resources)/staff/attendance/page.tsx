@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { attendanceAPI, staffAPI } from "@/lib/api";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface AttendanceRecord {
   id: string;
@@ -392,9 +393,7 @@ export default function AttendancePage() {
                 Daily Attendance Record
               </h2>
               {loading ? (
-                <div className="text-center py-8 text-gray-400">
-                  Loading attendance records...
-                </div>
+                <TableSkeleton rows={6} cols={5} />
               ) : error ? (
                 <div className="text-center py-8 text-red-500">{error}</div>
               ) : (

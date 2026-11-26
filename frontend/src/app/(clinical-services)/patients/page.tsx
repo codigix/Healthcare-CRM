@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import dayjs from "dayjs";
-import DataTable, { TableColumn } from 'react-data-table-component';
+import DataTable, { TableColumn, TableStyles } from 'react-data-table-component';
 
 // Simple Sparkline SVG component
 const Sparkline = ({ data, color }: { data: number[], color: string }) => {
@@ -63,7 +63,7 @@ const Sparkline = ({ data, color }: { data: number[], color: string }) => {
 };
 
 // DataTable Custom Styles to match the previous elegant design
-const customStyles = {
+const customStyles: TableStyles = {
     headRow: {
         style: {
             backgroundColor: '#f9fafb',
@@ -93,10 +93,10 @@ const customStyles = {
     rows: {
         style: {
             minHeight: '60px',
-            '&:hover': {
-                backgroundColor: 'rgba(239, 246, 255, 0.5)',
-                cursor: 'pointer',
-            },
+        },
+        highlightOnHoverStyle: {
+            backgroundColor: 'rgba(239, 246, 255, 0.5)',
+            cursor: 'pointer',
         },
     },
     pagination: {

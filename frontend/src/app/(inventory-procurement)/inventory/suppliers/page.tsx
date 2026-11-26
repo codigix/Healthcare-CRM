@@ -368,7 +368,7 @@ export default function SuppliersPage() {
                </p>
 
                <div className="overflow-x-auto">
-                  <DataTable columns={columns_0} data={filteredSuppliers} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_0} data={filteredSuppliers} enableLocalPagination isLoading={loadingData} />
                </div>
             </div>
 

@@ -308,7 +308,7 @@ export default function AppointmentsListDashboard() {
                                 customStyles={{
                                     headRow: { style: { backgroundColor: '#f8fafc', borderBottomWidth: '1px', borderBottomColor: '#f1f5f9', minHeight: '40px' } },
                                     headCells: { style: { fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' } },
-                                    rows: { style: { minHeight: '52px', '&:hover': { backgroundColor: '#f8fafc', cursor: 'pointer' } } },
+                                    rows: { style: { minHeight: '52px' }, highlightOnHoverStyle: { backgroundColor: '#f8fafc', cursor: 'pointer' } },
                                     cells: { style: { fontSize: '12px' } }
                                 }}
                                 highlightOnHover

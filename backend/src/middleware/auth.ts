@@ -1,6 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+// Never sign or verify tokens with a guessable secret in production.
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET must be set when NODE_ENV=production');
+}
+export const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+
 export interface AuthRequest extends Request {
   user?: {
     id: string;
@@ -19,7 +25,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
     req.user = decoded;
     next();
   } catch (error) {

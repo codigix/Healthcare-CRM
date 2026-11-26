@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface StaffMember {
    id: string;
@@ -282,14 +283,12 @@ export default function StaffPage() {
                </p>
 
                {loading ? (
-                  <div className="text-center py-8 text-gray-400">
-                     Loading staff data...
-                  </div>
+                  <TableSkeleton rows={6} cols={5} />
                ) : error ? (
                   <div className="text-center py-8 text-red-500">{error}</div>
                ) : (
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={filteredStaff} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={filteredStaff} enableLocalPagination isLoading={loading} />
                   </div>
                )}
             </div>

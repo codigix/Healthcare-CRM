@@ -59,7 +59,7 @@ export default function CircularsPage() {
       <div className="flex justify-between items-center my-3">
         <div>
           <h1 className="text-2xl  text-white flex items-center gap-2">
-            {'Circulars' === 'Emergency Alerts' ? <AlertTriangle className="text-red-500 animate-pulse" size={24} /> : <MessageSquare className="text-violet-500" size={24} />}
+            <MessageSquare className="text-violet-500" size={24} />
             Circulars
           </h1>
           <p className="text-sm text-gray-400 mt-1">Distribute official management circulars.</p>
@@ -68,7 +68,7 @@ export default function CircularsPage() {
           <button className="flex items-center gap-2 px-4 py-2 bg-dark-secondary border border-gray-700 rounded-lg text-sm font-medium hover:bg-dark-tertiary transition-colors text-white">
             <Download size={16} /> Export
           </button>
-          <button className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium transition-all ${'Circulars' === 'Emergency Alerts' ? 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-500/20' : 'bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20'}`}>
+          <button className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium transition-all bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-500/20`}>
             <Plus size={16} /> Create New
           </button>
         </div>

@@ -291,7 +291,7 @@ export default function RolesPage() {
                </div>
 
                <div className="overflow-x-auto">
-                  <DataTable columns={columns_0} data={roles} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_0} data={roles} enableLocalPagination isLoading={loading} />
                </div>
             </div>
          </div>

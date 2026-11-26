@@ -8,6 +8,7 @@ import {
     Edit, Printer, Download, ChevronDown, 
     MoreVertical, MapPin, User, Phone, Mail, FileText, CheckSquare, Settings, Activity, Calendar
 } from "lucide-react";
+import { DetailPageSkeleton } from "@/components/UI/Skeleton";
 
 export default function DemographicsDashboard() {
     const searchParams = useSearchParams();
@@ -33,7 +34,7 @@ export default function DemographicsDashboard() {
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading patient demographics...</div>;
+    if (loading) return <DetailPageSkeleton />;
     if (!data) return <div className="p-8 text-center text-red-500">No patient data found.</div>;
 
     const p = data.personal || {};

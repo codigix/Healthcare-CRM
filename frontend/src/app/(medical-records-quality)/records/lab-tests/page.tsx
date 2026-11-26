@@ -134,7 +134,7 @@ export default function LabTestsPage() {
 ${obs}
 
 ---
-*📄 Note:* You can log in to your patient portal at http://localhost:3000 to download the official signed PDF/Image report.
+*📄 Note:* You can log in to your patient portal at ${window.location.origin} to download the official signed PDF/Image report.
 
 Thank you,
 *MedixPro Health CRM System*`;
@@ -407,7 +407,7 @@ Thank you,
                <div className="text-center py-12 text-gray-400">Loading lab test requests...</div>
             ) : (
                <div className="overflow-x-auto">
-                  <DataTable columns={columns_0} data={filteredRecords} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_0} data={filteredRecords} enableLocalPagination isLoading={loading} />
                </div>
             )}
 

@@ -791,7 +791,7 @@ export default function CreatePrescriptionPage() {
 
                         {medications.length > 0 ? (
                            <div className="overflow-x-auto">
-                              <DataTable columns={columns_0} data={medications} enableLocalSearch enableLocalPagination />
+                              <DataTable columns={columns_0} data={medications} enableLocalPagination />
                            </div>
                         ) : (
                            <div className="p-8 text-center text-gray-400 flex flex-col items-center justify-center gap-2">

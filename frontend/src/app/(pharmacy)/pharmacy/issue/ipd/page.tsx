@@ -5,6 +5,7 @@ import { prescriptionAPI } from "@/lib/api";
 import { ArrowLeft, RefreshCw, Loader, Receipt, Check, Eye, X, User, Clock, FileText, Pill } from "lucide-react";
 import Link from "next/link";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 export default function IPDMedicineSupplyPage() {
   const [completedSupplies, setCompletedSupplies] = useState<any[]>([]);
@@ -109,9 +110,7 @@ export default function IPDMedicineSupplyPage() {
         </div>
 
         {historyLoading ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader className="animate-spin text-[#1abc9c]" size={24} />
-          </div>
+          <TableSkeleton rows={6} cols={5} />
         ) : completedSupplies.length === 0 ? (
           <div className="text-center py-12 text-gray-500 italic text-sm">
             No recently dispensed IPD supply prescriptions found in history logs.

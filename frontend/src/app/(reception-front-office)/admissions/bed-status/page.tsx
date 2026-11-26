@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { bedStatusAPI, roomAllotmentAPI } from '@/lib/api';
 import dayjs from 'dayjs';
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 interface Room {
@@ -240,9 +241,7 @@ export default function BedStatusPage() {
                         </div>
 
                         {isLoading ? (
-                            <div className="flex items-center justify-center py-16 text-gray-400 text-sm gap-2">
-                                <RefreshCw size={16} className="animate-spin" /> Loading bed status...
-                            </div>
+                            <TableSkeleton rows={6} cols={5} />
                         ) : (searchTerm || filterStatus !== 'All Status' || filterDept !== 'All Departments' || filterType !== 'All Types') ? (
                             // ── Flat filtered view ──────────────────────────────────────
                             filteredRooms.length === 0 ? (

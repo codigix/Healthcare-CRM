@@ -587,7 +587,7 @@ function AmbulanceDetailsContent() {
                         </p>
 
                         <div className="overflow-x-auto">
-                           <DataTable columns={columns_0} data={callAssignments} enableLocalSearch enableLocalPagination />
+                           <DataTable columns={columns_0} data={callAssignments} enableLocalSearch enableLocalPagination isLoading={loading} />
                         </div>
                      </div>
                   </div>

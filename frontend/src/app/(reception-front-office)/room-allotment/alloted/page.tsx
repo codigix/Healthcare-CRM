@@ -384,7 +384,7 @@ export default function AllotedRoomsPage() {
                </div>
 
                <div className="overflow-x-auto">
-                  <DataTable columns={columns_0} data={filteredRooms} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_0} data={filteredRooms} enableLocalPagination isLoading={loading} />
                </div>
 
                <div className="mt-4 flex justify-between items-center my-3 my-3 text-mdtext-gray-400">

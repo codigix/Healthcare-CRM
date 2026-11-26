@@ -5,6 +5,7 @@ import { invoiceAPI } from "@/lib/api";
 import { FileText, ArrowLeft, RefreshCw, Loader, Search, Eye, CreditCard, CheckCircle, Clock, AlertTriangle, Download, X } from "lucide-react";
 import Link from "next/link";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface PharmacyBill {
    id: string;
@@ -208,9 +209,7 @@ export default function PharmacyBillingPage() {
             </div>
 
             {loading ? (
-               <div className="flex justify-center items-center h-64">
-                  <Loader className="animate-spin text-emerald-500" size={32} />
-               </div>
+               <TableSkeleton rows={6} cols={5} />
             ) : error ? (
                <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
                   {error}
@@ -219,7 +218,7 @@ export default function PharmacyBillingPage() {
                <div className="text-center py-12 text-gray-500">No pharmacy bills found matching query.</div>
             ) : (
                <div className="overflow-x-auto">
-                  <DataTable columns={columns_0} data={filteredBills} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_0} data={filteredBills} enableLocalPagination isLoading={loading} />
                </div>
             )}
          </div>

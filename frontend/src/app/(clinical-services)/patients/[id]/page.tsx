@@ -436,7 +436,7 @@ export default function PatientProfilePage() {
                           <div>
                             <span className="text-xs  text-gray-400 uppercase tracking-wider block mb-2">Medications</span>
                             <div className="overflow-x-auto">
-                              <DataTable columns={columns_0} data={medicationsList} enableLocalSearch enableLocalPagination />
+                              <DataTable columns={columns_0} data={medicationsList} enableLocalSearch enableLocalPagination isLoading={loading} />
                             </div>
                           </div>
 
@@ -585,7 +585,7 @@ export default function PatientProfilePage() {
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <DataTable columns={columns_1} data={invoices} enableLocalSearch enableLocalPagination />
+                    <DataTable columns={columns_1} data={invoices} enableLocalSearch enableLocalPagination isLoading={loading} />
                   </div>
                 )}
               </div>

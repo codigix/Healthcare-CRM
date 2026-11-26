@@ -18,13 +18,13 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       params.push(searchTerm, searchTerm, searchTerm);
     }
 
-    const query = `SELECT * FROM Specialization WHERE ${whereClause} ORDER BY createdAt DESC LIMIT ? OFFSET ?`;
+    const query = `SELECT * FROM specializations WHERE ${whereClause} ORDER BY createdAt DESC LIMIT ? OFFSET ?`;
     const queryParams = [...params, Number(limit), skip];
 
     const connection = await pool.getConnection();
     
     const [specializations]: any = await connection.query(query, queryParams);
-    const countSql = `SELECT COUNT(*) as total FROM Specialization WHERE ${whereClause}`;
+    const countSql = `SELECT COUNT(*) as total FROM specializations WHERE ${whereClause}`;
     const [countResult]: any = await connection.query(countSql, params);
     const total = countResult[0].total;
     
@@ -40,7 +40,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
-    const [specializations]: any = await connection.query('SELECT * FROM Specialization WHERE id = ?', [req.params.id]);
+    const [specializations]: any = await connection.query('SELECT * FROM specializations WHERE id = ?', [req.params.id]);
     connection.release();
 
     if (specializations.length === 0) {
@@ -63,12 +63,12 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const connection = await pool.getConnection();
     
-    const query = `INSERT INTO Specialization (id, name, description, department, doctorCount, status, createdAt, updatedAt)
+    const query = `INSERT INTO specializations (id, name, description, department, doctorCount, status, createdAt, updatedAt)
                    VALUES (UUID(), ?, ?, ?, ?, ?, NOW(), NOW())`;
     
     await connection.query(query, [name, description || null, department, Number(doctorCount), status]);
 
-    const [specialization]: any = await connection.query('SELECT * FROM Specialization WHERE name = ? ORDER BY createdAt DESC LIMIT 1', [name]);
+    const [specialization]: any = await connection.query('SELECT * FROM specializations WHERE name = ? ORDER BY createdAt DESC LIMIT 1', [name]);
     connection.release();
 
     res.status(201).json(specialization[0]);
@@ -107,7 +107,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     updates.push('updatedAt = NOW()');
     values.push(req.params.id);
 
-    const query = `UPDATE Specialization SET ${updates.join(', ')} WHERE id = ?`;
+    const query = `UPDATE specializations SET ${updates.join(', ')} WHERE id = ?`;
     const result = await connection.query(query, values);
     
     if ((result[0] as any).affectedRows === 0) {
@@ -115,7 +115,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Specialization not found' });
     }
 
-    const [specialization]: any = await connection.query('SELECT * FROM Specialization WHERE id = ?', [req.params.id]);
+    const [specialization]: any = await connection.query('SELECT * FROM specializations WHERE id = ?', [req.params.id]);
     connection.release();
 
     res.json(specialization[0]);
@@ -130,7 +130,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const connection = await pool.getConnection();
-    const result = await connection.query('DELETE FROM Specialization WHERE id = ?', [req.params.id]);
+    const result = await connection.query('DELETE FROM specializations WHERE id = ?', [req.params.id]);
     connection.release();
 
     if ((result[0] as any).affectedRows === 0) {

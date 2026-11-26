@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { refillAPI } from "@/lib/api";
 import { Search, AlertTriangle, PackageX, Clock, Settings, ArrowRightLeft, CheckCircle2, Loader, Check, Play, CornerDownRight } from "lucide-react";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface AlertItem {
   id: string;
@@ -519,14 +520,12 @@ export default function StockAlertsPage() {
             </div>
 
             {refillsLoading ? (
-              <div className="flex justify-center items-center h-48">
-                <Loader className="animate-spin text-emerald-500" size={32} />
-              </div>
+              <TableSkeleton rows={6} cols={5} />
             ) : refills.length === 0 ? (
               <div className="text-center py-12 text-gray-500 italic text-sm">No pharmacy refill requests found.</div>
             ) : (
               <div className="overflow-x-auto">
-                <DataTable columns={columns_0} data={refills} enableLocalSearch enableLocalPagination />
+                <DataTable columns={columns_0} data={refills} enableLocalPagination />
               </div>
             )}
           </div>
@@ -546,7 +545,7 @@ export default function StockAlertsPage() {
             </p>
 
             <div className="overflow-x-auto">
-              <DataTable columns={columns_1} data={filteredItems} enableLocalSearch enableLocalPagination />
+              <DataTable columns={columns_1} data={filteredItems} enableLocalPagination />
             </div>
           </div>
         )}

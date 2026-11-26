@@ -5,6 +5,7 @@ import { prescriptionAPI } from "@/lib/api";
 import { Clipboard, ArrowLeft, RefreshCw, Loader, Search, Eye, Pill, Calendar } from "lucide-react";
 import Link from "next/link";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface Prescription {
    id: string;
@@ -120,9 +121,7 @@ export default function PrescriptionHistoryPage() {
             </div>
 
             {loading ? (
-               <div className="flex justify-center items-center h-64">
-                  <Loader className="animate-spin text-emerald-500" size={32} />
-               </div>
+               <TableSkeleton rows={6} cols={5} />
             ) : error ? (
                <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
                   {error}
@@ -131,7 +130,7 @@ export default function PrescriptionHistoryPage() {
                <div className="text-center py-12 text-gray-500">No prescription records found matching search query.</div>
             ) : (
                <div className="overflow-x-auto">
-                  <DataTable columns={columns_0} data={filteredHistory} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_0} data={filteredHistory} enableLocalPagination isLoading={loading} />
                </div>
             )}
          </div>

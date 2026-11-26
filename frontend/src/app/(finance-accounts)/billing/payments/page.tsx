@@ -376,7 +376,7 @@ export default function PaymentsHistoryPage() {
                </div>
 
                <div className="overflow-x-auto">
-                  <DataTable columns={columns_0} data={filteredPayments} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_0} data={filteredPayments} enableLocalPagination />
                </div>
             </div>
          </div>

@@ -1,9 +1,8 @@
 import { Router, Response } from 'express';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../prisma';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     try {
@@ -21,24 +20,92 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
         startOfWeek.setDate(diff);
 
-        // 1. Top KPIs
-        const opdToday = await prisma.patient.count({ where: { createdAt: { gte: today, lt: tomorrow } } });
-        const opdYday = await prisma.patient.count({ where: { createdAt: { gte: yesterday, lt: today } } });
+        // All of these queries are independent of each other, so run them
+        // together instead of one after another (was ~35 sequential round trips).
+        const sameDayWalkin = (start: Date, end: Date) =>
+            prisma.appointment.count({ where: { date: { gte: start, lt: end }, visitType: 'walk-in' } });
 
-        const ipdToday = await prisma.roomAllotment.count({ where: { allotmentDate: { gte: today, lt: tomorrow } } });
-        const ipdYday = await prisma.roomAllotment.count({ where: { allotmentDate: { gte: yesterday, lt: today } } });
-
-        const apptToday = await prisma.appointment.count({ where: { date: { gte: today, lt: tomorrow } } });
-        const apptYday = await prisma.appointment.count({ where: { date: { gte: yesterday, lt: today } } });
-
-        const walkinToday = await prisma.appointment.count({ where: { date: { gte: today, lt: tomorrow }, visitType: 'walk-in' } });
-        const walkinYday = await prisma.appointment.count({ where: { date: { gte: yesterday, lt: today }, visitType: 'walk-in' } });
-
-        const dischargesToday = await prisma.roomAllotment.count({ where: { status: 'Discharged', updatedAt: { gte: today, lt: tomorrow } } });
-        const dischargesYday = await prisma.roomAllotment.count({ where: { status: 'Discharged', updatedAt: { gte: yesterday, lt: today } } });
-
-        const revenueTodayRes = await prisma.invoice.aggregate({ _sum: { amount: true }, where: { date: { gte: today, lt: tomorrow }, status: 'paid' } });
-        const revenueYdayRes = await prisma.invoice.aggregate({ _sum: { amount: true }, where: { date: { gte: yesterday, lt: today }, status: 'paid' } });
+        const [
+            opdToday, opdYday,
+            ipdToday, ipdYday,
+            apptToday, apptYday,
+            walkinToday, walkinYday,
+            dischargesToday, dischargesYday,
+            revenueTodayRes, revenueYdayRes,
+            opdQueue, billingQueue, appointmentsList,
+            rooms,
+            weekCounts,
+            opdByDepartmentRaw,
+            recentRegistrations,
+            invoicesToday,
+            totalPatients, malePatients, femalePatients, activeStaff,
+        ] = await Promise.all([
+            // 1. Top KPIs
+            prisma.patient.count({ where: { createdAt: { gte: today, lt: tomorrow } } }),
+            prisma.patient.count({ where: { createdAt: { gte: yesterday, lt: today } } }),
+            prisma.roomAllotment.count({ where: { allotmentDate: { gte: today, lt: tomorrow } } }),
+            prisma.roomAllotment.count({ where: { allotmentDate: { gte: yesterday, lt: today } } }),
+            prisma.appointment.count({ where: { date: { gte: today, lt: tomorrow } } }),
+            prisma.appointment.count({ where: { date: { gte: yesterday, lt: today } } }),
+            sameDayWalkin(today, tomorrow),
+            sameDayWalkin(yesterday, today),
+            prisma.roomAllotment.count({ where: { status: 'Discharged', updatedAt: { gte: today, lt: tomorrow } } }),
+            prisma.roomAllotment.count({ where: { status: 'Discharged', updatedAt: { gte: yesterday, lt: today } } }),
+            prisma.invoice.aggregate({ _sum: { amount: true }, where: { date: { gte: today, lt: tomorrow }, status: 'paid' } }),
+            prisma.invoice.aggregate({ _sum: { amount: true }, where: { date: { gte: yesterday, lt: today }, status: 'paid' } }),
+            // 2. Queue (OPD vs Billing)
+            prisma.appointment.findMany({
+                where: { date: { gte: today, lt: tomorrow } },
+                take: 10,
+                orderBy: { time: 'asc' },
+                include: { patient: true, doctor: true }
+            }),
+            prisma.invoice.findMany({
+                where: { status: 'pending', date: { gte: today, lt: tomorrow } },
+                take: 10,
+                include: { patient: true }
+            }),
+            // 3. Today's Appointments (Detailed)
+            prisma.appointment.findMany({
+                where: { date: { gte: today, lt: tomorrow } },
+                take: 5,
+                orderBy: { time: 'asc' },
+                include: { patient: true, doctor: true }
+            }),
+            // 4. Bed Availability
+            prisma.room.findMany(),
+            // 5. Walk-in vs Appointments (Line Chart): 7 days x 2 counts
+            Promise.all(Array.from({ length: 7 }, (_, i) => {
+                const dStart = new Date(startOfWeek);
+                dStart.setDate(dStart.getDate() + i);
+                const dEnd = new Date(dStart);
+                dEnd.setDate(dEnd.getDate() + 1);
+                return Promise.all([
+                    sameDayWalkin(dStart, dEnd),
+                    prisma.appointment.count({ where: { date: { gte: dStart, lt: dEnd }, visitType: { not: 'walk-in' } } }),
+                ]);
+            })),
+            // 6. OPD by Department (Donut Chart)
+            prisma.appointment.groupBy({
+                by: ['department'],
+                _count: { department: true },
+                where: { date: { gte: startOfWeek } }
+            }),
+            // 7. Recent Registrations
+            prisma.patient.findMany({
+                take: 5,
+                orderBy: { createdAt: 'desc' }
+            }),
+            // 8. Payment Collection
+            prisma.invoice.findMany({
+                where: { date: { gte: today, lt: tomorrow }, status: 'paid' }
+            }),
+            // 9. Footer Stats
+            prisma.patient.count(),
+            prisma.patient.count({ where: { gender: 'Male' } }),
+            prisma.patient.count({ where: { gender: 'Female' } }),
+            prisma.staff.count({ where: { status: 'Active' } }),
+        ]);
 
         const revenueToday = Number(revenueTodayRes._sum.amount || 0);
         const revenueYday = Number(revenueYdayRes._sum.amount || 0);
@@ -57,30 +124,6 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
             revenue: { amount: revenueToday, percent: calcPercent(revenueToday, revenueYday) }
         };
 
-        // 2. Queue (OPD vs Billing)
-        const opdQueue = await prisma.appointment.findMany({
-            where: { date: { gte: today, lt: tomorrow } },
-            take: 10,
-            orderBy: { time: 'asc' },
-            include: { patient: true, doctor: true }
-        });
-
-        const billingQueue = await prisma.invoice.findMany({
-            where: { status: 'pending', date: { gte: today, lt: tomorrow } },
-            take: 10,
-            include: { patient: true }
-        });
-
-        // 3. Today's Appointments (Detailed)
-        const appointmentsList = await prisma.appointment.findMany({
-            where: { date: { gte: today, lt: tomorrow } },
-            take: 5,
-            orderBy: { time: 'asc' },
-            include: { patient: true, doctor: true }
-        });
-
-        // 4. Bed Availability
-        const rooms = await prisma.room.findMany();
         const bedAvailability = {
             general: { total: 0, available: 0 },
             private: { total: 0, available: 0 },
@@ -89,7 +132,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
             nicu: { total: 0, available: 0 }
         };
 
-        rooms.forEach(room => {
+        rooms.forEach((room: any) => {
             const type = room.roomType.toLowerCase();
             let key = null;
             if (type.includes('general')) key = 'general';
@@ -106,49 +149,20 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
             }
         });
 
-        // 5. Walk-in vs Appointments (Line Chart)
-        const walkInVsAppointments = [];
         const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        for (let i = 0; i < 7; i++) {
-            const dStart = new Date(startOfWeek);
-            dStart.setDate(dStart.getDate() + i);
-            const dEnd = new Date(dStart);
-            dEnd.setDate(dEnd.getDate() + 1);
+        const walkInVsAppointments = weekCounts.map(([walkin, appt], i) => ({
+            day: days[i],
+            walkIn: walkin,
+            appointments: appt
+        }));
 
-            const walkin = await prisma.appointment.count({ where: { date: { gte: dStart, lt: dEnd }, visitType: 'walk-in' } });
-            const appt = await prisma.appointment.count({ where: { date: { gte: dStart, lt: dEnd }, visitType: { not: 'walk-in' } } });
-
-            walkInVsAppointments.push({
-                day: days[i],
-                walkIn: walkin,
-                appointments: appt
-            });
-        }
-
-        // 6. OPD by Department (Donut Chart)
-        const opdByDepartmentRaw = await prisma.appointment.groupBy({
-            by: ['department'],
-            _count: { department: true },
-            where: { date: { gte: startOfWeek } }
-        });
-        const opdByDepartment = opdByDepartmentRaw.map(d => ({
+        const opdByDepartment = opdByDepartmentRaw.map((d: any) => ({
             name: d.department || 'General',
             value: d._count.department
         }));
 
-        // 7. Recent Registrations
-        const recentRegistrations = await prisma.patient.findMany({
-            take: 5,
-            orderBy: { createdAt: 'desc' }
-        });
-
-        // 8. Payment Collection
-        const invoicesToday = await prisma.invoice.findMany({
-            where: { date: { gte: today, lt: tomorrow }, status: 'paid' }
-        });
-        
         let opdCol = 0, ipdCol = 0, pharmCol = 0, otherCol = 0;
-        invoicesToday.forEach(inv => {
+        invoicesToday.forEach((inv: any) => {
             const amt = Number(inv.amount);
             const notes = (inv.notes || '').toLowerCase();
             if (notes.includes('opd')) opdCol += amt;
@@ -156,7 +170,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
             else if (notes.includes('pharmacy')) pharmCol += amt;
             else otherCol += amt;
         });
-        
+
         // Ensure revenue matches the sum if notes were missing
         if (opdCol + ipdCol + pharmCol + otherCol === 0) {
             opdCol = revenueToday;
@@ -169,12 +183,6 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
             pharmacy: pharmCol,
             other: otherCol
         };
-
-        // 9. Footer Stats
-        const totalPatients = await prisma.patient.count();
-        const malePatients = await prisma.patient.count({ where: { gender: 'Male' } });
-        const femalePatients = await prisma.patient.count({ where: { gender: 'Female' } });
-        const activeStaff = await prisma.staff.count({ where: { status: 'Active' } });
 
         res.json({
             stats,

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Search, Filter, MoreVertical, Eye, Edit2, Trash2, Bed, Activity, ShieldAlert, Sparkles, Clock, LayoutGrid, HeartPulse } from "lucide-react";
 import Link from "next/link";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -551,10 +552,7 @@ export default function RoomsByDepartmentPage() {
 
                     {/* ROOM & BEDS GRID LAYOUT */}
                     {loading ? (
-                        <div className="text-center py-16 text-gray-400 animate-pulse flex flex-col items-center gap-3">
-                            <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                            <p className="text-xs">Loading department wards...</p>
-                        </div>
+                        <TableSkeleton rows={6} cols={5} />
                     ) : filteredRooms.length === 0 ? (
                         <div className="text-center py-16 text-gray-500 text-sm italic border border-dashed border-dark-tertiary/50 rounded">
                             No clinical rooms found in {selectedDepartment} matching selected category or bed status.

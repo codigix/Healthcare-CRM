@@ -6,6 +6,7 @@ import { doctorAPI, appointmentAPI } from '@/lib/api';
 import { Plus, Search, Filter, Download, MoreVertical, Edit, Trash2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface Doctor {
    id: string;
@@ -160,10 +161,10 @@ export default function DoctorsPage() {
                </div>
 
                {loading ? (
-                  <div className="text-center py-8 text-gray-400">Loading...</div>
+                  <TableSkeleton rows={6} cols={5} />
                ) : (
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={doctors} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={doctors} enableLocalPagination isLoading={loading} />
                   </div>
                )}
 

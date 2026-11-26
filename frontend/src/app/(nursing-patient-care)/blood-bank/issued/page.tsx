@@ -18,6 +18,7 @@ import Link from "next/link";
 import { bloodBankAPI, patientAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface IssuedBlood {
    id: string;
@@ -485,12 +486,10 @@ export default function IssuedBloodPage() {
                </div>
 
                {loading ? (
-                  <div className="text-center py-8 text-gray-400">
-                     Loading issued blood records...
-                  </div>
+                  <TableSkeleton rows={6} cols={5} />
                ) : (
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={filteredIssues} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={filteredIssues} enableLocalPagination isLoading={loading} />
                   </div>
                )}
             </div>

@@ -17,22 +17,26 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true   # stop at the first failing command
           script: |
+            set -e            # never restart the apps if any build step failed
             cd /var/www/Healthcare-CRM
-            git pull origin main
+            git pull --ff-only origin main
 
-            # Backend
+            # Backend: the TypeScript build needs devDependencies, so install them
+            # all, then generate the Prisma client and build.
             cd backend
-            npm install --production  # ← using npm install
+            npm ci
+            npx prisma generate
             npm run build
             cd ..
 
             # Frontend (Next.js)
             cd frontend
-            npm install               # ← using npm install
+            npm ci
             npm run build
             cd ..
 
-            # Restart PM2 apps
-            pm2 restart medixpro-frontend
-            pm2 restart medixpro-backend
+            # Restart PM2 apps (only reached if everything above succeeded)
+            pm2 restart healthcare-frontend
+            pm2 restart healthcare-backend

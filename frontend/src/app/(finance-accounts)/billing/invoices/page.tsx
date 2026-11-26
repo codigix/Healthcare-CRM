@@ -339,7 +339,7 @@ export default function InvoicesPage() {
                </div>
 
                <div className="overflow-x-auto">
-                  <DataTable columns={columns_0} data={filteredInvoices} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_0} data={filteredInvoices} enableLocalPagination />
                </div>
             </div>
          </div>

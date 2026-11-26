@@ -521,7 +521,7 @@ export default function MedicineViewPage({
             <p className="text-gray-400 text-sm italic font-sans">No active batches available. Need to restock.</p>
           ) : (
             <div className="overflow-x-auto font-sans">
-              <DataTable columns={columns_0} data={batches} enableLocalSearch enableLocalPagination />
+              <DataTable columns={columns_0} data={batches} enableLocalSearch enableLocalPagination isLoading={loading} />
             </div>
           )}
         </div>
@@ -532,7 +532,7 @@ export default function MedicineViewPage({
             <p className="text-gray-400 text-sm italic">No stock transactions logged yet.</p>
           ) : (
             <div className="overflow-x-auto">
-              <DataTable columns={columns_1} data={transactions} enableLocalSearch enableLocalPagination />
+              <DataTable columns={columns_1} data={transactions} enableLocalSearch enableLocalPagination isLoading={loading} />
             </div>
           )}
         </div>

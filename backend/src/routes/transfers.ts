@@ -7,6 +7,7 @@ const router = Router();
 // Ensure patient_transfers table exists
 const ensureTable = async () => {
   const connection = await pool.getConnection();
+  try {
   await connection.query(`
     CREATE TABLE IF NOT EXISTS patient_transfers (
       id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
@@ -31,7 +32,11 @@ const ensureTable = async () => {
       updatedAt DATETIME DEFAULT NOW() ON UPDATE NOW()
     )
   `);
-  connection.release();
+  } finally {
+    // Release even when the DDL fails; startup runs outside any request, so the
+    // per-request safety net in db.ts can't reclaim this connection.
+    connection.release();
+  }
 };
 ensureTable().catch(console.error);
 

@@ -421,7 +421,7 @@ export default function ServicesOfferedPage() {
                   </div>
                ) : (
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={services} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={services} enableLocalPagination isLoading={loading} />
                   </div>
                )}
 

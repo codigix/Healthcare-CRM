@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { bloodBankAPI } from "@/lib/api";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface Donor {
    id: string;
@@ -442,12 +443,10 @@ export default function BloodDonorsPage() {
                </div>
 
                {loading ? (
-                  <div className="text-center py-8 text-gray-400">
-                     Loading donors...
-                  </div>
+                  <TableSkeleton rows={6} cols={5} />
                ) : (
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={filteredDonors} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={filteredDonors} enableLocalPagination isLoading={loading} />
                   </div>
                )}
             </div>

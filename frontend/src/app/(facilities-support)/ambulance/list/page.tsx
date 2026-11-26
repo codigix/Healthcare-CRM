@@ -330,7 +330,7 @@ export default function AmbulanceListPage() {
 
                {!loading && filteredAmbulances.length > 0 && (
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={filteredAmbulances} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={filteredAmbulances} enableLocalPagination />
                   </div>
                )}
 

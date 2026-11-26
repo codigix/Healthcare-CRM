@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Modal from "@/components/UI/Modal";
 import AppointmentForm from "@/components/Forms/AppointmentForm";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface AppointmentRequest {
     id: string;
@@ -175,9 +176,7 @@ export default function AppointmentRequestsPage() {
                     </div>
 
                     {loading ? (
-                        <div className="text-center py-12 text-gray-400">
-                            Loading requests...
-                        </div>
+                        <TableSkeleton rows={6} cols={5} />
                     ) : filteredRequests.length === 0 ? (
                         <div className="text-center py-12">
                             <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">

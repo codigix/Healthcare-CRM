@@ -499,7 +499,7 @@ export default function DepartmentsPage() {
                </div>
 
                <div className="overflow-x-auto">
-                  <DataTable columns={columns_0} data={filteredDepartments} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_0} data={filteredDepartments} enableLocalPagination isLoading={loading} />
                </div>
             </div>
 

@@ -303,7 +303,7 @@ export default function SpecializationsPage() {
                   </div>
 
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={filteredSpecializations} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={filteredSpecializations} enableLocalPagination isLoading={loading} />
                   </div>
 
                   {filteredSpecializations.length === 0 && (

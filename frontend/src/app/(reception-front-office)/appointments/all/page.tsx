@@ -585,7 +585,7 @@ export default function AllAppointmentsPage() {
                   <div className="text-center py-12 text-gray-400">Loading appointments...</div>
                ) : (
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={filteredAppointments} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={filteredAppointments} enableLocalPagination isLoading={loading} />
                   </div>
                )}
 

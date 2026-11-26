@@ -75,9 +75,9 @@ export default function PatientRegistration() {
                 window.print();
             }
             router.push('/patients');
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert("Failed to save patient.");
+            alert(`Failed to save patient${error?.response?.data?.error ? `: ${error.response.data.error}` : '.'}`);
         } finally {
             setLoading(false);
         }

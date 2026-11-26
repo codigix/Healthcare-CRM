@@ -30,3 +30,10 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+
+# local environment files (secrets stay out of git)
+.env.local
+.env.*.local
+
+# alternate production build output
+/.next-*/

@@ -171,19 +171,12 @@ body.light .input-field::placeholder {
   color: rgba(0, 0, 0, 0.5);
 }
 
-body.light h1,
-body.light h2,
-body.light h3,
-body.light h4,
-body.light h5,
-body.light h6 {
-  color: #1a1a1a;
-}
-
-body.light p,
-body.light div {
-  color: #1a1a1a;
-}
+/*
+ * Headings, paragraphs and divs used to be forced to #1a1a1a here. That rule
+ * out-ranked every Tailwind text colour (red, amber, grey inside a grey parent…)
+ * so coloured text turned black in light mode. They now simply inherit the
+ * body colour; the explicit text-* remaps below still apply.
+ */
 
 body.light .text-gray-400,
 body.light .text-gray-300,
@@ -718,3 +711,86 @@ body.light ::-webkit-scrollbar-thumb:hover {
     inset: 50% auto auto 50% !important;
   }
 }
+
+/* ---- Skeleton loading placeholders (components/UI/Skeleton) ---- */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(132, 149, 171, 0.15);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Theme fixes
+   The app is written dark-first; light mode is a set of `body.light` overrides.
+   The blocks below cover classes those overrides missed, and pages that were
+   written light-first and therefore looked white in dark mode.
+   ========================================================================== */
+
+/* ---- Light mode: classes the original overrides did not cover ---- */
+body.light [class*="bg-dark-tertiary/"] { background-color: rgba(0, 0, 0, 0.06); }
+body.light [class*="bg-dark-secondary/"] { background-color: rgba(0, 0, 0, 0.04); }
+body.light [class*="bg-dark-primary/"] { background-color: rgba(0, 0, 0, 0.04); }
+body.light [class*="border-dark-tertiary/"] { border-color: #dddddd; }
+body.light .hover\:bg-dark-secondary:hover { background-color: #eeeeee; }
+/* hover:text-white is used in ~1400 files; white-on-light is unreadable */
+body.light .hover\:text-white:hover { color: #1a1a1a; }
+body.light .text-gray-100,
+body.light .text-gray-200,
+body.light .text-slate-100 { color: #333333; }
+
+/* ---- Dark mode: light-first pages (bg-white, text-gray-900, …) ---- */
+body:not(.light) .bg-white { background-color: var(--dark-secondary); }
+body:not(.light) .bg-gray-50,
+body:not(.light) .bg-slate-50 { background-color: #1b1d24; }
+body:not(.light) .bg-gray-100,
+body:not(.light) .bg-slate-100 { background-color: var(--dark-tertiary); }
+body:not(.light) .bg-gray-200 { background-color: #343a40; }
+body:not(.light) .hover\:bg-gray-50:hover,
+body:not(.light) .hover\:bg-gray-100:hover { background-color: var(--dark-tertiary); }
+body:not(.light) .text-gray-900,
+body:not(.light) .text-gray-800 { color: #f3f4f6; }
+body:not(.light) .text-gray-700 { color: #e5e7eb; }
+body:not(.light) .text-gray-600 { color: #9ca3af; }
+body:not(.light) .border-gray-200 { border-color: var(--dark-tertiary); }
+body:not(.light) .border-gray-300 { border-color: #3a3f45; }
+body:not(.light) .divide-gray-200 > * + * { border-color: var(--dark-tertiary); }
+
+/* react-data-table-component brings its own light colours (customStyles) */
+body:not(.light) .rdt_Table,
+body:not(.light) .rdt_TableHeader,
+body:not(.light) .rdt_TableBody,
+body:not(.light) .rdt_TableRow,
+body:not(.light) .rdt_TableCell,
+body:not(.light) .rdt_Pagination {
+  background-color: var(--dark-secondary) !important;
+  color: #e5e7eb !important;
+  border-color: var(--dark-tertiary) !important;
+}
+body:not(.light) .rdt_TableHeadRow,
+body:not(.light) .rdt_TableCol {
+  background-color: #23252d !important;
+  color: #9ca3af !important;
+  border-color: var(--dark-tertiary) !important;
+}
+body:not(.light) .rdt_TableRow:hover { background-color: var(--dark-tertiary) !important; }

@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { doctorAPI, appointmentAPI } from "@/lib/api";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface Doctor {
    id: string;
@@ -288,10 +289,7 @@ export default function DoctorSchedulePage() {
                      <div className="mt-6 pt-6 border-t border-dark-tertiary">
                         <h4 className="font-semibold mb-4">Filter by Doctor</h4>
                         {doctorsLoading ? (
-                           <div className="flex items-center gap-2 text-gray-400 text-sm">
-                              <Loader size={16} className="animate-spin" />
-                              Loading doctors...
-                           </div>
+                           <TableSkeleton rows={6} cols={5} />
                         ) : (
                            <select
                               value={selectedDoctor}
@@ -629,7 +627,7 @@ export default function DoctorSchedulePage() {
                         </div>
                      ) : (
                         <div className="overflow-x-auto">
-                           <DataTable columns={columns_0} data={appointments} enableLocalSearch enableLocalPagination />
+                           <DataTable columns={columns_0} data={appointments} enableLocalSearch enableLocalPagination isLoading={doctorsLoading} />
                         </div>
                      )}
                   </div>

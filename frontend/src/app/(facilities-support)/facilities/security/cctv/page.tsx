@@ -71,7 +71,7 @@ export default function CCTVMonitoringPage() {
   ];
 
   const mockData = Array.from({ length: 5 }).map((_, i) => {
-    return { cameraid: 'CAM-' + (401 + i), location: 'Corridor ' + (1 + i), status: i === 0 ? 'Offline' : 'Online', recordingretention: '30 Days', lastchecked: 'Today', status: i === 0 ? 'Faulty' : 'Functional' };
+    return { cameraid: 'CAM-' + (401 + i), location: 'Corridor ' + (1 + i), recordingretention: '30 Days', lastchecked: 'Today', status: i === 0 ? 'Faulty' : 'Functional' };
   });
 
   return (

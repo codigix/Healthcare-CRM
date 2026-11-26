@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface Prescription {
   id: string;
@@ -409,10 +410,7 @@ export default function PendingPrescriptionsPage() {
       {/* Main Table Queue Card */}
       <div className="card overflow-hidden border border-white/5 shadow-2xl p-0">
         {loading ? (
-          <div className="flex flex-col justify-center items-center h-80 gap-3">
-            <Loader className="animate-spin text-[#1abc9c]" size={36} />
-            <span className="text-gray-400 text-sm">Syncing prescription queues...</span>
-          </div>
+          <TableSkeleton rows={6} cols={5} />
         ) : filteredPrescriptions.length === 0 ? (
           <div className="text-center py-20">
             <Clipboard className="mx-auto text-gray-600 mb-4" size={56} />
@@ -424,7 +422,7 @@ export default function PendingPrescriptionsPage() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <DataTable columns={columns_0} data={paginatedPrescriptions} enableLocalSearch enableLocalPagination />
+              <DataTable columns={columns_0} data={paginatedPrescriptions} enableLocalPagination isLoading={loading} />
             </div>
 
             {/* Pagination Controls */}
@@ -551,7 +549,7 @@ export default function PendingPrescriptionsPage() {
                   <Pill size={16} className="text-[#1abc9c]" /> Medications Verification Checklist
                 </h4>
                 <div className="border border-white/5 roundederflow-hidden bg-card/[0.01]">
-                  <DataTable columns={columns_1} data={modalDetails.items} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_1} data={modalDetails.items} enableLocalPagination isLoading={loading} />
                 </div>
               </div>
 

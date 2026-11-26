@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { inventoryAPI } from "@/lib/api";
 import { ArrowLeft, RefreshCw, Loader, Hotel, Settings, UserCheck, AlertTriangle, ShieldCheck, HeartPulse } from "lucide-react";
 import Link from "next/link";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface Asset {
     id: string;
@@ -125,9 +126,7 @@ export default function AssetsTypePage({ params }: { params: { type: string } })
             </div>
 
             {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <Loader className="animate-spin text-emerald-500" size={32} />
-                </div>
+                <TableSkeleton rows={6} cols={5} />
             ) : error ? (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
                     {error}

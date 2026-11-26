@@ -6,6 +6,7 @@ import { ArrowLeft, RefreshCw, Loader, AlertTriangle, PackageOpen, ArrowUpRight 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface MedicineItem {
    id: string;
@@ -103,9 +104,7 @@ export default function LowStockMedicinesPage() {
          )}
 
          {loading ? (
-            <div className="flex justify-center items-center h-64">
-               <Loader className="animate-spin text-emerald-500" size={32} />
-            </div>
+            <TableSkeleton rows={6} cols={5} />
          ) : items.length === 0 ? (
             <div className="card text-center py-16">
                <PackageOpen className="mx-auto text-gray-500 mb-4" size={48} />
@@ -117,7 +116,7 @@ export default function LowStockMedicinesPage() {
          ) : (
             <div className="card">
                <div className="overflow-x-auto">
-                  <DataTable columns={columns_0} data={items} enableLocalSearch enableLocalPagination />
+                  <DataTable columns={columns_0} data={items} enableLocalSearch enableLocalPagination isLoading={loading} />
                </div>
             </div>
          )}

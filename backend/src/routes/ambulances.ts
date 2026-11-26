@@ -4,7 +4,7 @@ import pool from '../db';
 
 const router = Router();
 
-router.get('/', async (req: any, res: Response) => {
+router.get('/', authMiddleware, async (req: any, res: Response) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
@@ -36,7 +36,7 @@ router.get('/', async (req: any, res: Response) => {
   }
 });
 
-router.get('/:id', async (req: any, res: Response) => {
+router.get('/:id', authMiddleware, async (req: any, res: Response) => {
   try {
     const connection = await pool.getConnection();
     const [ambulances]: any = await connection.query('SELECT * FROM ambulances WHERE id = ?', [req.params.id]);

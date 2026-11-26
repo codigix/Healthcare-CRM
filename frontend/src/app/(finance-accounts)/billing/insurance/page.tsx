@@ -502,7 +502,7 @@ export default function InsuranceClaimsPage() {
                   </div>
 
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={filteredClaims} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={filteredClaims} enableLocalPagination isLoading={loading} />
                   </div>
 
                   {filteredClaims.length === 0 && !loading && (

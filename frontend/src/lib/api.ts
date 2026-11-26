@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios, { type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 
-const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export const getApiUrl = (): string => {
  if (typeof window !== 'undefined') {
@@ -9,7 +9,7 @@ export const getApiUrl = (): string => {
  const hostname = window.location.hostname;
  // 1. Local Testing Fallback
  if (hostname === 'localhost' || hostname === '127.0.0.1') {
- return 'http://localhost:5001/api';
+ return 'http://localhost:5000/api';
  }
  // 2. Relative Origin Fallback (same domain hosting/reverse proxy)
  return `${window.location.origin}/api`;
@@ -22,10 +22,86 @@ export const API_URL = getApiUrl();
 
 const apiClient = axios.create({
  baseURL: API_URL,
+ // Fail instead of waiting forever, so a page shows its error state rather than a never-ending loader.
+ timeout: 60000,
  headers: {
  'Content-Type': 'application/json',
  },
 });
+
+// ---------------------------------------------------------------------------
+// GET response cache: repeat visits / Back navigation show data instantly.
+//  - Identical GETs inside CACHE_TTL_MS are served from memory.
+//  - Identical GETs already in flight share one network request.
+//  - Any write (POST/PUT/PATCH/DELETE) clears the cache, so saved changes
+//    are never hidden behind stale data.
+//  - Opt out per request with the header  'Cache-Control': 'no-cache'.
+//  - Auth and notification endpoints and non-JSON responses are never cached.
+// ---------------------------------------------------------------------------
+const CACHE_TTL_MS = 30_000;
+const CACHE_MAX_ENTRIES = 200;
+const NEVER_CACHE = /\/(auth|notifications?)(\/|\?|$)/;
+
+const responseCache = new Map<string, { time: number; response: AxiosResponse }>();
+const inflightRequests = new Map<string, Promise<AxiosResponse>>();
+const networkAdapter = axios.getAdapter(axios.defaults.adapter);
+let cacheVersion = 0;
+
+export const clearApiCache = () => {
+  cacheVersion++;
+  responseCache.clear();
+  inflightRequests.clear();
+};
+
+// Callers get their own copy so mutating response.data cannot corrupt the cache.
+const copyResponse = (response: AxiosResponse, config: InternalAxiosRequestConfig): AxiosResponse => ({
+  ...response,
+  data: response.data === undefined ? response.data : structuredClone(response.data),
+  config,
+});
+
+apiClient.defaults.adapter = async (config) => {
+  const method = (config.method || 'get').toLowerCase();
+
+  if (method !== 'get') {
+    clearApiCache();
+    return networkAdapter(config);
+  }
+
+  const url = config.url || '';
+  const cacheable =
+    (!config.responseType || config.responseType === 'json') &&
+    !NEVER_CACHE.test(url) &&
+    config.headers.get('Cache-Control') !== 'no-cache';
+  if (!cacheable) return networkAdapter(config);
+
+  const key = `${config.headers.get('Authorization') ?? ''}|${apiClient.getUri(config)}`;
+
+  const hit = responseCache.get(key);
+  if (hit && Date.now() - hit.time < CACHE_TTL_MS) return copyResponse(hit.response, config);
+
+  const pending = inflightRequests.get(key);
+  if (pending) return copyResponse(await pending, config);
+
+  const versionAtStart = cacheVersion;
+  const request = networkAdapter(config)
+    .then((response) => {
+      // Skip caching if a write happened while this request was in flight.
+      if (versionAtStart === cacheVersion) {
+        responseCache.set(key, { time: Date.now(), response });
+        if (responseCache.size > CACHE_MAX_ENTRIES) {
+          const oldest = responseCache.keys().next().value;
+          if (oldest !== undefined) responseCache.delete(oldest);
+        }
+      }
+      return response;
+    })
+    .finally(() => {
+      if (inflightRequests.get(key) === request) inflightRequests.delete(key);
+    });
+  inflightRequests.set(key, request);
+  return copyResponse(await request, config);
+};
 
 apiClient.interceptors.request.use((config) => {
  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -48,6 +124,7 @@ export const authAPI = {
 
 export const doctorAPI = {
  list: (page = 1, limit = 10, search = '') => apiClient.get('/doctors', { params: { page, limit, search } }),
+ getAll: (page = 1, limit = 10, search = '') => apiClient.get('/doctors', { params: { page, limit, search } }),
  get: (id: string) => apiClient.get(`/doctors/${id}`),
  search: (name: string) => apiClient.get('/doctors/search', { params: { search: name, limit: 20 } }),
  available: (specialization?: string) => apiClient.get('/doctors/available', { params: { specialization } }),
@@ -58,6 +135,10 @@ export const doctorAPI = {
 
 export const patientAPI = {
   getAll: (page: number = 1, limit: number = 10) => apiClient.get(`/patients?page=${page}&limit=${limit}`),
+  // Same naming as every other API client (list / get); `search` is supported by GET /patients.
+  list: (page: number = 1, limit: number = 10, search: string = '') =>
+    apiClient.get('/patients', { params: { page, limit, search } }),
+  get: (id: string) => apiClient.get(`/patients/${id}`),
   search: (name: string) => apiClient.get(`/patients/search?name=${name}`),
   getById: (id: string) => apiClient.get(`/patients/${id}`),
   create: (data: any) => apiClient.post('/patients', data),

@@ -612,7 +612,7 @@ export default function DoctorDashboard() {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <DataTable columns={columns_0} data={patients} enableLocalSearch enableLocalPagination />
+                      <DataTable columns={columns_0} data={patients} enableLocalSearch enableLocalPagination isLoading={loading} />
                     </div>
                   )}
                 </div>

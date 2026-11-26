@@ -18,6 +18,7 @@ import { medicineAPI } from "@/lib/api";
 import AddStockModal from "@/components/Pharmacy/AddStockModal";
 import ViewMedicineModal from "@/components/Pharmacy/ViewMedicineModal";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 interface Medicine {
    id: string;
@@ -382,9 +383,7 @@ export default function MedicineListPage() {
                </div>
 
                {loading ? (
-                  <div className="flex items-center justify-center py-12">
-                     <Loader className="animate-spin text-emerald-500" size={32} />
-                  </div>
+                  <TableSkeleton rows={6} cols={5} />
                ) : error ? (
                   <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
                      {error}
@@ -395,7 +394,7 @@ export default function MedicineListPage() {
                   </div>
                ) : (
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={filteredMedicines} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={filteredMedicines} enableLocalPagination isLoading={loading} />
                   </div>
                )}
 

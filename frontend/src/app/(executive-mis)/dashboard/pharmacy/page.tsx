@@ -28,6 +28,7 @@ import {
    Area
 } from "recharts";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 const dispenseData = [
    { day: "Mon", prescriptions: 42, volume: 150 },
@@ -189,10 +190,7 @@ export default function PharmacyDashboard() {
          </div>
 
          {loading ? (
-            <div className="flex items-center justify-center h-64 card">
-               <Loader className="animate-spin text-teal-400" size={32} />
-               <p className="text-gray-400 ml-2">Loading Live Pharmacy Systems...</p>
-            </div>
+            <TableSkeleton rows={6} cols={5} />
          ) : (
             <>
                {/* Stats Cards */}
@@ -281,7 +279,7 @@ export default function PharmacyDashboard() {
                      </Link>
                   </div>
                   <div className="overflow-x-auto">
-                     <DataTable columns={columns_0} data={pendingQueue} enableLocalSearch enableLocalPagination />
+                     <DataTable columns={columns_0} data={pendingQueue} enableLocalSearch enableLocalPagination isLoading={loading} />
                   </div>
                </div>
             </>

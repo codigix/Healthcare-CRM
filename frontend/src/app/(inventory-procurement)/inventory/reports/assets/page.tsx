@@ -6,6 +6,7 @@ import { ArrowLeft, RefreshCw, Loader, Hotel, ShieldCheck, Activity, DollarSign,
 import Link from "next/link";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
 import DataTable, { Column } from "@/components/UI/DataTable";
+import { TableSkeleton } from "@/components/UI/Skeleton";
 
 const COLORS = ["#1abc9c", "#3498db", "#f1c40f", "#e74c3c"];
 
@@ -155,9 +156,7 @@ export default function AssetReportsPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <Loader className="animate-spin text-emerald-500" size={32} />
-        </div>
+        <TableSkeleton rows={6} cols={5} />
       ) : error ? (
         <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded">
           {error}
@@ -277,7 +276,7 @@ export default function AssetReportsPage() {
           <div className="card">
             <h3 className="text-lg  text-white mb-6">Asset Maintenance Registry</h3>
             <div className="overflow-x-auto">
-              <DataTable columns={columns_0} data={assets} enableLocalSearch enableLocalPagination />
+              <DataTable columns={columns_0} data={assets} enableLocalSearch enableLocalPagination isLoading={loading} />
             </div>
           </div>
         </>
