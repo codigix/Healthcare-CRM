@@ -25,8 +25,8 @@ export default function HospitalManagementPage() {
   ];
 
   const mockData = Array.from({ length: 12 }).map((_, i) => ({
-    id: `${title.substring(0, 3).toUpperCase()}-${1000 + i}`,
-    name: `Sample ${title} ${i + 1}`,
+    id: `${'Hospital'.substring(0, 3).toUpperCase()}-${1000 + i}`,
+    name: `Sample ${'Hospital'} ${i + 1}`,
     status: i % 3 === 0 ? 'Pending' : 'Active',
     updatedAt: new Date(Date.now() - i * 86400000).toLocaleDateString()
   }));

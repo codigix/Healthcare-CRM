@@ -1,13 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { appointmentAPI, doctorAPI, patientAPI, recordsAPI, roomAllotmentAPI } from "@/lib/api";
-import { Plus, Edit2, Trash2, Search, Filter, Calendar, Loader2, Check, Activity, Send, Eye, Download, ExternalLink, FileText, ClipboardList } from "lucide-react";
-import Modal from "@/components/UI/Modal";
-import AppointmentForm from "@/components/Forms/AppointmentForm";
-import Link from "next/link";
-import { useAuthStore } from "@/lib/store";
-import DataTable, { Column } from "@/components/UI/DataTable";
 import { useRouter, useSearchParams } from "next/navigation";
 import { appointmentAPI, patientAPI, doctorAPI } from "@/lib/api";
 import DataTable, { TableColumn } from "react-data-table-component";

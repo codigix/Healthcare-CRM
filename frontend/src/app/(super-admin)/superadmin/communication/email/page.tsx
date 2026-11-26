@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Save } from "lucide-react";
+import { Mail, Save, Server } from "lucide-react";
 
 export default function EmailServerPage() {
   return (

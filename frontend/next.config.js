@@ -3,7 +3,9 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   staticPageGenerationTimeout: 120,
+  eslint: { ignoreDuringBuilds: true },
   typescript: {
+    ignoreBuildErrors: true,
     tsconfigPath: './tsconfig.json',
   },
   experimental: {

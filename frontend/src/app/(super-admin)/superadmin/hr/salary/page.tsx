@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { HandCoins, Plus, Search, Edit2, Trash2 } from "lucide-react";
+import { Coins, Plus, Search, Edit2, Trash2 } from "lucide-react";
 import DataTable from "@/components/UI/DataTable";
 
 export default function SalaryComponentsPage() {
@@ -28,7 +28,7 @@ export default function SalaryComponentsPage() {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-2xl text-white flex items-center gap-3">
-            <HandCoins className="text-blue-500" />
+            <Coins className="text-blue-500" />
             Salary Components Master
           </h1>
           <p className="text-gray-400 mt-1 text-xs">Configure earnings, deductions, taxes, and allowances</p>
