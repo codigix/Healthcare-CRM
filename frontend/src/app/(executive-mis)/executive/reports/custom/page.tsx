@@ -80,12 +80,12 @@ export default function CustomReportsPage() {
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">
           <p className="text-sm text-gray-400 font-medium">Data Warehouse Latency</p>
-          <p className={"text-2xl font-bold mt-2 " + "text-blue-400"}>< 5 Mins</p>
+          <p className={"text-2xl font-bold mt-2 " + "text-blue-400"}>&lt; 5 Mins</p>
         </div>
       </div>
 
       <div className="">
-        <div className="flex justify-between items-center my-3
+        <div className="flex justify-between items-center my-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input 

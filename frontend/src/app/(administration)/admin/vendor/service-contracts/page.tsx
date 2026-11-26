@@ -73,7 +73,7 @@ export default function ServiceContractsPage() {
           <p className="text-2xl  mt-2 text-indigo-400">86</p>
         </div>
         <div className="bg-dark-secondary rounded4 border border-gray-800">
-          <p className="text-sm text-gray-400 font-medium">Expiring <30d</p>
+          <p className="text-sm text-gray-400 font-medium">Expiring &lt;30d</p>
           <p className="text-2xl  mt-2 text-amber-400">8</p>
         </div>
         <div className="bg-dark-secondary rounded4 border border-gray-800">

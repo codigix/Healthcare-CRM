@@ -82,7 +82,7 @@ export default function RecordCompletionPage() {
           <p className={"text-2xl font-bold mt-2 " + "text-emerald-400"}>95%</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">
-          <p className="text-sm text-gray-400 font-medium">Overdue (>30D)</p>
+          <p className="text-sm text-gray-400 font-medium">Overdue (&gt;30D)</p>
           <p className={"text-2xl font-bold mt-2 " + "text-red-400"}>2</p>
         </div>
       </div>

@@ -75,7 +75,7 @@ export default function PostOpPainManagementPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">
-          <p className="text-sm text-gray-400 font-medium">Patients in Pain (VAS > 4)</p>
+          <p className="text-sm text-gray-400 font-medium">Patients in Pain (VAS &gt; 4)</p>
           <p className={"text-2xl font-bold mt-2 " + "text-red-400"}>2</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">

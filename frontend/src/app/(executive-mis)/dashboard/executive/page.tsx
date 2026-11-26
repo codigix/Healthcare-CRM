@@ -397,7 +397,7 @@ export default function ExecutiveDashboard() {
                                         <Award className="text-yellow-500 shrink-0 mt-0.5" size={15} />
                                         <div>
                                             <p className="text-sm font-medium text-yellow-400">Action Required</p>
-                                            <p className="text-xs text-gray-400 mt-1">ICU occupancy is critical (>90%). Consider activating overflow protocols or expediting step-down transfers.</p>
+                                            <p className="text-xs text-gray-400 mt-1">ICU occupancy is critical (&gt;90%). Consider activating overflow protocols or expediting step-down transfers.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -436,7 +436,7 @@ export default function ExecutiveDashboard() {
                                 ))}
                             </div>
                             
-                            <div className="mt-6 p-5 border border-emerald-500/20 bg-emerald-500/5 rounded
+                            <div className="mt-6 p-5 border border-emerald-500/20 bg-emerald-500/5 rounded">
                                 <h4 className="font-semibold text-emerald-400 mb-2 flex items-center gap-2">
                                     <Target size={15} />
                                     Executive Summary

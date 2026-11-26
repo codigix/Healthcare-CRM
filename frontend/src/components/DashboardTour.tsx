@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { X } from 'lucide-react';
-import SystemTourModal from './ui/SystemTourModal';
+import SystemTourModal from './UI/SystemTourModal';
 import WelcomeTourScreen from './WelcomeTourScreen';
 
 interface DashboardTourStep {

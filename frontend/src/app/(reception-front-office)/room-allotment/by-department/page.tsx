@@ -556,7 +556,7 @@ export default function RoomsByDepartmentPage() {
                             <p className="text-xs">Loading department wards...</p>
                         </div>
                     ) : filteredRooms.length === 0 ? (
-                        <div className="text-center py-16 text-gray-500 text-sm italic border border-dashed border-dark-tertiary/50 rounded
+                        <div className="text-center py-16 text-gray-500 text-sm italic border border-dashed border-dark-tertiary/50 rounded">
                             No clinical rooms found in {selectedDepartment} matching selected category or bed status.
                         </div>
                     ) : (

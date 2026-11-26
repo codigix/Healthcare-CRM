@@ -78,7 +78,7 @@ export default function AMCContractsPage() {
           <p className={"text-2xl font-bold mt-2 " + "text-blue-400"}>$450K</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">
-          <p className="text-sm text-gray-400 font-medium">Expiring < 30 Days</p>
+          <p className="text-sm text-gray-400 font-medium">Expiring &lt; 30 Days</p>
           <p className={"text-2xl font-bold mt-2 " + "text-amber-400"}>3</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">

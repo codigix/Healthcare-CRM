@@ -273,7 +273,7 @@ export default function PharmacyDashboard() {
                </div>
 
                {/* Active Prescriptions Table */}
-               <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded
+               <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded">
                   <div className="flex justify-between items-center my-3 my-3 mb-4 pb-2 border-b border-dark-tertiary">
                      <h2 className="text-lg font-semibold text-white">Pending Prescription Dispense Queue</h2>
                      <Link href="/pharmacy/prescriptions/pending" className="text-teal-400 hover:underline text-sm font-semibold flex items-center gap-1">

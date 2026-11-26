@@ -20,7 +20,7 @@ import {
     X, CheckSquare
 } from "lucide-react";
 
-import Modal from "@/components/ui/Modal";
+import Modal from "@/components/UI/Modal";
 import AppointmentForm from "@/components/Forms/AppointmentForm";
 
 // Import Tab Components

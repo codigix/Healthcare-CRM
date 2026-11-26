@@ -25,7 +25,7 @@ export default function MFAPage() {
       <div className=" p-6 space-y-8">
 
         {/* Master Toggle */}
-        <div className="flex items-center justify-between p-6 bg-dark-tertiary/50 border border-blue-500/20 rounded
+        <div className="flex items-center justify-between p-6 bg-dark-tertiary/50 border border-blue-500/20 rounded">
           <div className="flex items-center gap-4">
             <div className={`p-3 rounded-full ${mfaStatus ? 'bg-blue-500/20 text-blue-500' : 'bg-gray-800 text-gray-500'}`}>
               <ShieldCheck size={32} />

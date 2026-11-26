@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Modal from "@/components/ui/Modal";
+import Modal from "@/components/UI/Modal";
 
 interface AdmissionRecord {
   id: string;

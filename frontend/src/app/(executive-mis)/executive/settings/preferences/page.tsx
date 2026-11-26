@@ -48,7 +48,7 @@ export default function DashboardPreferencesPage() {
   ];
 
   const mockData = Array.from({ length: 4 }).map((_, i) => {
-    return { setting: ['Landing Page', 'Default Date Range', 'Currency Display', 'Chart Colors'][i], currentconfiguration: i === 0 ? 'Hospital KPIs' : i === 1 ? 'MTD' : 'USD ($)', 'Brand Colors', scope: 'Global / Exec', lastmodified: 'Jan 2026', action: 'Edit' };
+    return { setting: ['Landing Page', 'Default Date Range', 'Currency Display', 'Chart Colors'][i], currentconfiguration: i === 0 ? 'Hospital KPIs' : i === 1 ? 'MTD' : i === 2 ? 'USD ($)' : 'Brand Colors', scope: 'Global / Exec', lastmodified: 'Jan 2026', action: 'Edit' };
   });
 
   return (
@@ -84,7 +84,7 @@ export default function DashboardPreferencesPage() {
       </div>
 
       <div className="">
-        <div className="flex justify-between items-center my-3
+        <div className="flex justify-between items-center my-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input 

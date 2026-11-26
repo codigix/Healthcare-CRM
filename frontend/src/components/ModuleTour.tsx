@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import SystemTourModal from "./ui/SystemTourModal";
+import SystemTourModal from "./UI/SystemTourModal";
 
 interface ModuleInfo {
     title: string;

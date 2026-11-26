@@ -60,7 +60,7 @@ export default function RoleMappingPage() {
             <LayoutGrid className="text-blue-500" size={24} />
             Role Mapping
           </h1>
-          <p className="text-sm text-gray-400 mt-1">Mapping physical departments to software modules (e.g., Radiology Dept -> RIS Module).</p>
+          <p className="text-sm text-gray-400 mt-1">Mapping physical departments to software modules (e.g., Radiology Dept -&gt; RIS Module).</p>
         </div>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-4 py-2 bg-dark-secondary border border-gray-700 rounded-lg text-sm font-medium hover:bg-dark-tertiary transition-colors text-white">
@@ -88,7 +88,7 @@ export default function RoleMappingPage() {
       </div>
 
       <div className="">
-        <div className="flex justify-between items-center my-3
+        <div className="flex justify-between items-center my-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input 

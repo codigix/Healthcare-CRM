@@ -80,7 +80,7 @@ export default function EarlyWarningScorePage() {
           <p className={"text-2xl font-bold mt-2 " + "text-blue-400"}>45</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">
-          <p className="text-sm text-gray-400 font-medium">High Risk (Score >6)</p>
+          <p className="text-sm text-gray-400 font-medium">High Risk (Score &gt;6)</p>
           <p className={"text-2xl font-bold mt-2 " + "text-red-500"}>2</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">

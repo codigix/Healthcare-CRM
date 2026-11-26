@@ -77,7 +77,7 @@ export default function PainAssessmentsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-dark-secondary rounded4 border border-gray-800">
-          <p className="text-sm text-gray-400 font-medium">High Pain (>7)</p>
+          <p className="text-sm text-gray-400 font-medium">High Pain (&gt;7)</p>
           <p className={"text-2xl font-bold mt-2 " + "text-red-400"}>4</p>
         </div>
         <div className="bg-dark-secondary rounded4 border border-gray-800">

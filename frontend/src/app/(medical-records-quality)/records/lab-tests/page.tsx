@@ -373,7 +373,7 @@ Thank you,
             </div>
          </div>
 
-         <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded
+         <div className="card bg-dark-secondary border border-dark-tertiary p-6 rounded">
             <div className="flex flex-col md:flex-row gap-4 mb-6">
                <div className="flex-1 flex items-center gap-2 bg-dark-tertiary/45 border border-dark-tertiary/20 rounded px-4">
                   <Search size={20} className="text-gray-400" />

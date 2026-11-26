@@ -83,13 +83,13 @@ export default function ClaimTrackingPage() {
           <p className={"text-2xl font-bold mt-2 " + "text-red-400"}>$850,000</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">
-          <p className="text-sm text-gray-400 font-medium">Overdue > 30 Days</p>
+          <p className="text-sm text-gray-400 font-medium">Overdue &gt; 30 Days</p>
           <p className={"text-2xl font-bold mt-2 " + "text-red-400"}>15</p>
         </div>
       </div>
 
       <div className="">
-        <div className="flex justify-between items-center my-3
+        <div className="flex justify-between items-center my-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input 

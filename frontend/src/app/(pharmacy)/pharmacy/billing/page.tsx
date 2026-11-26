@@ -243,39 +243,39 @@ export default function PharmacyBillingPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
-                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded
+                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded">
                         <span className="text-gray-400">Patient UHID</span>
                         <span className="text-white ">{selectedBill.uhid}</span>
                      </div>
-                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded
+                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded">
                         <span className="text-gray-400">Patient Name</span>
                         <span className="text-white ">{selectedBill.patientName}</span>
                      </div>
-                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded
+                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded">
                         <span className="text-gray-400">Prescription Ref</span>
                         <span className="text-[#1abc9c]  font-mono">{selectedBill.prescriptionId}</span>
                      </div>
-                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded
+                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded">
                         <span className="text-gray-400">Billing Date</span>
                         <span className="text-white">{selectedBill.invoiceDate}</span>
                      </div>
-                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded
+                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded">
                         <span className="text-gray-400">Payment Gateway</span>
                         <span className="text-white font-semibold">{selectedBill.paymentMethod}</span>
                      </div>
-                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded
+                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-card/5 border border-white/5 rounded">
                         <span className="text-gray-400">Total Net Charges</span>
                         <span className="text-[#1abc9c] ">₹{selectedBill.totalAmount.toFixed(2)}</span>
                      </div>
-                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded
+                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded">
                         <span className="text-emerald-400 font-semibold">Amount Paid</span>
                         <span className="text-emerald-400 font-extrabold font-mono">₹{selectedBill.paidAmount.toFixed(2)}</span>
                      </div>
-                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded
+                     <div className="flex justify-between items-center my-3 my-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded">
                         <span className="text-amber-500 font-semibold">Remaining Balance</span>
                         <span className="text-amber-500 font-extrabold font-mono">₹{selectedBill.remainingAmount.toFixed(2)}</span>
                      </div>
-                     <div className="md:col-span-2 p-3 bg-card/5 border border-white/5 rounded
+                     <div className="md:col-span-2 p-3 bg-card/5 border border-white/5 rounded">
                         <span className="text-gray-400 block mb-1 text-xs  uppercase tracking-wider">Billing Notes</span>
                         <span className="text-gray-300 block text-xs leading-relaxed max-h-16 overflow-y-auto">{selectedBill.notes}</span>
                      </div>

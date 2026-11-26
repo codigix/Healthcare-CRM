@@ -80,7 +80,7 @@ export default function ComplianceTrackingPage() {
           <p className={"text-2xl font-bold mt-2 " + "text-emerald-400"}>34/34</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">
-          <p className="text-sm text-gray-400 font-medium">Expiring < 90 Days</p>
+          <p className="text-sm text-gray-400 font-medium">Expiring &lt; 90 Days</p>
           <p className={"text-2xl font-bold mt-2 " + "text-amber-400"}>2</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">

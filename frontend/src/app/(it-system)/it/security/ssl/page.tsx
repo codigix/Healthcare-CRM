@@ -50,7 +50,7 @@ export default function SSLCertificatesPage() {
 
   const mockData = Array.from({ length: 5 }).map((_, i) => {
     return {
-      domainsubdomain: i === 0 ? 'api.hospital.com' : 'portal.hospital.com', issuedby: 'Let's Encrypt', validfrom: 'Jan 2026', validto: i===0?'Next Week':'Jan 2027', daysremaining: i===0?'12 Days':'300 Days', status: i===0?'Expiring Soon':'Valid' };
+      domainsubdomain: i === 0 ? 'api.hospital.com' : 'portal.hospital.com', issuedby: "Let's Encrypt", validfrom: 'Jan 2026', validto: i===0?'Next Week':'Jan 2027', daysremaining: i===0?'12 Days':'300 Days', status: i===0?'Expiring Soon':'Valid' };
     });
 
   return (
@@ -79,7 +79,7 @@ export default function SSLCertificatesPage() {
           <p className={"text-2xl font-bold mt-2 " + "text-blue-400"}>15</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">
-          <p className="text-sm text-gray-400 font-medium">Expiring < 30D</p>
+          <p className="text-sm text-gray-400 font-medium">Expiring &lt; 30D</p>
           <p className={"text-2xl font-bold mt-2 " + "text-amber-400"}>1</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">
@@ -89,7 +89,7 @@ export default function SSLCertificatesPage() {
       </div>
 
       <div className="">
-        <div className="flex justify-between items-center my-3
+        <div className="flex justify-between items-center my-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input 

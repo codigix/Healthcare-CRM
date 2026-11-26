@@ -80,7 +80,7 @@ export default function IntakeOutputIOPage() {
           <p className={"text-2xl font-bold mt-2 " + "text-emerald-400"}>100%</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">
-          <p className="text-sm text-gray-400 font-medium">Positive Balance > 1L</p>
+          <p className="text-sm text-gray-400 font-medium">Positive Balance &gt; 1L</p>
           <p className={"text-2xl font-bold mt-2 " + "text-amber-400"}>3</p>
         </div>
         <div className="bg-dark-secondary rounded p-4 border border-gray-800">

@@ -10,7 +10,7 @@ export default function OPDDashboardPage() {
   const columns = [
     { header: 'Metric', accessor: 'metric', sortable: true },
     {
-      header: 'Today's Target', accessor: 'todaystarget', sortable: true },
+      header: "Today's Target", accessor: 'todaystarget', sortable: true },
     { header: 'Current Progress', accessor: 'currentprogress', sortable: true },
     { header: 'Last Week Avg', accessor: 'lastweekavg', sortable: true },
     { header: 'Trend', accessor: 'trend', sortable: true },
