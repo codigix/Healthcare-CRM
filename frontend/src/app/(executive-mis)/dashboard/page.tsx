@@ -29,7 +29,7 @@ import {
    ArrowUp,
    ArrowDown,
 } from "lucide-react";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Stats {
    totalDoctors: number;

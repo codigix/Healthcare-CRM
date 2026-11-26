@@ -27,7 +27,7 @@ import {
    AreaChart,
    Area
 } from "recharts";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 const dispenseData = [
    { day: "Mon", prescriptions: 42, volume: 150 },

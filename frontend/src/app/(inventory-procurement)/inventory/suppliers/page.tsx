@@ -12,7 +12,7 @@ import {
    X,
    AlertCircle,
 } from "lucide-react";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 

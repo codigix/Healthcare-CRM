@@ -18,7 +18,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Download, RefreshCw, TrendingUp, TrendingDown } from "lucide-react";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface FinancialTransaction {
   month: string;

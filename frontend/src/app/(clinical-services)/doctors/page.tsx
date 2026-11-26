@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { doctorAPI, appointmentAPI } from '@/lib/api';
 import { Plus, Search, Filter, Download, MoreVertical, Edit, Trash2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Doctor {
    id: string;

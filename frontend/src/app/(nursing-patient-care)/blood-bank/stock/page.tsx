@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-import ActionModal from "@/components/ui/ActionModal";
+import ActionModal from "@/components/UI/ActionModal";
 import {
    Search,
    Plus,
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { bloodBankAPI } from "@/lib/api";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface BloodUnit {
    id: string;

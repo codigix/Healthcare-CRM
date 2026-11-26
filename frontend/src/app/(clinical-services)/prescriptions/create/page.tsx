@@ -25,7 +25,7 @@ import {
    patientAPI,
    doctorAPI,
 } from "@/lib/api";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Medication {
    id: string;

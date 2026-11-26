@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { prescriptionAPI } from "@/lib/api";
 import { ArrowLeft, RefreshCw, Loader, Receipt, Check, Eye, X, User, Clock, FileText, Pill } from "lucide-react";
 import Link from "next/link";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 export default function OPDMedicineIssuePage() {
   const [completedIssues, setCompletedIssues] = useState<any[]>([]);

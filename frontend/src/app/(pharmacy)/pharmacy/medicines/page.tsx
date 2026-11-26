@@ -17,7 +17,7 @@ import Link from "next/link";
 import { medicineAPI } from "@/lib/api";
 import AddStockModal from "@/components/Pharmacy/AddStockModal";
 import ViewMedicineModal from "@/components/Pharmacy/ViewMedicineModal";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Medicine {
    id: string;

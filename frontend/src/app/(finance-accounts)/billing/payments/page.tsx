@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { Search, IndianRupee, CreditCard, MoreVertical } from "lucide-react";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Payment {
    id: string;

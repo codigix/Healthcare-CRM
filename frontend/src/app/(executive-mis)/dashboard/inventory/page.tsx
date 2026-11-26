@@ -30,7 +30,7 @@ import {
    Legend
 } from "recharts";
 import { bloodBankAPI } from "@/lib/api";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 const stockData = [
    { name: "Antibiotics", stock: 120, limit: 30 },

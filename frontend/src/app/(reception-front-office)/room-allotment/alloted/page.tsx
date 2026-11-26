@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 
 import { Search, Eye, Edit, Trash2, Filter, MoreVertical } from "lucide-react";
 import Link from "next/link";
-import Modal from "@/components/ui/Modal";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import Modal from "@/components/UI/Modal";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 

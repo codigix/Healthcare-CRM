@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { recordsAPI, patientAPI, whatsappAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { ClipboardList, Search, FileText, CheckCircle2, AlertCircle, Clock, Check, Plus, Clipboard, ExternalLink, Eye, Upload, Download } from "lucide-react";
-import Modal from "@/components/ui/Modal";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import Modal from "@/components/UI/Modal";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface LabRecord {
    id: string;

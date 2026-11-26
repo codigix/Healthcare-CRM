@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { prescriptionTemplateAPI } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface MedicationTemplate {
    id: string;

@@ -11,7 +11,7 @@ import {
    Trash2,
 } from "lucide-react";
 import { insuranceClaimsAPI, patientAPI, doctorAPI } from "@/lib/api";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Patient {
    id: string;

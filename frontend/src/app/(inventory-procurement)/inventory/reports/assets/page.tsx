@@ -5,7 +5,7 @@ import { inventoryAPI } from "@/lib/api";
 import { ArrowLeft, RefreshCw, Loader, Hotel, ShieldCheck, Activity, DollarSign, Wrench } from "lucide-react";
 import Link from "next/link";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 const COLORS = ["#1abc9c", "#3498db", "#f1c40f", "#e74c3c"];
 

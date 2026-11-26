@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { patientAPI, doctorAPI, departmentAPI } from "@/lib/api";
 import { ChevronLeft, Check, Search, Calendar, Bed, User, FileText, Printer, Building2, AlertTriangle, ShieldAlert } from "lucide-react";
 import Link from "next/link";
-import Modal from "@/components/ui/Modal";
+import Modal from "@/components/UI/Modal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 

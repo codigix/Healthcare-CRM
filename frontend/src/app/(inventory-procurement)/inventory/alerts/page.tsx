@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { refillAPI } from "@/lib/api";
 import { Search, AlertTriangle, PackageX, Clock, Settings, ArrowRightLeft, CheckCircle2, Loader, Check, Play, CornerDownRight } from "lucide-react";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface AlertItem {
   id: string;

@@ -10,7 +10,7 @@ import {
     Clock,
     MoreVertical,
 } from "lucide-react";
-import Modal from "@/components/ui/Modal";
+import Modal from "@/components/UI/Modal";
 import AppointmentForm from "@/components/Forms/AppointmentForm";
 
 interface AppointmentRequest {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-import ActionModal from "@/components/ui/ActionModal";
+import ActionModal from "@/components/UI/ActionModal";
 import {
    Search,
    Plus,
@@ -17,7 +17,7 @@ import {
 import Link from "next/link";
 import { bloodBankAPI, patientAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface IssuedBlood {
    id: string;

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Building, Plus, Search, Edit2, Trash2 } from "lucide-react";
-import DataTable from "@/components/ui/DataTable";
+import DataTable from "@/components/UI/DataTable";
 
 export default function WarehouseMasterPage() {
   const [searchTerm, setSearchTerm] = useState("");

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { prescriptionAPI } from "@/lib/api";
 import { Clipboard, ArrowLeft, RefreshCw, Loader, Search, Eye, Pill, Calendar } from "lucide-react";
 import Link from "next/link";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Prescription {
    id: string;

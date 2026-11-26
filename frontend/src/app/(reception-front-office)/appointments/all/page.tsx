@@ -20,11 +20,11 @@ import {
    FileText,
    ClipboardList,
 } from "lucide-react";
-import Modal from "@/components/ui/Modal";
+import Modal from "@/components/UI/Modal";
 import AppointmentForm from "@/components/Forms/AppointmentForm";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/store";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Appointment {
    id: string;

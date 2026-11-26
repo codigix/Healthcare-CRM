@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { invoiceAPI } from "@/lib/api";
 import { FileText, ArrowLeft, RefreshCw, Loader, Search, Eye, CreditCard, CheckCircle, Clock, AlertTriangle, Download, X } from "lucide-react";
 import Link from "next/link";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface PharmacyBill {
    id: string;

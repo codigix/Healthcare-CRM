@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { Droplet, ClipboardList, CheckCircle, Clock, AlertTriangle, Plus } from "lucide-react";
 import { bloodBankAPI, patientAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
-import ActionModal from "@/components/ui/ActionModal";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import ActionModal from "@/components/UI/ActionModal";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface IssuedBlood {
    id: string;

@@ -25,7 +25,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import Link from "next/link";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Prescription {
   id: string;

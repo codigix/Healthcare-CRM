@@ -13,7 +13,7 @@ import {
    Trash2,
    Eye,
 } from "lucide-react";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Role {
    id: string;

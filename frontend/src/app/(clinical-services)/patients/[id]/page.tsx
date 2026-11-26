@@ -26,7 +26,7 @@ import {
   Download,
   Eye,
 } from "lucide-react";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 type TabType = "details" | "appointments" | "prescriptions" | "labs" | "billing" | "admissions";
 

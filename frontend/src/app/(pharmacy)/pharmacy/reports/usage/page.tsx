@@ -5,7 +5,7 @@ import { medicineAPI, prescriptionAPI } from "@/lib/api";
 import { ArrowLeft, RefreshCw, Loader, Pill, ClipboardCheck, TrendingUp, Sparkles, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, AreaChart, Area } from "recharts";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface UsageItem {
    name: string;

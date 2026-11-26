@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 
 import { invoiceAPI, patientAPI } from '@/lib/api';
 import { Plus, Edit2, Trash2, Download, Search } from 'lucide-react';
-import Modal from '@/components/ui/Modal';
+import Modal from '@/components/UI/Modal';
 import InvoiceForm from '@/components/Forms/InvoiceForm';
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Invoice {
    id: string;

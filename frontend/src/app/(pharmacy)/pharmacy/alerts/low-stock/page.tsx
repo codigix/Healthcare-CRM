@@ -5,7 +5,7 @@ import { medicineAPI } from "@/lib/api";
 import { ArrowLeft, RefreshCw, Loader, AlertTriangle, PackageOpen, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface MedicineItem {
    id: string;

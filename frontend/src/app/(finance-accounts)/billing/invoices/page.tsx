@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { Search, Plus, IndianRupee, FileText, MoreVertical } from "lucide-react";
 import Link from "next/link";
-import DataTable, { Column } from "@/components/ui/DataTable";
+import DataTable, { Column } from "@/components/UI/DataTable";
 
 interface Invoice {
    id: string;
