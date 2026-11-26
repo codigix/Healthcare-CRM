@@ -1,164 +1,151 @@
-import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import { Router, Response } from 'express';
+import { AuthRequest, authMiddleware } from '../middleware/auth';
+import pool from '../db';
 
 const router = Router();
-const prisma = new PrismaClient();
 
-// Ensure uploads/consents directory exists
-const uploadDir = path.join(process.cwd(), 'uploads', 'consents');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Set up multer for file upload
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.pdf';
-    cb(null, `consent_${req.params.id}_${Date.now()}${ext}`);
-  }
-});
-const upload = multer({ storage });
-
-// Get consents (optionally filter by patientId)
-router.get('/', async (req, res) => {
+// Seed data if empty
+async function seedConsents() {
+  const connection = await pool.getConnection();
   try {
-    const { patientId } = req.query;
-    
-    let whereClause = {};
-    if (patientId) {
-      whereClause = { patientId: String(patientId) };
-    }
+    const [countRows]: any = await connection.query('SELECT COUNT(*) as count FROM consent_forms');
+    if (countRows[0].count === 0) {
+      console.log('Seeding dummy consent forms...');
+      const [patients]: any = await connection.query('SELECT id FROM patients LIMIT 20');
+      if (patients.length === 0) return;
 
-    const consents = await prisma.consent.findMany({
-      where: whereClause,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        patient: {
-          select: { name: true, dob: true, gender: true, status: true, bloodGroup: true, updatedAt: true, id: true }
+      const formTypes = ['General Treatment Consent', 'Surgery Consent', 'Privacy & Data Consent (HIPAA)', 'Anesthesia Consent', 'Telehealth Consent'];
+      const statuses = ['Signed', 'Pending', 'Expired', 'Rejected'];
+      
+      for (let i = 0; i < 60; i++) {
+        const patient = patients[Math.floor(Math.random() * patients.length)];
+        const formName = formTypes[Math.floor(Math.random() * formTypes.length)];
+        const status = statuses[Math.floor(Math.random() * statuses.length)];
+        const formId = `#CN-${23450 + i}`;
+        
+        const signedDate = status === 'Signed' || status === 'Expired' ? new Date(Date.now() - Math.random() * 10000000000) : null;
+        const expiryDate = signedDate ? new Date(signedDate.getTime() + 31536000000) : null; // 1 year later
+        
+        await connection.query(
+          `INSERT INTO consent_forms (id, formId, formName, version, patientId, signedDate, expiryDate, signedBy, status, createdAt, updatedAt) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+          [
+            `cuid_${Math.random().toString(36).substring(7)}`,
+            formId,
+            formName,
+            `${Math.floor(Math.random() * 4) + 1}.${Math.floor(Math.random() * 9)}`,
+            patient.id,
+            signedDate,
+            expiryDate,
+            status === 'Signed' ? (Math.random() > 0.5 ? 'Patient (Digital)' : 'Dr. A. Smith') : null,
+            status
+          ]
+        );
+      }
+
+      // Add audit logs
+      const [forms]: any = await connection.query('SELECT id, formName FROM consent_forms');
+      for (const form of forms) {
+        const createTime = new Date(Date.now() - 1000000000);
+        await connection.query(
+          `INSERT INTO consent_audit_logs (id, consentFormId, action, timestamp) VALUES (?, ?, ?, ?)`,
+          [`cuid_log_${Math.random().toString(36).substring(7)}`, form.id, 'Created by System (Admin)', createTime]
+        );
+        await connection.query(
+          `INSERT INTO consent_audit_logs (id, consentFormId, action, timestamp) VALUES (?, ?, ?, ?)`,
+          [`cuid_log_${Math.random().toString(36).substring(7)}`, form.id, 'Sent to Patient (Email)', new Date(createTime.getTime() + 60000)]
+        );
+        if (Math.random() > 0.3) {
+            await connection.query(
+            `INSERT INTO consent_audit_logs (id, consentFormId, action, timestamp) VALUES (?, ?, ?, ?)`,
+            [`cuid_log_${Math.random().toString(36).substring(7)}`, form.id, 'Viewed by Patient (IP: 192.168.1.1)', new Date(createTime.getTime() + 300000)]
+            );
         }
       }
-    });
-    
-    res.json(consents);
-  } catch (error: any) {
-    console.error('Error fetching consents:', error);
-    res.status(500).json({ error: 'Failed to fetch consents', details: error.message });
+      console.log('Seeding complete.');
+    }
+  } catch (e) {
+    console.error('Error seeding consents:', e);
+  } finally {
+    connection.release();
   }
-});
+}
 
-// Create a new consent
-router.post('/', async (req, res) => {
+// Run seeder asynchronously
+seedConsents();
+
+router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const {
-      patientId, type, department, visitType, doctorId,
-      signedBy, witness, status, version
-    } = req.body;
-
-    if (!patientId || !type || !department || !visitType) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    const { page = 1, limit = 25, search, patientId } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+    
+    const connection = await pool.getConnection();
+    
+    let query = `
+      SELECT 
+        c.*, 
+        p.name as patientName, 
+        p.id as patientUHID 
+      FROM consent_forms c 
+      JOIN patients p ON c.patientId = p.id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+    
+    if (patientId) {
+      query += ` AND p.id = ?`;
+      params.push(patientId);
     }
 
-    const consent = await prisma.consent.create({
-      data: {
-        patientId,
-        type,
-        department,
-        visitType,
-        doctorId,
-        signedBy: signedBy || 'Pending',
-        witness: witness || 'Pending',
-        status: status || 'Pending Signature',
-        version: version || 'v1.0'
-      }
-    });
-    
-    res.status(201).json(consent);
-  } catch (error: any) {
-    console.error('Error creating consent:', error);
-    res.status(500).json({ error: 'Failed to create consent', details: error.message });
-  }
-});
-
-// Upload a signed consent document
-router.post('/:id/upload', upload.single('file'), async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    // Since we don't have fileUrl in DB, we'll just update status to Signed
-    const consent = await prisma.consent.update({
-      where: { id },
-      data: { status: 'Signed' }
-    });
-    
-    res.json({ message: 'File uploaded successfully', consent, file: req.file.filename });
-  } catch (error: any) {
-    console.error('Error uploading consent:', error);
-    res.status(500).json({ error: 'Failed to upload consent', details: error.message });
-  }
-});
-
-// Download a signed consent document
-router.get('/:id/download', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    // Find latest file for this consent ID
-    const files = fs.readdirSync(uploadDir);
-    const consentFiles = files.filter(f => f.startsWith(`consent_${id}_`)).sort().reverse();
-    
-    if (consentFiles.length === 0) {
-      return res.status(404).json({ error: 'No document found for this consent' });
+    if (search) {
+      query += ` AND (c.formId LIKE ? OR c.formName LIKE ? OR p.name LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
     
-    const filePath = path.join(uploadDir, consentFiles[0]);
-    res.download(filePath);
+    query += ` ORDER BY c.createdAt DESC LIMIT ? OFFSET ?`;
+    params.push(Number(limit), Number(skip));
+    
+    const [forms]: any = await connection.query(query, params);
+    
+    // Count total
+    let countQuery = `SELECT COUNT(*) as count FROM consent_forms c JOIN patients p ON c.patientId = p.id WHERE 1=1`;
+    const countParams: any[] = [];
+
+    if (patientId) {
+      countQuery += ` AND p.id = ?`;
+      countParams.push(patientId);
+    }
+
+    if (search) {
+      countQuery += ` AND (c.formId LIKE ? OR c.formName LIKE ? OR p.name LIKE ?)`;
+      countParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+    const [countRows]: any = await connection.query(countQuery, countParams);
+    
+    connection.release();
+    
+    res.json({
+      success: true,
+      forms,
+      total: countRows[0].count
+    });
   } catch (error: any) {
-    console.error('Error downloading consent:', error);
-    res.status(500).json({ error: 'Failed to download consent', details: error.message });
+    res.status(500).json({ error: 'Failed to fetch consent forms', details: error.message });
   }
 });
 
-// Update an existing consent
-router.put('/:id', async (req, res) => {
+router.get('/:id/audit', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.params;
-    const updateData = req.body;
-
-    const consent = await prisma.consent.update({
-      where: { id },
-      data: updateData
-    });
+    const connection = await pool.getConnection();
+    const [logs]: any = await connection.query(
+      `SELECT * FROM consent_audit_logs WHERE consentFormId = ? ORDER BY timestamp ASC`,
+      [req.params.id]
+    );
+    connection.release();
     
-    res.json(consent);
+    res.json({ success: true, logs });
   } catch (error: any) {
-    console.error('Error updating consent:', error);
-    res.status(500).json({ error: 'Failed to update consent', details: error.message });
-  }
-});
-
-// Delete a consent
-router.delete('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    
-    await prisma.consent.delete({
-      where: { id }
-    });
-    
-    res.json({ message: 'Consent deleted successfully' });
-  } catch (error: any) {
-    console.error('Error deleting consent:', error);
-    res.status(500).json({ error: 'Failed to delete consent', details: error.message });
+    res.status(500).json({ error: 'Failed to fetch audit logs', details: error.message });
   }
 });
 

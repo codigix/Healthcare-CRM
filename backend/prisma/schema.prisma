@@ -81,7 +81,17 @@ model Patient {
   photoUrl               String?
   isVip                  Boolean  @default(false)
   patientType            String   @default("OPD")
-  
+  // Additional Demographics
+  mrn                    String?
+  abhaId                 String?
+  birthPlace             String?
+  education              String?
+  primaryLanguage        String?
+  secondaryLanguage      String?
+  motherTongue           String?
+  district               String?
+  preferredContact       String?
+
   // Contact
   alternateMobile        String?
   landline               String?
@@ -89,6 +99,13 @@ model Patient {
   state                  String?
   pincode                String?
   country                String?
+  permanentAddress       String?
+  permanentCity          String?
+  permanentDistrict      String?
+  permanentState         String?
+  permanentCountry       String?
+  permanentPincode       String?
+  sameAsCurrentAddress   Boolean  @default(false)
   
   // ID Proof
   idProofType            String?
@@ -99,6 +116,8 @@ model Patient {
   emergencyContactName   String?
   emergencyContactRel    String?
   emergencyContactMobile String?
+  emergencyContactAltMobile String?
+  emergencyContactAddress   String?
   
   // Additional Info
   occupation             String?
@@ -125,6 +144,9 @@ model Patient {
   invoices               Invoice[]
   insuranceClaims        InsuranceClaim[]
   prescriptions          Prescription[]
+  consentForms           ConsentForm[]
+  patientDocuments       PatientDocument[]
+  medicalProfile         MedicalProfile?
 
   @@map("patients")
 }
@@ -644,5 +666,78 @@ model Notification {
   updatedAt  DateTime @updatedAt
 
   @@map("notifications")
+}
+
+model ConsentForm {
+  id          String   @id @default(cuid())
+  formId      String   @unique
+  formName    String
+  version     String
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  signedDate  DateTime?
+  expiryDate  DateTime?
+  signedBy    String?
+  status      String   @default("Pending")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  auditLogs   ConsentAuditLog[]
+
+  @@map("consent_forms")
+}
+
+model ConsentAuditLog {
+  id            String   @id @default(cuid())
+  consentFormId String
+  consentForm   ConsentForm @relation(fields: [consentFormId], references: [id], onDelete: Cascade)
+  action        String
+  timestamp     DateTime @default(now())
+
+  @@map("consent_audit_logs")
+}
+
+model PatientDocument {
+  id              String   @id @default(cuid())
+  documentType    String
+  fileName        String
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  dateOfService   DateTime
+  source          String
+  status          String   @default("Final")
+  version         String   @default("1.0")
+  actions         String   @default("[]") 
+  category        String?
+  fileSize        String?
+  uploadedBy      String?
+  tags            String?
+  description     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("patient_documents")
+}
+
+model MedicalProfile {
+  id                 String   @id @default(cuid())
+  patientId          String   @unique
+  patient            Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  bloodGroup         String?
+  drugAllergies      String?
+  foodAllergies      String?
+  chronicDiseases    String?
+  currentMedications String?
+  smokingStatus      String?
+  alcoholConsumption String?
+  tobaccoUsage       String?
+  organDonor         Boolean  @default(false)
+  pregnancyStatus    String?
+  specialNeeds       String?
+  medicalAlertText   String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("medical_profiles")
 }
 

@@ -79,9 +79,9 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
                   a.department, a.visitType, a.createdAt, a.updatedAt,
                   d.name as doctorName,
                   p.name as patientName, p.email as patientEmail, p.phone as patientPhone,
-                  (SELECT status FROM records WHERE appointmentId = a.id AND type = 'Lab Test' LIMIT 1) as labTestStatus,
-                  (SELECT status FROM records WHERE appointmentId = a.id AND type = 'Admission Request' LIMIT 1) as admissionStatus,
-                  (SELECT status FROM prescriptions WHERE appointmentId = a.id LIMIT 1) as prescriptionStatus
+                  NULL as labTestStatus,
+                  NULL as admissionStatus,
+                  NULL as prescriptionStatus
                 FROM appointments a
                 LEFT JOIN doctors d ON a.doctorId = d.id
                 LEFT JOIN patients p ON a.patientId = p.id
@@ -172,7 +172,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     const connection = await pool.getConnection();
     const query = `
       SELECT a.*, d.name as doctorName, d.specialization, p.name as patientName,
-             (SELECT status FROM prescriptions WHERE appointmentId = a.id LIMIT 1) as prescriptionStatus
+             NULL as prescriptionStatus
       FROM appointments a
       LEFT JOIN doctors d ON a.doctorId = d.id
       LEFT JOIN patients p ON a.patientId = p.id

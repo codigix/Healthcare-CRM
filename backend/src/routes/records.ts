@@ -9,21 +9,21 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     const { page = 1, limit = 10, type, search, appointmentId } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
-    let query = 'SELECT records.*, doctors.name as doctorName FROM records LEFT JOIN doctors ON records.doctorId = doctors.id WHERE 1=1';
+    let query = 'SELECT * FROM records WHERE 1=1';
     const params: any[] = [];
 
     if (type && String(type).trim() !== '') {
-      query += ' AND records.type = ?';
+      query += ' AND type = ?';
       params.push(String(type));
     }
 
     if (appointmentId && String(appointmentId).trim() !== '') {
-      query += ' AND records.appointmentId = ?';
-      params.push(String(appointmentId));
+      query += ' AND details LIKE ?';
+      params.push(`%"appointmentId":"${String(appointmentId)}"%`);
     }
 
     if (search && String(search).trim() !== '') {
-      query += ' AND (records.patientName LIKE ? OR records.details LIKE ?)';
+      query += ' AND (patientName LIKE ? OR details LIKE ?)';
       const searchTerm = `%${String(search)}%`;
       params.push(searchTerm, searchTerm);
     }
@@ -41,7 +41,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       countSql += ' AND type = ?';
     }
     if (appointmentId && String(appointmentId).trim() !== '') {
-      countSql += ' AND appointmentId = ?';
+      countSql += ' AND details LIKE ?';
     }
     if (search && String(search).trim() !== '') {
       countSql += ' AND (patientName LIKE ? OR details LIKE ?)';
@@ -52,7 +52,33 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     
     connection.release();
 
-    res.json({ records, total, page: Number(page), limit: Number(limit) });
+    // Map records to parse details JSON and attach doctorName and other missing fields
+    const formattedRecords = records.map((rec: any) => {
+      let doctorName = null;
+      let patientId = null;
+      let doctorId = null;
+      let parsedAppointmentId = null;
+      
+      try {
+        if (rec.details && rec.details.startsWith('{')) {
+          const parsed = JSON.parse(rec.details);
+          doctorName = parsed.attendingDoctorName || parsed.doctorName || null;
+          patientId = parsed.patientId || null;
+          doctorId = parsed.attendingDoctorId || parsed.doctorId || null;
+          parsedAppointmentId = parsed.appointmentId || null;
+        }
+      } catch (e) {}
+
+      return {
+        ...rec,
+        doctorName: doctorName || 'Unassigned',
+        patientId,
+        doctorId,
+        appointmentId: parsedAppointmentId || rec.appointmentId || null
+      };
+    });
+
+    res.json({ records: formattedRecords, total, page: Number(page), limit: Number(limit) });
   } catch (error: any) {
     console.error('[RECORDS GET] Error:', error);
     res.status(500).json({ error: 'Failed to fetch records', details: error.message });

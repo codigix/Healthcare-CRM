@@ -114,7 +114,7 @@ export default function PatientRegistration() {
                 <div className="xl:col-span-9 space-y-6">
 
                     {/* Sticky Top Alert & Buttons */}
-                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center sticky top-0 z-10">
+                    <div className="bg-white p-4 rounded shadow-sm border border-gray-100 flex justify-between items-center sticky top-0 z-10">
                         <div className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded text-sm font-medium border border-green-100">
                             <Activity size={16} /> UHID will be generated automatically after saving the patient details.
                         </div>
@@ -128,7 +128,7 @@ export default function PatientRegistration() {
                     </div>
 
                     {/* 1. Personal Information */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative">
+                    <div className="bg-white p-6 rounded shadow-sm border border-gray-100 relative">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-base font-bold text-gray-800 border-l-4 border-blue-500 pl-3 -ml-6">1. Personal Information</h2>
                             <div className="flex items-center gap-6">
@@ -201,7 +201,7 @@ export default function PatientRegistration() {
 
                             <div className="w-40 shrink-0">
                                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Photo</label>
-                                <div className="border-2 border-dashed border-gray-200 rounded-xl h-36 flex flex-col items-center justify-center bg-gray-50 text-gray-400 hover:bg-gray-100 cursor-pointer">
+                                <div className="border-2 border-dashed border-gray-200 rounded h-36 flex flex-col items-center justify-center bg-gray-50 text-gray-400 hover:bg-gray-100 cursor-pointer">
                                     <UserCircle size={40} className="mb-2 text-blue-200" />
                                     <span className="text-xs text-blue-600 font-medium">Upload Photo</span>
                                     <span className="text-[10px] mt-1">JPG, PNG (Max 2MB)</span>
@@ -212,7 +212,7 @@ export default function PatientRegistration() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* 2. Contact Information */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="bg-white p-6 rounded shadow-sm border border-gray-100">
                             <h2 className="text-base font-bold text-gray-800 border-l-4 border-blue-500 pl-3 -ml-6 mb-5">2. Contact Information</h2>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -256,7 +256,7 @@ export default function PatientRegistration() {
 
                         <div className="space-y-6">
                             {/* 3. Identification Details */}
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div className="bg-white p-6 rounded shadow-sm border border-gray-100">
                                 <h2 className="text-base font-bold text-gray-800 border-l-4 border-blue-500 pl-3 -ml-6 mb-5">3. Identification Details</h2>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
@@ -279,7 +279,7 @@ export default function PatientRegistration() {
                             </div>
 
                             {/* 4. Emergency Contact */}
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div className="bg-white p-6 rounded shadow-sm border border-gray-100">
                                 <h2 className="text-base font-bold text-gray-800 border-l-4 border-blue-500 pl-3 -ml-6 mb-5">4. Emergency Contact</h2>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div className="col-span-1">
@@ -301,7 +301,7 @@ export default function PatientRegistration() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* 5. Additional Information */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-full">
+                        <div className="bg-white p-6 rounded shadow-sm border border-gray-100 h-full">
                             <h2 className="text-base font-bold text-gray-800 border-l-4 border-blue-500 pl-3 -ml-6 mb-5">5. Additional Information</h2>
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
@@ -336,7 +336,7 @@ export default function PatientRegistration() {
                         </div>
 
                         {/* 6. Insurance Information */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-full">
+                        <div className="bg-white p-6 rounded shadow-sm border border-gray-100 h-full">
                             <div className="flex justify-between items-center mb-5">
                                 <h2 className="text-base font-bold text-gray-800 border-l-4 border-blue-500 pl-3 -ml-6">6. Insurance Information <span className="text-gray-400 font-normal text-sm">(Optional)</span></h2>
                                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">
@@ -395,7 +395,7 @@ export default function PatientRegistration() {
                 {/* Right Sidebar */}
                 <div className="xl:col-span-3 space-y-6">
                     {/* Patient Summary */}
-                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div className="bg-white p-5 rounded shadow-sm border border-gray-100">
                         <h2 className="text-sm font-bold text-gray-800 mb-4">Patient Summary</h2>
                         <div className="flex flex-col items-center mb-6">
                             <div className="w-20 h-20 rounded-full bg-blue-50 border-4 border-white shadow-md flex items-center justify-center mb-3 text-blue-300">
@@ -421,7 +421,7 @@ export default function PatientRegistration() {
                     </div>
 
                     {/* Important Notes */}
-                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                    <div className="bg-amber-50 p-4 rounded border border-amber-100">
                         <h3 className="text-amber-800 font-bold text-sm mb-2">Important Notes</h3>
                         <ul className="list-disc list-outside ml-4 text-xs text-amber-700 space-y-1.5">
                             <li>All fields marked with * are mandatory.</li>
@@ -431,7 +431,7 @@ export default function PatientRegistration() {
                     </div>
 
                     {/* Recent Registrations */}
-                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div className="bg-white p-5 rounded shadow-sm border border-gray-100">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-sm font-bold text-gray-800">Recent Registrations</h2>
                             <Link href="/patients" className="text-blue-500 text-xs font-semibold hover:underline">View all</Link>
@@ -448,7 +448,7 @@ export default function PatientRegistration() {
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div className="bg-white p-5 rounded shadow-sm border border-gray-100">
                         <h2 className="text-sm font-bold text-gray-800 mb-4">Quick Actions</h2>
                         <div className="space-y-2">
                             <button className="w-full flex items-center gap-2 text-blue-600 bg-blue-50 hover:bg-blue-100 p-2.5 rounded text-xs font-semibold transition-colors">
@@ -464,7 +464,7 @@ export default function PatientRegistration() {
                     </div>
 
                     {/* Left Navbar mock section (Help) - Recreating from screenshot edge */}
-                    <div className="bg-[#0f172a] text-white p-4 rounded-xl mt-8">
+                    <div className="bg-[#0f172a] text-white p-4 rounded mt-8">
                         <div className="flex items-center gap-2 font-bold mb-2"><AlertCircle size={16} /> Need Help?</div>
                         <p className="text-xs text-gray-400 mb-4">Check our user guide or contact support</p>
                         <button className="bg-blue-600 text-white text-xs px-4 py-2 rounded font-medium hover:bg-blue-700 w-full mb-4">View Guide</button>
@@ -482,7 +482,7 @@ export default function PatientRegistration() {
             {metaData?.footerStats && (
                 <div className="bg-white p-4 rounded-t-2xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] border border-gray-100 mt-10 flex flex-wrap lg:flex-nowrap justify-between gap-4 sticky bottom-0 z-20 mx-[-24px] px-8">
                     <div className="flex items-center gap-3 w-full lg:w-auto">
-                        <div className="p-2 bg-blue-50 text-blue-500 rounded"><UserPlus size={18} /></div>
+                        <div className="p-2 bg-blue-50 text-blue-500 rounded"><UserPlus size={15} /></div>
                         <div>
                             <div className="text-[10px] font-semibold text-gray-400 uppercase">Today's Registrations</div>
                             <div className="text-lg font-bold text-gray-800">{metaData.footerStats.today}</div>
@@ -490,7 +490,7 @@ export default function PatientRegistration() {
                     </div>
                     <div className="w-px h-10 bg-gray-200 hidden lg:block"></div>
                     <div className="flex items-center gap-3 w-full lg:w-auto">
-                        <div className="p-2 bg-green-50 text-green-500 rounded"><Activity size={18} /></div>
+                        <div className="p-2 bg-green-50 text-green-500 rounded"><Activity size={15} /></div>
                         <div>
                             <div className="text-[10px] font-semibold text-gray-400 uppercase">OPD Registrations</div>
                             <div className="text-lg font-bold text-gray-800">{metaData.footerStats.opd}</div>
@@ -498,7 +498,7 @@ export default function PatientRegistration() {
                     </div>
                     <div className="w-px h-10 bg-gray-200 hidden lg:block"></div>
                     <div className="flex items-center gap-3 w-full lg:w-auto">
-                        <div className="p-2 bg-blue-50 text-blue-500 rounded"><Bed size={18} /></div>
+                        <div className="p-2 bg-blue-50 text-blue-500 rounded"><Bed size={15} /></div>
                         <div>
                             <div className="text-[10px] font-semibold text-gray-400 uppercase">IPD Admissions</div>
                             <div className="text-lg font-bold text-gray-800">{metaData.footerStats.ipd}</div>
@@ -506,7 +506,7 @@ export default function PatientRegistration() {
                     </div>
                     <div className="w-px h-10 bg-gray-200 hidden lg:block"></div>
                     <div className="flex items-center gap-3 w-full lg:w-auto">
-                        <div className="p-2 bg-red-50 text-red-500 rounded"><AlertCircle size={18} /></div>
+                        <div className="p-2 bg-red-50 text-red-500 rounded"><AlertCircle size={15} /></div>
                         <div>
                             <div className="text-[10px] font-semibold text-gray-400 uppercase">Emergency</div>
                             <div className="text-lg font-bold text-gray-800">{metaData.footerStats.emergency}</div>
@@ -514,7 +514,7 @@ export default function PatientRegistration() {
                     </div>
                     <div className="w-px h-10 bg-gray-200 hidden lg:block"></div>
                     <div className="flex items-center gap-3 w-full lg:w-auto">
-                        <div className="p-2 bg-orange-50 text-orange-500 rounded"><UserCircle size={18} /></div>
+                        <div className="p-2 bg-orange-50 text-orange-500 rounded"><UserCircle size={15} /></div>
                         <div>
                             <div className="text-[10px] font-semibold text-gray-400 uppercase">Returning Patients</div>
                             <div className="flex items-baseline gap-1">
@@ -525,7 +525,7 @@ export default function PatientRegistration() {
                     </div>
                     <div className="w-px h-10 bg-gray-200 hidden lg:block"></div>
                     <div className="flex items-center gap-3 w-full lg:w-auto">
-                        <div className="p-2 bg-emerald-50 text-emerald-500 rounded"><UserPlus size={18} /></div>
+                        <div className="p-2 bg-emerald-50 text-emerald-500 rounded"><UserPlus size={15} /></div>
                         <div>
                             <div className="text-[10px] font-semibold text-gray-400 uppercase">New Patients</div>
                             <div className="flex items-baseline gap-1">

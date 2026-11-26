@@ -61,6 +61,34 @@ router.get('/allotments', authMiddleware, async (req: AuthRequest, res: Response
   }
 });
 
+router.get('/allotments/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const connection = await pool.getConnection();
+    const [allotment]: any = await connection.query(
+      `SELECT ra.*, r.roomNumber, r.roomType, r.department 
+       FROM room_allotments ra
+       LEFT JOIN rooms r ON ra.roomId = r.id
+       WHERE ra.id = ?`,
+      [req.params.id]
+    );
+    connection.release();
+    if (allotment.length === 0) {
+      return res.status(404).json({ error: 'Room allotment not found' });
+    }
+    res.json({
+      ...allotment[0],
+      room: {
+        id: allotment[0].roomId,
+        roomNumber: allotment[0].roomNumber,
+        roomType: allotment[0].roomType,
+        department: allotment[0].department
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch room allotment' });
+  }
+});
+
 router.post('/allotments', authMiddleware, async (req: AuthRequest, res: Response) => {
   let connection;
   try {

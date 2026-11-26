@@ -63,6 +63,9 @@ export const patientAPI = {
   create: (data: any) => apiClient.post('/patients', data),
   update: (id: string, data: any) => apiClient.put(`/patients/${id}`, data),
   registrationMeta: () => apiClient.get('/patients/registration-meta'),
+  searchMeta: () => apiClient.get('/patients/search-meta'),
+  demographicsStats: () => apiClient.get('/patients/demographics-stats'),
+  dashboard: (patientId?: string) => apiClient.get('/patients/dashboard', { params: { patientId } }),
   delete: (id: string) => apiClient.delete(`/patients/${id}`),
 };
 
@@ -78,13 +81,28 @@ export const appointmentAPI = {
 };
 
 export const roomAllotmentAPI = {
- available: () => apiClient.get('/room-allotment/available'),
- list: (page = 1, limit = 10, filters = {}) => apiClient.get('/room-allotment/allotments', { params: { page, limit, ...filters } }),
- create: (data: any) => apiClient.post('/room-allotment/allotments', data),
- update: (id: string, data: any) => apiClient.put(`/room-allotment/allotments/${id}`, data),
- delete: (id: string) => apiClient.delete(`/room-allotment/allotments/${id}`),
- getDetails: (roomNumber?: string) => apiClient.get('/room-allotment/allotments', { params: { roomNumber, limit: 100 } }),
- getAllRooms: () => apiClient.get('/room-allotment/allotments', { params: { limit: 100 } }),
+  available: () => apiClient.get('/room-allotment/available'),
+  list: (page = 1, limit = 10, filters = {}) => apiClient.get('/room-allotment/allotments', { params: { page, limit, ...filters } }),
+  getById: (id: string) => apiClient.get(`/room-allotment/allotments/${id}`),
+  create: (data: any) => apiClient.post('/room-allotment/allotments', data),
+  update: (id: string, data: any) => apiClient.put(`/room-allotment/allotments/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/room-allotment/allotments/${id}`),
+  getDetails: (roomNumber?: string) => apiClient.get('/room-allotment/allotments', { params: { roomNumber, limit: 100 } }),
+  getAllRooms: () => apiClient.get('/room-allotment/rooms'),
+  byDepartment: (dept: string) => apiClient.get(`/room-allotment/by-department/${dept}`),
+};
+
+export const bedStatusAPI = {
+  overview: () => apiClient.get('/bed-status'),
+  byDepartment: (dept: string) => apiClient.get(`/bed-status/department/${dept}`),
+};
+
+export const transferAPI = {
+  list: (page = 1, limit = 10, filters = {}) => apiClient.get('/transfers', { params: { page, limit, ...filters } }),
+  get: (id: string) => apiClient.get(`/transfers/${id}`),
+  create: (data: any) => apiClient.post('/transfers', data),
+  update: (id: string, data: any) => apiClient.put(`/transfers/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/transfers/${id}`),
 };
 
 export const invoiceAPI = {
@@ -251,5 +269,14 @@ export const notificationAPI = {
  markAsRead: (id: string) => apiClient.patch(`/notifications/${id}/read`),
  markAllAsRead: () => apiClient.post('/notifications/mark-all-read'),
  delete: (id: string) => apiClient.delete(`/notifications/${id}`),
+};
+
+export const consentAPI = {
+  list: (page = 1, limit = 25, search = '', patientId?: string) => apiClient.get('/consents', { params: { page, limit, search, patientId } }),
+  getAuditLog: (id: string) => apiClient.get(`/consents/${id}/audit`),
+};
+
+export const patientDocumentAPI = {
+  list: (page = 1, limit = 25, search = '', type = '', status = '', patientId?: string) => apiClient.get('/patient-documents', { params: { page, limit, search, type, status, patientId } }),
 };
 

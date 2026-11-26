@@ -32,6 +32,8 @@ import departmentRoutes from './routes/departments';
 import staffRoutes from './routes/staff';
 import attendanceRoutes from './routes/attendance';
 import roomAllotmentRoutes from './routes/room-allotment';
+import bedStatusRoutes from './routes/bed-status';
+import transferRoutes from './routes/transfers';
 import medicineRoutes from './routes/medicines';
 import inventoryRoutes from './routes/inventory';
 import bloodBankRoutes from './routes/blood-bank';
@@ -45,6 +47,8 @@ import servicesRoutes from './routes/services';
 import notificationRoutes from './routes/notifications';
 import whatsappRoutes from './routes/whatsapp';
 import refillRoutes from './routes/refills';
+import consentRoutes from './routes/consents';
+import patientDocumentRoutes from './routes/patient-documents';
 
 console.log('Registering routes...');
 app.use('/api/auth', authRoutes);
@@ -66,6 +70,8 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/room-allotment', roomAllotmentRoutes);
+app.use('/api/bed-status', bedStatusRoutes);
+app.use('/api/transfers', transferRoutes);
 app.use('/api/medicines', medicineRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/blood-bank', bloodBankRoutes);
@@ -78,6 +84,8 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/pharmacy/refills', refillRoutes);
+app.use('/api/consents', consentRoutes);
+app.use('/api/patient-documents', patientDocumentRoutes);
 console.log('✓ All routes registered');
 
 app.get('/api/health', (req, res) => {

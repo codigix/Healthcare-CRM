@@ -16,7 +16,7 @@ export default function AuthenticationPage() {
   return (
     <div className="min-h-screen bg-[#0F172A] flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-[url('/grid.svg')] bg-center relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/80 to-transparent pointer-events-none"></div>
-      
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="mx-auto w-16 h-16 bg-blue-500/10 rounded-2xl border border-blue-500/20 flex items-center justify-center mb-6">
           <Lock className="text-blue-500" size={32} />
@@ -51,7 +51,7 @@ export default function AuthenticationPage() {
             <div>
               <button type="submit" className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-[#1E293B] transition-all">
                 Authenticate Securely
-                <ChevronRight size={18} />
+                <ChevronRight size={15} />
               </button>
             </div>
           </form>
