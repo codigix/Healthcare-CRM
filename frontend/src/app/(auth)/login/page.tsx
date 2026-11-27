@@ -36,7 +36,7 @@ const DEPARTMENTS = [
     { id: 'Super Admin', label: 'Super Admin', icon: ShieldAlert, desc: 'Root access & controls', role: 'superadmin', color: 'border-red-500/30 hover:border-red-500 text-red-400 bg-red-500/5 hover:bg-red-500/10' },
     { id: 'Administration', label: 'Administration', icon: Shield, desc: 'Central system controls', role: 'admin', color: 'border-blue-500/30 hover:border-blue-500 text-blue-400 bg-blue-500/5 hover:bg-blue-500/10' },
     { id: 'Reception', label: 'Reception & Front Office', icon: ConciergeBell, desc: 'Front desk & bookings', role: 'receptionist', color: 'border-pink-500/30 hover:border-pink-500 text-pink-400 bg-pink-500/5 hover:bg-pink-500/10' },
-    { id: 'Clinical', label: 'Clinical Services', icon: Stethoscope, desc: 'Consultations & clinical care', role: 'doctor', color: 'border-emerald-500/30 hover:border-emerald-500 text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10' },
+    { id: 'Clinical', label: 'Doctor', icon: Stethoscope, desc: 'Consultations & clinical care', role: 'doctor', color: 'border-emerald-500/30 hover:border-emerald-500 text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10' },
     { id: 'Nursing', label: 'Nursing & Patient Care', icon: HeartPulse, desc: 'Ward & patient management', role: 'nurse', color: 'border-rose-500/30 hover:border-rose-500 text-rose-400 bg-rose-500/5 hover:bg-rose-500/10' },
     { id: 'Diagnostics', label: 'Diagnostics', icon: FlaskConical, desc: 'Testing & laboratory', role: 'laboratory', color: 'border-purple-500/30 hover:border-purple-500 text-purple-400 bg-purple-500/5 hover:bg-purple-500/10' },
     { id: 'OT', label: 'OT & Critical Care', icon: Activity, desc: 'Surgery & ICU', role: 'ot', color: 'border-orange-500/30 hover:border-orange-500 text-orange-400 bg-orange-500/5 hover:bg-orange-500/10' },
@@ -72,6 +72,7 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [dummyUsers, setDummyUsers] = useState<any[]>([]);
     const [dummyLoaded, setDummyLoaded] = useState(false);
+    const [dummyFailed, setDummyFailed] = useState(false);
 
     useEffect(() => {
         const fetchDummyLogins = async () => {
@@ -80,6 +81,7 @@ export default function LoginPage() {
                 setDummyUsers(response.data);
             } catch (err) {
                 console.error("Failed to fetch dummy logins", err);
+                setDummyFailed(true);
             } finally {
                 setDummyLoaded(true);
             }
@@ -439,7 +441,7 @@ export default function LoginPage() {
                     )}
 
                     {/* Hidden when the server provides no demo accounts (e.g. production). */}
-                    {(!dummyLoaded || dummyUsers.length > 0) && (
+                    {(!dummyLoaded || dummyUsers.length > 0 || dummyFailed) && (
                     <div className="mt-8 pt-6 border-t border-white/[0.05]">
                         <p className="text-gray-300 text-sm font-semibold mb-4 text-center">
                             Quick Department Logins
@@ -471,7 +473,13 @@ export default function LoginPage() {
                                 })}
                             </div>
                         ) : (
-                            <p className="text-gray-500 text-xs text-center animate-pulse">Loading dummy logins...</p>
+                            dummyFailed ? (
+                                <p className="text-amber-400 text-xs text-center">
+                                    Cannot reach the server, so demo logins cannot load. Start the backend (npm run dev) and refresh.
+                                </p>
+                            ) : (
+                                <p className="text-gray-500 text-xs text-center animate-pulse">Loading dummy logins...</p>
+                            )
                         )}
                     </div>
                     )}

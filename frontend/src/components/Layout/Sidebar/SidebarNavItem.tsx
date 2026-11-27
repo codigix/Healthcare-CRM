@@ -87,7 +87,7 @@ function SidebarNavItem({
         aria-expanded={expanded}
         suppressHydrationWarning
         className={`${rowBase} ${rowState}`}
-        data-tour={item.label.toLowerCase().replace(" ", "-") + "-nav"}
+        data-tour={item.tourId ?? item.label.toLowerCase().replace(" ", "-") + "-nav"}
       >
         {activeBar}
         {tile}

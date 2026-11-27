@@ -1167,6 +1167,88 @@ const pages: TablePageRegistry = {
         return { evalid: 'RSK-' + (6001 + i), patientname: names[i], risktype: types[i], score: scores[i], precautionstaken: precs[i], status: statuses[i] };
       }),
   },
+  // ---- Doctor department: screens added for the new doctor menu (hand-written) ----
+  "/doctor/patients/today": {
+    ui: 0,
+    title: "Today's Patients", description: "Patients scheduled or checked in to see you today.",
+    stats: [{ label: "Total Today", color: "text-blue-400", value: "28" }, { label: "Seen", color: "text-emerald-400", value: "12" }, { label: "Pending", color: "text-amber-400", value: "16" }],
+    columns: [["UHID", "uhid"], ["Patient Name", "patientname"], ["Age / Gender", "agegender"], ["Visit Type", "visittype"], ["Time", "time"]],
+    badge: ["Status", "status", {"Seen":"emerald","Consulting":"blue","Waiting":"amber","Not Arrived":"gray"}],
+    actions: "Actions",
+    rows: () => Array.from({ length: 5 }).map((_, i) => {
+        const names = ['Rahul Sharma', 'Priya Patil', 'Amit Deshmukh', 'Sneha Kulkarni', 'Vikas Joshi'];
+        const ag = ['34 / M', '28 / F', '52 / M', '41 / F', '63 / M'];
+        const types = ['New', 'Follow-Up', 'Follow-Up', 'New', 'Review'];
+        const times = ['09:00 AM', '09:20 AM', '09:40 AM', '10:00 AM', '10:20 AM'];
+        const statuses = ['Seen', 'Consulting', 'Waiting', 'Waiting', 'Not Arrived'];
+        return { uhid: 'UHID-' + (2001 + i), patientname: names[i], agegender: ag[i], visittype: types[i], time: times[i], status: statuses[i] };
+    }),
+  },
+  "/doctor/patients/returning": {
+    ui: 0,
+    title: "Returning Patients", description: "Patients who have visited you before and are back for review.",
+    stats: [{ label: "Returning This Month", color: "text-blue-400", value: "46" }, { label: "Avg Gap (Days)", color: "text-emerald-400", value: "21" }, { label: "Due For Review", color: "text-amber-400", value: "9" }],
+    columns: [["UHID", "uhid"], ["Patient Name", "patientname"], ["Last Visit", "lastvisit"], ["Total Visits", "totalvisits"], ["Last Diagnosis", "lastdiagnosis"]],
+    badge: ["Status", "status", {"Recently Seen":"emerald","Review Due":"amber","Overdue":"red"}],
+    actions: "Actions",
+    rows: () => Array.from({ length: 5 }).map((_, i) => {
+        const names = ['Anjali Mehta', 'Suresh Pawar', 'Kavita Naik', 'Ramesh Gupta', 'Neha Bhosale'];
+        const last = ['12 Nov 2026', '02 Nov 2026', '20 Oct 2026', '05 Oct 2026', '18 Sep 2026'];
+        const visits = ['4', '7', '3', '9', '2'];
+        const dx = ['Hypertension', 'Type 2 Diabetes', 'Migraine', 'Asthma', 'Anaemia'];
+        const statuses = ['Recently Seen', 'Review Due', 'Review Due', 'Overdue', 'Overdue'];
+        return { uhid: 'UHID-' + (1101 + i), patientname: names[i], lastvisit: last[i], totalvisits: visits[i], lastdiagnosis: dx[i], status: statuses[i] };
+    }),
+  },
+  "/doctor/consultation/examination": {
+    ui: 0,
+    title: "Patient Examination", description: "Record the physical examination findings for the current patient.",
+    stats: [{ label: "Examinations Today", color: "text-blue-400", value: "18" }, { label: "Pending", color: "text-amber-400", value: "4" }, { label: "Avg Duration (min)", color: "text-emerald-400", value: "12" }],
+    columns: [["Patient Name", "patientname"], ["Chief Complaint", "complaint"], ["General Examination", "general"], ["Systemic Examination", "systemic"], ["Examined At", "examinedat"]],
+    badge: ["Status", "status", {"Completed":"emerald","In Progress":"blue","Pending":"amber"}],
+    actions: "Actions",
+    rows: () => Array.from({ length: 5 }).map((_, i) => {
+        const names = ['Rahul Sharma', 'Priya Patil', 'Amit Deshmukh', 'Sneha Kulkarni', 'Vikas Joshi'];
+        const cc = ['Fever, body ache', 'Headache', 'Chest discomfort', 'Knee pain', 'Cough for 2 weeks'];
+        const gen = ['Febrile, alert', 'Afebrile, comfortable', 'Anxious, sweating', 'Walks with limp', 'Mild pallor'];
+        const sys = ['Chest clear', 'CNS normal', 'S1 S2 normal', 'Swelling right knee', 'Crepitations right base'];
+        const at = ['09:12 AM', '09:34 AM', '09:55 AM', '10:18 AM', '-'];
+        const statuses = ['Completed', 'Completed', 'In Progress', 'In Progress', 'Pending'];
+        return { patientname: names[i], complaint: cc[i], general: gen[i], systemic: sys[i], examinedat: at[i], status: statuses[i] };
+    }),
+  },
+  "/doctor/consultation/follow-up-advice": {
+    ui: 0,
+    title: "Follow-up Advice", description: "Advice and next-visit instructions given to patients after consultation.",
+    stats: [{ label: "Advice Given Today", color: "text-blue-400", value: "22" }, { label: "Follow-ups Booked", color: "text-emerald-400", value: "15" }, { label: "Pending Booking", color: "text-amber-400", value: "7" }],
+    columns: [["Patient Name", "patientname"], ["Advice", "advice"], ["Diet / Lifestyle", "lifestyle"], ["Follow-up Date", "followupdate"]],
+    badge: ["Status", "status", {"Booked":"emerald","Not Booked":"amber","Reminder Sent":"blue"}],
+    actions: "Actions",
+    rows: () => Array.from({ length: 5 }).map((_, i) => {
+        const names = ['Anjali Mehta', 'Suresh Pawar', 'Kavita Naik', 'Ramesh Gupta', 'Neha Bhosale'];
+        const advice = ['Continue BP medicines, recheck in 2 weeks', 'Repeat HbA1c after 3 months', 'Avoid triggers, keep headache diary', 'Inhaler twice daily, review in 1 month', 'Iron tablets, repeat CBC in 4 weeks'];
+        const life = ['Low salt diet', 'Diabetic diet, daily walk', 'Regular sleep, hydration', 'Avoid dust and smoke', 'Iron rich diet'];
+        const dates = ['11 Dec 2026', '28 Feb 2027', '10 Dec 2026', '27 Dec 2026', '24 Dec 2026'];
+        const statuses = ['Booked', 'Not Booked', 'Reminder Sent', 'Booked', 'Not Booked'];
+        return { patientname: names[i], advice: advice[i], lifestyle: life[i], followupdate: dates[i], status: statuses[i] };
+    }),
+  },
+  "/doctor/ipd/discharge-summary": {
+    ui: 0,
+    title: "Discharge Summary", description: "Discharge summaries prepared for inpatients leaving the hospital.",
+    stats: [{ label: "Pending Summaries", color: "text-amber-400", value: "6" }, { label: "Completed Today", color: "text-emerald-400", value: "4" }, { label: "Awaiting Approval", color: "text-blue-400", value: "3" }],
+    columns: [["IPD No", "ipdno"], ["Patient Name", "patientname"], ["Admission Date", "admissiondate"], ["Discharge Date", "dischargedate"], ["Final Diagnosis", "finaldiagnosis"]],
+    badge: ["Status", "status", {"Completed":"emerald","Draft":"amber","Awaiting Approval":"blue"}],
+    actions: "Actions",
+    rows: () => Array.from({ length: 5 }).map((_, i) => {
+        const names = ['Mahesh Kale', 'Sunita Rane', 'Prakash Shinde', 'Lata Jadhav', 'Dinesh More'];
+        const adm = ['20 Nov 2026', '22 Nov 2026', '23 Nov 2026', '24 Nov 2026', '25 Nov 2026'];
+        const dis = ['26 Nov 2026', '27 Nov 2026', '27 Nov 2026', '28 Nov 2026', '28 Nov 2026'];
+        const dx = ['Community acquired pneumonia', 'Acute gastroenteritis', 'Fracture neck of femur', 'Diabetic ketoacidosis', 'Dengue fever'];
+        const statuses = ['Completed', 'Awaiting Approval', 'Draft', 'Draft', 'Awaiting Approval'];
+        return { ipdno: 'IPD-' + (5001 + i), patientname: names[i], admissiondate: adm[i], dischargedate: dis[i], finaldiagnosis: dx[i], status: statuses[i] };
+    }),
+  },
 };
 
 export default pages;
