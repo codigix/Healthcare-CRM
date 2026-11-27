@@ -28,6 +28,8 @@ const NO_SECONDARY = [
   "hr", "human resources", "medical records", "quality", "records", "crm", "patient relationship",
   "facilities", "support", "facilities & support", "it", "system", "executive", "mis",
   "superadmin", "super admin",
+  "nursing & patient care", "medical records & quality", "executive mis", "ot & critical care", "finance & accounts",
+  "inventory & procurement", "clinical services", "reception & front office", "diagnostics", "human resources",
 ];
 
 export function getSecondaryMenu(d: string): NavItem[] {
@@ -38,19 +40,19 @@ export function getSecondaryMenu(d: string): NavItem[] {
 export function getMenuForDepartment(d: string): NavItem[] {
   if (d === 'admin' || d === 'administration') return adminMenu;
   else if (d === 'doctor' || d === 'clinical' || d === 'clinical services') return doctorMenu;
-  else if (d === 'nurse' || d === 'nursing') return nurseMenu;
+  else if (d === 'nurse' || d === 'nursing' || d === 'nursing & patient care') return nurseMenu;
   else if (d === 'receptionist' || d === 'reception' || d === 'reception & front office') return receptionMenu;
   else if (d === 'laboratory' || d === 'diagnostics') return laboratoryMenu;
-  else if (d === 'ot') return otMenu;
+  else if (d === 'ot' || d === 'ot & critical care') return otMenu;
   else if (d === 'pharmacy' || d === 'pharmacist') return pharmacyMenu;
-  else if (d === 'inventory') return inventoryMenu;
-  else if (d === 'finance' || d === 'accountant') return financeMenu;
+  else if (d === 'inventory' || d === 'inventory & procurement') return inventoryMenu;
+  else if (d === 'finance' || d === 'accountant' || d === 'finance & accounts') return financeMenu;
   else if (d === 'hr' || d === 'human resources') return hrMenu;
-  else if (d === 'medical records' || d === 'quality' || d === 'records') return recordsMenu;
+  else if (d === 'medical records' || d === 'quality' || d === 'records' || d === 'medical records & quality') return recordsMenu;
   else if (d === 'crm' || d === 'patient relationship') return crmMenu;
   else if (d === 'facilities' || d === 'support' || d === 'facilities & support') return facilitiesMenu;
   else if (d === 'it' || d === 'system') return itMenu;
-  else if (d === 'executive' || d === 'mis') return executiveMenu;
+  else if (d === 'executive' || d === 'mis' || d === 'executive mis') return executiveMenu;
   else if (d === 'superadmin' || d === 'super admin') return superAdminMenu;
   else if (d === 'admin' || d === 'administrator') return administratorMenu;
   return defaultMenu;

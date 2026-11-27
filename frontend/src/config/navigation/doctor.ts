@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Calendar, Stethoscope, ClipboardList, Pill, FlaskConical, Hotel } from "lucide-react";
+import { LayoutDashboard, Users, Calendar, ClipboardList, Pill, FlaskConical, Hotel } from "lucide-react";
 import type { NavItem } from "./types";
 
 // Doctor department menu: 8 sections. Most items reuse screens that already existed
@@ -23,7 +23,6 @@ export const doctorMenu: NavItem[] = [
           { label: "All Patients", href: "/patients" },
           { label: "Today's Patients", href: "/doctor/patients/today" },
           { label: "Returning Patients", href: "/doctor/patients/returning" },
-          { label: "Patient History", href: "/doctor/diagnosis/history" },
           { label: "Patient Medical Records", href: "/records/medical/patient" },
         ]
       },
@@ -36,17 +35,6 @@ export const doctorMenu: NavItem[] = [
           { label: "Upcoming Appointments", href: "/appointments/all" },
           { label: "Appointment Calendar", href: "/appointments/calendar" },
           { label: "Appointment Requests", href: "/appointments/requests" },
-        ]
-      },
-      {
-        icon: Stethoscope,
-        label: "OPD",
-        href: "/doctor/queue/today",
-        subItems: [
-          { label: "OPD Patient Queue", href: "/doctor/queue/today" },
-          { label: "Waiting Patients", href: "/doctor/queue/waiting" },
-          { label: "Start Consultation", href: "/doctor/opd/consultation" },
-          { label: "Consultation History", href: "/doctor/documentation/consultation" },
         ]
       },
       {

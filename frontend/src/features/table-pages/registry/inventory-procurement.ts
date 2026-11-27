@@ -974,6 +974,55 @@ const pages: TablePageRegistry = {
         return { rackid: 'RCK-' + (301 + i), location: 'Aisle 1', racktype: types[i], maxweight: '500 kg', utilization: (60 + i * 5) + '%', status: 'Active' };
       }),
   },
+  // ---- Purchase workflow screens (hand-written; Suppliers reuses the real /inventory/suppliers page) ----
+  "/inventory/purchase/requisition": {
+    ui: 0,
+    title: "Purchase Requisition", description: "Departments raise requests for items that need to be purchased.",
+    stats: [{ label: "Open Requisitions", color: "text-blue-400", value: "14" }, { label: "Approved", color: "text-emerald-400", value: "22" }, { label: "Pending Approval", color: "text-amber-400", value: "6" }],
+    columns: [["Requisition No", "reqno"], ["Department", "department"], ["Item", "item"], ["Quantity", "quantity"], ["Requested On", "requestedon"]],
+    badge: ["Status", "status", {"Approved":"emerald","Pending":"amber","Rejected":"red","Converted to PO":"blue"}],
+    actions: "Actions",
+    rows: () => Array.from({ length: 5 }).map((_, i) => {
+        const dept = ['Pharmacy', 'OT', 'Nursing', 'Laboratory', 'Housekeeping'];
+        const item = ['Surgical Gloves (7.5)', 'Suture Vicryl 2-0', 'IV Cannula 20G', 'Test Tubes EDTA', 'Floor Disinfectant 5L'];
+        const qty = ['2000 pcs', '500 pcs', '1500 pcs', '3000 pcs', '120 cans'];
+        const dates = ['22 Nov 2026', '23 Nov 2026', '24 Nov 2026', '25 Nov 2026', '26 Nov 2026'];
+        const statuses = ['Converted to PO', 'Approved', 'Approved', 'Pending', 'Pending'];
+        return { reqno: 'PR-' + (3001 + i), department: dept[i], item: item[i], quantity: qty[i], requestedon: dates[i], status: statuses[i] };
+    }),
+  },
+  "/inventory/purchase/orders": {
+    ui: 0,
+    title: "Purchase Orders", description: "Purchase orders issued to suppliers and their delivery status.",
+    stats: [{ label: "Open POs", color: "text-blue-400", value: "18" }, { label: "Received This Month", color: "text-emerald-400", value: "41" }, { label: "Delayed", color: "text-red-400", value: "3" }],
+    columns: [["PO No", "pono"], ["Supplier", "supplier"], ["Items", "items"], ["Amount", "amount"], ["Expected Delivery", "expected"]],
+    badge: ["Status", "status", {"Issued":"blue","Partially Received":"amber","Received":"emerald","Delayed":"red"}],
+    actions: "Actions",
+    rows: () => Array.from({ length: 5 }).map((_, i) => {
+        const sup = ['MediSupply Co.', 'SurgiCare Traders', 'BioLab Distributors', 'Apex Pharma', 'CleanPro Services'];
+        const items = ['4', '2', '6', '3', '1'];
+        const amt = ['Rs. 1,25,000', 'Rs. 86,400', 'Rs. 2,10,500', 'Rs. 54,300', 'Rs. 18,900'];
+        const eta = ['28 Nov 2026', '30 Nov 2026', '02 Dec 2026', '03 Dec 2026', '05 Dec 2026'];
+        const statuses = ['Issued', 'Partially Received', 'Delayed', 'Received', 'Issued'];
+        return { pono: 'PO-' + (7001 + i), supplier: sup[i], items: items[i], amount: amt[i], expected: eta[i], status: statuses[i] };
+    }),
+  },
+  "/inventory/purchase/approvals": {
+    ui: 0,
+    title: "Purchase Approvals", description: "Requisitions and purchase orders waiting for management approval.",
+    stats: [{ label: "Awaiting Approval", color: "text-amber-400", value: "7" }, { label: "Approved Today", color: "text-emerald-400", value: "5" }, { label: "Rejected", color: "text-red-400", value: "1" }],
+    columns: [["Request No", "reqno"], ["Requested By", "requestedby"], ["Department", "department"], ["Amount", "amount"], ["Submitted On", "submitted"]],
+    badge: ["Status", "status", {"Pending Approval":"amber","Approved":"emerald","Rejected":"red"}],
+    actions: "Actions",
+    rows: () => Array.from({ length: 5 }).map((_, i) => {
+        const by = ['Dr. Kulkarni', 'Sr. Nurse Deshpande', 'Mr. Patil', 'Ms. Shah', 'Mr. Rao'];
+        const dept = ['OT', 'Nursing', 'Facilities', 'Laboratory', 'Pharmacy'];
+        const amt = ['Rs. 1,25,000', 'Rs. 42,000', 'Rs. 96,500', 'Rs. 2,10,500', 'Rs. 18,900'];
+        const dates = ['24 Nov 2026', '25 Nov 2026', '25 Nov 2026', '26 Nov 2026', '26 Nov 2026'];
+        const statuses = ['Approved', 'Pending Approval', 'Pending Approval', 'Pending Approval', 'Rejected'];
+        return { reqno: 'AP-' + (9001 + i), requestedby: by[i], department: dept[i], amount: amt[i], submitted: dates[i], status: statuses[i] };
+    }),
+  },
 };
 
 export default pages;

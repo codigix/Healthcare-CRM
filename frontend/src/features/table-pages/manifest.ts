@@ -1035,5 +1035,8 @@ export const tablePageModule: Record<string, string> = {
  "/visitors/approval": "reception-front-office",
  "/visitors/history": "reception-front-office",
  "/visitors/pass": "reception-front-office",
+ "/inventory/purchase/requisition": "inventory-procurement",
+ "/inventory/purchase/orders": "inventory-procurement",
+ "/inventory/purchase/approvals": "inventory-procurement",
  "/visitors/register": "reception-front-office"
 };
