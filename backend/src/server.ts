@@ -60,6 +60,7 @@ import whatsappRoutes from './routes/whatsapp';
 import refillRoutes from './routes/refills';
 import consentRoutes from './routes/consents';
 import patientDocumentRoutes from './routes/patient-documents';
+import hospitalRoutes from './routes/hospital';
 
 console.log('Registering routes...');
 app.use('/api/auth', authRoutes);
@@ -97,6 +98,7 @@ app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/pharmacy/refills', refillRoutes);
 app.use('/api/consents', consentRoutes);
 app.use('/api/patient-documents', patientDocumentRoutes);
+app.use('/api/hospital', hospitalRoutes);
 console.log('✓ All routes registered');
 
 // Reports DB reachability too, so monitors/deploys detect a dead database

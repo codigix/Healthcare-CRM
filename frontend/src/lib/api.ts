@@ -357,6 +357,18 @@ export const consentAPI = {
   getAuditLog: (id: string) => apiClient.get(`/consents/${id}/audit`),
 };
 
+/** Hospital structure: profile, branches, buildings, floors, wards, rooms, beds (all real DB data). */
+export type HospitalEntity = 'branches' | 'buildings' | 'floors' | 'wards' | 'rooms' | 'beds';
+export const hospitalAPI = {
+  summary: () => apiClient.get('/hospital/summary'),
+  getProfile: () => apiClient.get('/hospital/profile'),
+  saveProfile: (data: any) => apiClient.put('/hospital/profile', data),
+  list: (entity: HospitalEntity, params: Record<string, string> = {}) => apiClient.get(`/hospital/${entity}`, { params }),
+  create: (entity: HospitalEntity, data: any) => apiClient.post(`/hospital/${entity}`, data),
+  update: (entity: HospitalEntity, id: string, data: any) => apiClient.put(`/hospital/${entity}/${id}`, data),
+  remove: (entity: HospitalEntity, id: string) => apiClient.delete(`/hospital/${entity}/${id}`),
+};
+
 export const patientDocumentAPI = {
   list: (page = 1, limit = 25, search = '', type = '', status = '', patientId?: string) => apiClient.get('/patient-documents', { params: { page, limit, search, type, status, patientId } }),
 };

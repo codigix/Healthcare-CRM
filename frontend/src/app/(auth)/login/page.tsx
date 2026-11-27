@@ -51,6 +51,13 @@ const DEPARTMENTS = [
     { id: 'MIS', label: 'Executive MIS', icon: BarChart3, desc: 'Analytics & reporting', role: 'executive', color: 'border-violet-500/30 hover:border-violet-500 text-violet-400 bg-violet-500/5 hover:bg-violet-500/10' }
 ];
 
+// Quick-login buttons shown first, in this order; every other department follows in its usual order.
+const QUICK_LOGIN_FIRST = ['admin', 'superadmin', 'receptionist', 'doctor', 'nurse'];
+const quickOrder = (role: string) => {
+    const i = QUICK_LOGIN_FIRST.indexOf(String(role || '').toLowerCase());
+    return i === -1 ? QUICK_LOGIN_FIRST.length : i;
+};
+
 export default function LoginPage() {
     const [isRegister, setIsRegister] = useState(false);
 
@@ -448,7 +455,7 @@ export default function LoginPage() {
                         </p>
                         {dummyUsers.length > 0 ? (
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                {dummyUsers.map((user) => {
+                                {[...dummyUsers].sort((a, b) => quickOrder(a.role) - quickOrder(b.role)).map((user) => {
                                     const dept = DEPARTMENTS.find(d => d.role === user.role) || DEPARTMENTS[0];
                                     const Icon = dept.icon;
                                     return (

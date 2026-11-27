@@ -420,11 +420,124 @@ model Room {
   additionalNotes   String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  wardId            String?  @db.VarChar(36)
 
   roomAllotments RoomAllotment[] @relation("RoomAllotments")
+  ward           Ward?           @relation(fields: [wardId], references: [id], onDelete: SetNull)
+  beds           Bed[]
 
   @@unique([roomNumber, floor])
+  @@index([wardId])
   @@map("rooms")
+}
+
+// ---- Hospital structure: Hospital -> Branch -> Building -> Floor -> Ward -> Room -> Bed ----
+model HospitalProfile {
+  id               String   @id @db.VarChar(36)
+  name             String
+  registrationNo   String?  @db.VarChar(100)
+  type             String?  @db.VarChar(100)
+  email            String?
+  phone            String?  @db.VarChar(50)
+  website          String?
+  address          String?  @db.VarChar(500)
+  city             String?  @db.VarChar(100)
+  state            String?  @db.VarChar(100)
+  pincode          String?  @db.VarChar(20)
+  gstNumber        String?  @db.VarChar(50)
+  establishedYear  Int?
+  totalBedCapacity Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
+
+  @@map("hospital_profile")
+}
+
+model Branch {
+  id          String     @id @db.VarChar(36)
+  name        String
+  code        String     @unique @db.VarChar(50)
+  address     String?    @db.VarChar(500)
+  city        String?    @db.VarChar(100)
+  phone       String?    @db.VarChar(50)
+  email       String?
+  managerName String?
+  status      String     @default("Active") @db.VarChar(30)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now()) @updatedAt
+  buildings   Building[]
+
+  @@map("branches")
+}
+
+model Building {
+  id          String   @id @db.VarChar(36)
+  branchId    String   @db.VarChar(36)
+  name        String
+  code        String   @db.VarChar(50)
+  totalFloors Int      @default(1)
+  description String?  @db.VarChar(500)
+  status      String   @default("Active") @db.VarChar(30)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  branch      Branch   @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  floors      Floor[]
+
+  @@unique([branchId, code])
+  @@index([branchId])
+  @@map("buildings")
+}
+
+model Floor {
+  id          String   @id @db.VarChar(36)
+  buildingId  String   @db.VarChar(36)
+  name        String
+  floorNumber Int
+  description String?  @db.VarChar(500)
+  status      String   @default("Active") @db.VarChar(30)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  building    Building @relation(fields: [buildingId], references: [id], onDelete: Restrict)
+  wards       Ward[]
+
+  @@unique([buildingId, floorNumber])
+  @@index([buildingId])
+  @@map("floors")
+}
+
+model Ward {
+  id            String   @id @db.VarChar(36)
+  floorId       String   @db.VarChar(36)
+  name          String
+  code          String   @unique @db.VarChar(50)
+  wardType      String   @default("General") @db.VarChar(50)
+  department    String?
+  nurseInCharge String?
+  status        String   @default("Active") @db.VarChar(30)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  floor         Floor    @relation(fields: [floorId], references: [id], onDelete: Restrict)
+  rooms         Room[]
+
+  @@index([floorId])
+  @@map("wards")
+}
+
+model Bed {
+  id        String   @id @db.VarChar(36)
+  roomId    String
+  bedNumber String   @db.VarChar(50)
+  bedType   String   @default("Standard") @db.VarChar(50)
+  status    String   @default("Available") @db.VarChar(30)
+  notes     String?  @db.VarChar(500)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, bedNumber])
+  @@index([roomId])
+  @@index([status])
+  @@map("beds")
 }
 
 model RoomAllotment {

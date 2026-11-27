@@ -362,6 +362,12 @@ body.light .bg-black {
   background-color: #f5f5f5;
 }
 
+/* Popup backdrops (fixed + bg-black + bg-opacity-*) must stay see-through in light mode;
+   the rule above turned them into a solid sheet that hid the page behind every modal. */
+body.light .fixed.bg-black[class*="bg-opacity-"] {
+  background-color: rgb(15 23 42 / var(--tw-bg-opacity, 0.5));
+}
+
 body.light .bg-slate-900,
 body.light .bg-slate-800,
 body.light .bg-slate-700 {
