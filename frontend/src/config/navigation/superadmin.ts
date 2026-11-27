@@ -10,15 +10,16 @@ export const superAdminMenu: NavItem[] = [
       {
         icon: Building2,
         label: "Hospital Management",
-        href: "/superadmin/hospital",
+        // Same database-backed screens as the Administration menu.
+        href: "/admin/hospital",
         subItems: [
-          { label: "Hospital Master", href: "/superadmin/hospital/master" },
-          { label: "Hospital Registration", href: "/superadmin/hospital/registration" },
-          { label: "Branch Management", href: "/superadmin/hospital/branch" },
-          { label: "Group Hospitals", href: "/superadmin/hospital/group" },
-          { label: "Hospital License", href: "/superadmin/hospital/license" },
-          { label: "Accreditation", href: "/superadmin/hospital/accreditation" },
-          { label: "Hospital Settings", href: "/superadmin/hospital/settings" },
+          { label: "Hospital Profile", href: "/admin/hospital/profile" },
+          { label: "Branch Information", href: "/admin/hospital/branch" },
+          { label: "Buildings", href: "/admin/hospital/buildings" },
+          { label: "Floors", href: "/admin/hospital/floors" },
+          { label: "Wards", href: "/admin/hospital/wards" },
+          { label: "Rooms", href: "/admin/hospital/rooms" },
+          { label: "Bed Management", href: "/admin/hospital/beds" },
         ]
       },
       {
