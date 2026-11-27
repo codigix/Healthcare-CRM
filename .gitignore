@@ -1,6 +1,9 @@
 .env*
 !.env.production
 
+# Root tooling (npm run dev runs backend + frontend together)
+/node_modules/
+
 # WhatsApp Gateway Session Cache
 backend/.wwebjs_auth/
 backend/.wwebjs_cache/
