@@ -10,10 +10,7 @@ const router = Router();
 const ADMIN_LEVEL = ['superadmin', 'super admin', 'admin', 'administration', 'administrator'];
 
 router.get('/dummy-logins', async (req: AuthRequest, res: Response) => {
-  // Demo accounts must not be advertised on a live system.
-  if (process.env.NODE_ENV === 'production') {
-    return res.json([]);
-  }
+  // Demo site: the department demo accounts are always listed (live too).
   let connection;
   try {
     connection = await pool.getConnection();

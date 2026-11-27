@@ -37,9 +37,9 @@ export function getSecondaryMenu(d: string): NavItem[] {
 /** Same match order as the original if/else-if chain in Sidebar.tsx. */
 export function getMenuForDepartment(d: string): NavItem[] {
   if (d === 'admin' || d === 'administration') return adminMenu;
-  else if (d === 'doctor' || d === 'clinical') return doctorMenu;
+  else if (d === 'doctor' || d === 'clinical' || d === 'clinical services') return doctorMenu;
   else if (d === 'nurse' || d === 'nursing') return nurseMenu;
-  else if (d === 'receptionist' || d === 'reception') return receptionMenu;
+  else if (d === 'receptionist' || d === 'reception' || d === 'reception & front office') return receptionMenu;
   else if (d === 'laboratory' || d === 'diagnostics') return laboratoryMenu;
   else if (d === 'ot') return otMenu;
   else if (d === 'pharmacy' || d === 'pharmacist') return pharmacyMenu;

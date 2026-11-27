@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, UserCheck, Calendar, FileText, BarChart3, Settings, LogOut, Pill, Activity, Stethoscope, Syringe, ClipboardList, Hotel, Star, Clock, MessageSquare, HeartPulse, Search, Video } from "lucide-react";
+import { LayoutDashboard, Users, UserCheck, Calendar, FileText, BarChart3, Settings, LogOut, Pill, Activity, Stethoscope, Syringe, ClipboardList, Hotel, Star, Clock, MessageSquare, HeartPulse, Search, Video, Clipboard } from "lucide-react";
 import type { NavItem } from "./types";
 
 export const doctorMenu: NavItem[] = [
@@ -6,6 +6,33 @@ export const doctorMenu: NavItem[] = [
         icon: LayoutDashboard,
         label: "Dashboard",
         href: "/dashboard/doctor",
+      },
+      {
+        icon: Users,
+        label: "Patients",
+        href: "/patients",
+        subItems: [
+          { label: "Patients List", href: "/patients" },
+        ]
+      },
+      {
+        icon: Calendar,
+        label: "Appointments",
+        href: "/appointments",
+        subItems: [
+          { label: "Dashboard", href: "/appointments" },
+          { label: "Add Appointment", href: "/appointments/add" },
+          { label: "Calendar View", href: "/appointments/calendar" },
+        ]
+      },
+      {
+        icon: Clipboard,
+        label: "Prescriptions",
+        href: "/prescriptions",
+        subItems: [
+          { label: "All Prescriptions", href: "/prescriptions/all" },
+          { label: "Create Prescription", href: "/prescriptions/create" },
+        ]
       },
       {
         icon: Calendar,

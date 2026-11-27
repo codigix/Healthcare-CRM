@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, UserCheck, Calendar, BarChart3, Settings, Hotel, MessageCircle, Mail, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Users, UserCheck, Calendar, BarChart3, Settings, Hotel, MessageCircle, Mail, MessageSquare, Clipboard } from "lucide-react";
 import type { NavItem } from "./types";
 
 export const receptionMenu: NavItem[] = [
@@ -9,7 +9,7 @@ export const receptionMenu: NavItem[] = [
       },
       {
         icon: Users,
-        label: "Patient Management",
+        label: "Patients",
         href: "/patients",
         subItems: [
           { label: "Patient Registration", href: "/patients/add" },
@@ -25,6 +25,14 @@ export const receptionMenu: NavItem[] = [
           { label: "Appointment List", href: "/appointments" },
           { label: "Book Appointment", href: "/appointments/add" },
 
+        ]
+      },
+      {
+        icon: Clipboard,
+        label: "Prescriptions",
+        href: "/prescriptions",
+        subItems: [
+          { label: "All Prescriptions", href: "/prescriptions/all" },
         ]
       },
       {
