@@ -24,6 +24,7 @@ export { secondaryMenu, defaultMenu };
 
 /** Departments that do not get the "Others" secondary menu. */
 const NO_SECONDARY = [
+  "administration", "admin",
   "doctor", "receptionist", "laboratory", "inventory", "pharmacy", "finance", "accountant",
   "hr", "human resources", "medical records", "quality", "records", "crm", "patient relationship",
   "facilities", "support", "facilities & support", "it", "system", "executive", "mis",

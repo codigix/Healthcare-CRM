@@ -1,5 +1,6 @@
 import { LayoutDashboard, Users, FileText, BarChart3, Settings, Activity, Stethoscope, Package, Users2, MessageSquare, Receipt, Code, ShieldAlert, Server, Key, HardDrive, Link2, ShieldCheck, Building2, Globe, GitBranch } from "lucide-react";
 import type { NavItem } from "./types";
+import { hospitalAdministrationItems } from "./admin";
 
 export const superAdminMenu: NavItem[] = [
       {
@@ -10,17 +11,9 @@ export const superAdminMenu: NavItem[] = [
       {
         icon: Building2,
         label: "Hospital Management",
-        // Same database-backed screens as the Administration menu.
-        href: "/admin/hospital",
-        subItems: [
-          { label: "Hospital Profile", href: "/admin/hospital/profile" },
-          { label: "Branch Information", href: "/admin/hospital/branch" },
-          { label: "Buildings", href: "/admin/hospital/buildings" },
-          { label: "Floors", href: "/admin/hospital/floors" },
-          { label: "Wards", href: "/admin/hospital/wards" },
-          { label: "Rooms", href: "/admin/hospital/rooms" },
-          { label: "Bed Management", href: "/admin/hospital/beds" },
-        ]
+        // Same screens as the Administration menu (Module A: Hospital Administration).
+        href: "/admin/hospital-admin",
+        subItems: hospitalAdministrationItems,
       },
       {
         icon: GitBranch,

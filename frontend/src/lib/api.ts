@@ -292,12 +292,6 @@ export const recordsAPI = {
  updateStatus: (id: string, status: string) => apiClient.patch(`/records/${id}/status`, { status }),
 };
 
-export const whatsappAPI = {
- getStatus: () => apiClient.get('/whatsapp/status'),
- sendMessage: (phone: string, message: string, fileData?: string, fileName?: string, fileType?: string) => 
- apiClient.post('/whatsapp/send', { phone, message, fileData, fileName, fileType }),
-};
-
 export const refillAPI = {
  list: () => apiClient.get('/pharmacy/refills'),
  create: (data: { medicineName: string; quantityRequested: number; notes?: string }) => 

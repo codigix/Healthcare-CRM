@@ -12,7 +12,8 @@ const pool = mysql.createPool({
   connectionLimit: parseInt(process.env.DB_POOL_SIZE || '10'),
   queueLimit: 0,
   // Fail fast (instead of hanging a request) when MySQL is unreachable.
-  connectTimeout: 10_000,
+  // 30 s by default: on a busy Windows PC the first connection can be slow. Override with DB_CONNECT_TIMEOUT.
+  connectTimeout: parseInt(process.env.DB_CONNECT_TIMEOUT || '30000'),
   // Keep idle pooled sockets alive so firewalls/NAT don't silently drop them,
   // which otherwise surfaces as "PROTOCOL_CONNECTION_LOST" on the next query.
   enableKeepAlive: true,

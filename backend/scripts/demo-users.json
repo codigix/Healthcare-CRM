@@ -1,0 +1,18 @@
+[
+  { "name": "Super Admin User", "email": "superadmin@medixpro.com", "role": "superadmin", "department": "Super Admin" },
+  { "name": "Admin User", "email": "admin@medixpro.com", "role": "admin", "department": "Administration" },
+  { "name": "receptionist", "email": "receptionist@medixpro.com", "role": "receptionist", "department": "Reception & Front Office" },
+  { "name": "Doctor User", "email": "doctor@medixpro.com", "role": "doctor", "department": "Clinical Services" },
+  { "name": "Nurse User", "email": "nurse@medixpro.com", "role": "nurse", "department": "Nursing & Patient Care" },
+  { "name": "Diagnostics User", "email": "laboratory@medixpro.com", "role": "laboratory", "department": "Diagnostics" },
+  { "name": "OT", "email": "OT@medixpro.com", "role": "ot", "department": "OT & Critical Care" },
+  { "name": "pharmacy", "email": "pharmacy@medixpro.com", "role": "pharmacy", "department": "Pharmacy" },
+  { "name": "inventory", "email": "inventory@medixpro.com", "role": "inventory", "department": "Inventory & Procurement" },
+  { "name": "finance", "email": "finance@medixpro.com", "role": "finance", "department": "Finance & Accounts" },
+  { "name": "HR", "email": "HR@medixpro.com", "role": "hr", "department": "Human Resources" },
+  { "name": "Medical Records User", "email": "records@medixpro.com", "role": "records", "department": "Medical Records & Quality" },
+  { "name": "CRM User", "email": "crm@medixpro.com", "role": "crm", "department": "Patient Relationship (CRM)" },
+  { "name": "facilities", "email": "facilities@medixpro.com", "role": "facilities", "department": "Facilities & Support" },
+  { "name": "IT", "email": "IT@medixpro.com", "role": "it", "department": "IT & System" },
+  { "name": "Executive MIS User", "email": "executive@medixpro.com", "role": "executive", "department": "Executive MIS" }
+]

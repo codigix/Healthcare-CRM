@@ -5,6 +5,9 @@
   "description": "MedixPro Healthcare CRM - run backend (port 5000) and frontend (port 3000) together",
   "scripts": {
     "dev": "concurrently -k -n API,WEB -c blue,green \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "dev:local": "concurrently -k -n API,WEB -c blue,green \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "dev:remote": "concurrently -k -n API,WEB -c blue,green \"npm run dev:remote --prefix backend\" \"npm run dev --prefix frontend\"",
+    "db:setup:local": "npm run db:setup:local --prefix backend",
     "start": "concurrently -k -n API,WEB -c blue,green \"npm start --prefix backend\" \"npm start --prefix frontend\"",
     "build": "npm run build --prefix backend && npm run build --prefix frontend",
     "typecheck": "npm run typecheck --prefix backend && npm run typecheck --prefix frontend",

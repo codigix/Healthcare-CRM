@@ -4,7 +4,11 @@
   "description": "MedixPro Medical Admin Dashboard Backend",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn src/server.ts",
+    "dev": "ts-node-dev --respawn -r dotenv/config src/server.ts dotenv_config_path=.env.local",
+    "dev:local": "ts-node-dev --respawn -r dotenv/config src/server.ts dotenv_config_path=.env.local",
+    "dev:remote": "ts-node-dev --respawn src/server.ts",
+    "start:local": "node -r dotenv/config dist/server.js dotenv_config_path=.env.local",
+    "db:setup:local": "node scripts/setup-local-db.js",
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
@@ -27,9 +31,7 @@
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.6.5",
     "pdfkit": "^0.13.0",
-    "qrcode-terminal": "^0.12.0",
     "uuid": "^9.0.1",
-    "whatsapp-web.js": "^1.34.7",
     "zod": "^3.25.76"
   },
   "devDependencies": {
