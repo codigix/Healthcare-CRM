@@ -8,14 +8,21 @@
  * - When the backend is built, only this file changes: the same functions will call the API.
  */
 import { useSyncExternalStore } from 'react';
-import { buildSeed } from './seed';
+import { buildSeed, buildReceptionSeed } from './seed';
+import { slotError, todayStr } from './slots';
 
 export type Row = { id: string; createdAt: string; updatedAt: string; [key: string]: any };
 
-export const COLLECTIONS = [
+// Module A: Hospital Administration. Module B: Reception (patients, appointments, queue, admissions ...).
+export const ADMIN_COLLECTIONS = [
   'hospitalProfile', 'branches', 'departments', 'costCentres', 'buildings', 'floors', 'wards', 'rooms', 'beds',
   'staff', 'services', 'tariffs', 'policies', 'approvalRules', 'approvalRequests',
 ] as const;
+export const RECEPTION_COLLECTIONS = [
+  'receptionSettings', 'patients', 'enquiries', 'doctorSchedules', 'doctorLeaves', 'appointments',
+  'admissions', 'patientDocuments', 'transfers', 'dischargeRegs', 'feedback',
+] as const;
+export const COLLECTIONS = [...ADMIN_COLLECTIONS, ...RECEPTION_COLLECTIONS] as const;
 export type CollectionName = (typeof COLLECTIONS)[number];
 export type Db = Record<CollectionName, Row[]>;
 
@@ -41,7 +48,20 @@ function load(): Db {
   if (typeof window === 'undefined') return SERVER_DB;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) { state = { ...emptyDb(), ...JSON.parse(raw) }; return state!; }
+    if (raw) {
+      const saved = JSON.parse(raw);
+      const merged: Db = { ...emptyDb(), ...saved };
+      // Data saved before Module B existed: add the reception starter data, keep every admin edit.
+      const missing = RECEPTION_COLLECTIONS.filter((c) => saved[c] === undefined);
+      if (missing.length) {
+        const seed = buildReceptionSeed(merged);
+        for (const c of missing) merged[c] = seed[c];
+        state = merged;
+        try { persist(); } catch { /* storage unavailable: keep working in memory */ }
+      }
+      state = merged;
+      return state;
+    }
   } catch { /* damaged data: fall through to the starter data */ }
   state = buildSeed();
   try { persist(); } catch { /* storage unavailable: keep working in memory */ }
@@ -83,7 +103,16 @@ interface Rule {
   unique?: { fields: string[]; message: string }[];
   parents?: { field: string; col: CollectionName; label: string }[];   // the referenced row must exist
   dependants?: { col: CollectionName; field: string; message: string }[]; // delete refused while rows point here ({n} = count)
+  /** Extra rule that needs the whole database. Throw a DbError to refuse the save. `existingId` is set on edits. */
+  check?: (data: Record<string, any>, db: Db, existingId?: string) => void;
 }
+
+const digits = (v: any) => String(v ?? '').replace(/\D/g, '');
+const mobileOk = (v: any) => /^[6-9]\d{9}$/.test(digits(v)) && digits(v).length === 10;
+const needMobile = (label: string, v: any, optional = false) => {
+  if (blank(v)) { if (optional) return; throw new DbError(`${label} is required`); }
+  if (!mobileOk(v)) throw new DbError(`${label} must be a 10 digit mobile number starting with 6, 7, 8 or 9`);
+};
 
 const RULES: Partial<Record<CollectionName, Rule>> = {
   hospitalProfile: { label: 'hospital profile', required: { name: 'Hospital name' } },
@@ -146,6 +175,10 @@ const RULES: Partial<Record<CollectionName, Rule>> = {
       { col: 'costCentres', field: 'ownerId', message: 'This person owns {n} cost centre(s). Choose another owner first.' },
       { col: 'branches', field: 'managerId', message: 'This person manages {n} branch(es). Choose another manager first.' },
       { col: 'policies', field: 'ownerId', message: 'This person owns {n} policy document(s). Choose another owner first.' },
+      { col: 'doctorSchedules', field: 'doctorId', message: 'This doctor has {n} OPD session(s) in Doctor Scheduling. Delete them first.' },
+      { col: 'doctorLeaves', field: 'doctorId', message: 'This doctor has {n} leave record(s). Delete them first.' },
+      { col: 'appointments', field: 'doctorId', message: 'This doctor has {n} appointment(s). Make the doctor Inactive instead of deleting.' },
+      { col: 'admissions', field: 'doctorId', message: 'This doctor has {n} admission(s). Make the doctor Inactive instead of deleting.' },
     ],
   },
   services: {
@@ -173,6 +206,111 @@ const RULES: Partial<Record<CollectionName, Rule>> = {
     unique: [{ fields: ['requestNo'], message: 'A request with this number already exists' }],
     parents: [{ field: 'requesterId', col: 'staff', label: 'The requester' }],
   },
+
+  // ------------------------------------------------------------ Module B: Reception
+  receptionSettings: {
+    label: 'reception settings', required: { uhidPrefix: 'UHID prefix', mrnPrefix: 'MRN prefix', uhidDigits: 'UHID digits', mrnDigits: 'MRN digits' },
+    check: (d) => {
+      for (const [k, label] of [['uhidPrefix', 'UHID prefix'], ['mrnPrefix', 'MRN prefix']] as const) if (!/^[A-Za-z0-9-]{1,8}$/.test(String(d[k]))) throw new DbError(`${label} can have 1 to 8 letters, digits or dashes`);
+      for (const [k, label] of [['uhidDigits', 'UHID digits'], ['mrnDigits', 'MRN digits']] as const) if (!(Number(d[k]) >= 4 && Number(d[k]) <= 10)) throw new DbError(`${label} must be between 4 and 10`);
+    },
+  },
+  patients: {
+    label: 'patient',
+    required: { firstName: 'First name', lastName: 'Last name', gender: 'Gender', dob: 'Date of birth', phone: 'Mobile number', uhid: 'UHID' },
+    unique: [
+      { fields: ['uhid'], message: 'This UHID is already used by another patient' },
+      { fields: ['firstName', 'lastName', 'dob', 'phone'], message: 'A patient with the same name, date of birth and mobile number is already registered' },
+    ],
+    check: (d) => {
+      needMobile('Mobile number', d.phone); needMobile('Alternate mobile', d.altPhone, true); needMobile('Emergency contact mobile', d.emergencyPhone, true);
+      if (d.dob > todayStr()) throw new DbError('Date of birth cannot be in the future');
+      if (d.dob < '1900-01-01') throw new DbError('Enter a valid date of birth');
+      if (!blank(d.email) && !/^\S+@\S+\.\S+$/.test(String(d.email))) throw new DbError('Enter a valid email address');
+      if (!blank(d.pincode) && !/^\d{6}$/.test(String(d.pincode))) throw new DbError('PIN code must be 6 digits');
+      if (!blank(d.idProofType) && blank(d.idProofNumber)) throw new DbError('Enter the ID proof number');
+      if (d.idProofType === 'Aadhaar Card' && !blank(d.idProofNumber) && digits(d.idProofNumber).length !== 12) throw new DbError('Aadhaar number must be 12 digits');
+      if (d.hasInsurance === 'Yes') {
+        if (blank(d.insuranceProvider)) throw new DbError('Choose the insurance provider');
+        if (blank(d.policyNumber)) throw new DbError('Enter the policy number');
+      }
+    },
+    dependants: [
+      { col: 'appointments', field: 'patientId', message: 'This patient has {n} appointment(s), so the record cannot be deleted. Mark the patient Inactive instead.' },
+      { col: 'admissions', field: 'patientId', message: 'This patient has {n} admission(s), so the record cannot be deleted. Mark the patient Inactive instead.' },
+      { col: 'patientDocuments', field: 'patientId', message: 'This patient has {n} document(s). Delete them first.' },
+      { col: 'feedback', field: 'patientId', message: 'This patient has {n} feedback record(s). Delete them first.' },
+    ],
+  },
+  enquiries: {
+    label: 'enquiry', required: { name: 'Caller name', phone: 'Phone', enquiryType: 'Enquiry type', source: 'Source', status: 'Status' },
+    parents: [{ field: 'patientId', col: 'patients', label: 'The patient' }],
+    check: (d) => { if (!mobileOk(d.phone)) throw new DbError('Phone must be a 10 digit mobile number starting with 6, 7, 8 or 9'); },
+  },
+  doctorSchedules: {
+    label: 'OPD session', required: { doctorId: 'Doctor', weekday: 'Day', startTime: 'Start time', endTime: 'End time', slotMinutes: 'Minutes per patient' },
+    parents: [{ field: 'doctorId', col: 'staff', label: 'The doctor' }],
+    check: (d, db, id) => {
+      const doc = db.staff.find((s) => s.id === d.doctorId);
+      if (doc && doc.staffType !== 'Doctor') throw new DbError('Only doctors can have an OPD schedule');
+      if (!(d.startTime < d.endTime)) throw new DbError('The end time must be after the start time');
+      const step = Number(d.slotMinutes);
+      if (!(step >= 5 && step <= 120)) throw new DbError('Minutes per patient must be between 5 and 120');
+      const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+      if (toMin(d.endTime) - toMin(d.startTime) < step) throw new DbError('The session is shorter than one patient slot');
+      if (!blank(d.maxPatients) && !(Number(d.maxPatients) >= 1)) throw new DbError('Maximum patients must be at least 1');
+      const clash = db.doctorSchedules.find((s) => s.id !== id && s.doctorId === d.doctorId && s.weekday === d.weekday && String(s.status || 'Active') !== 'Inactive' && s.startTime < d.endTime && s.endTime > d.startTime);
+      if (clash && String(d.status || 'Active') !== 'Inactive') throw new DbError(`This overlaps another ${d.weekday} session (${clash.startTime} - ${clash.endTime}) of the same doctor`);
+    },
+    dependants: [],
+  },
+  doctorLeaves: {
+    label: 'leave', required: { doctorId: 'Doctor', fromDate: 'From date', toDate: 'To date' },
+    parents: [{ field: 'doctorId', col: 'staff', label: 'The doctor' }],
+    check: (d, db) => {
+      if (d.fromDate > d.toDate) throw new DbError('The "to" date cannot be before the "from" date');
+      const n = db.appointments.filter((a) => a.doctorId === d.doctorId && a.date >= d.fromDate && a.date <= d.toDate && ['Booked', 'Checked-in'].includes(a.status)).length;
+      if (n > 0) throw new DbError(`This doctor has ${n} booked appointment(s) in this period. Cancel or reschedule them first.`);
+    },
+  },
+  appointments: {
+    label: 'appointment',
+    required: { patientId: 'Patient', doctorId: 'Doctor', departmentId: 'Department', date: 'Date', status: 'Status', source: 'Source', visitType: 'Visit type', tokenNo: 'Token' },
+    unique: [{ fields: ['doctorId', 'date', 'tokenNo'], message: 'This token number is already issued to another patient of this doctor today' }],
+    parents: [{ field: 'patientId', col: 'patients', label: 'The patient' }, { field: 'doctorId', col: 'staff', label: 'The doctor' }, { field: 'departmentId', col: 'departments', label: 'The department' }],
+    check: (d, db, id) => {
+      const old = id ? db.appointments.find((a) => a.id === id) : undefined;
+      // Only re-check the slot when the booking itself changes (not for check-in, call, complete ...).
+      const moved = !old || ['patientId', 'doctorId', 'date', 'time', 'source'].some((k) => old[k] !== d[k]);
+      if (!moved) return;
+      const patient = db.patients.find((p) => p.id === d.patientId);
+      if (patient && String(patient.status || 'Active') === 'Inactive') throw new DbError('This patient is marked Inactive. Make the patient Active first.');
+      const err = slotError(db, d, id);
+      if (err) throw new DbError(err);
+    },
+  },
+  admissions: {
+    label: 'admission', required: { patientId: 'Patient', bedId: 'Bed', doctorId: 'Doctor', departmentId: 'Department', admittedAt: 'Admission date', status: 'Status' },
+    parents: [{ field: 'patientId', col: 'patients', label: 'The patient' }, { field: 'doctorId', col: 'staff', label: 'The doctor' }, { field: 'departmentId', col: 'departments', label: 'The department' }],
+  },
+  patientDocuments: {
+    label: 'document', required: { patientId: 'Patient', docType: 'Document type', title: 'Title', fileName: 'File' },
+    parents: [{ field: 'patientId', col: 'patients', label: 'The patient' }],
+  },
+  transfers: {
+    label: 'transfer', required: { patientId: 'Patient', admissionId: 'Admission', transferType: 'Transfer type', transferDate: 'Date' },
+    parents: [{ field: 'patientId', col: 'patients', label: 'The patient' }],
+  },
+  dischargeRegs: {
+    label: 'discharge', required: { admissionId: 'Admission', patientId: 'Patient', dischargeType: 'Discharge type', dischargeDate: 'Discharge date' },
+    unique: [{ fields: ['admissionId'], message: 'The discharge of this admission is already registered' }],
+    parents: [{ field: 'patientId', col: 'patients', label: 'The patient' }],
+  },
+  feedback: {
+    label: 'feedback', required: { patientId: 'Patient', rating: 'Rating', category: 'Category' },
+    parents: [{ field: 'patientId', col: 'patients', label: 'The patient' }],
+    check: (d) => { if (!(Number(d.rating) >= 1 && Number(d.rating) <= 5)) throw new DbError('Rating must be from 1 to 5'); },
+  },
 };
 
 function validate(c: CollectionName, data: Record<string, any>, all: Db, existingId?: string) {
@@ -187,6 +325,7 @@ function validate(c: CollectionName, data: Record<string, any>, all: Db, existin
     if (blank(data[p.field])) continue;
     if (!all[p.col].some((r) => r.id === data[p.field])) throw new DbError(`${p.label} you selected no longer exists`);
   }
+  rule.check?.(data, all, existingId);
 }
 
 // ---------------------------------------------------------------- beds follow the room's number of beds
@@ -210,7 +349,7 @@ function syncBeds(next: Db, room: Row) {
   }
 }
 // ---------------------------------------------------------------- writes
-function commit(next: Db) { state = next; persist(); emit(); }
+function commit(next: Db) { state = next; if (suspend) return; persist(); emit(); }
 
 export function create(c: CollectionName, data: Record<string, any>): Row {
   const cur = load(); const d = clean(data);
@@ -272,12 +411,31 @@ export function remove(c: CollectionName, id: string): void {
   commit(next);
 }
 
-/** The hospital profile is a single record: create it the first time, then update it. */
-export function saveProfile(data: Record<string, any>): Row {
-  const cur = load();
-  const existing = cur.hospitalProfile[0];
-  return existing ? update('hospitalProfile', existing.id, data) : create('hospitalProfile', data);
+/** A collection that holds a single record (hospital profile, reception settings): create it, then update it. */
+export function saveSingle(c: CollectionName, data: Record<string, any>): Row {
+  const existing = load()[c][0];
+  return existing ? update(c, existing.id, data) : create(c, data);
 }
+export const saveProfile = (data: Record<string, any>) => saveSingle('hospitalProfile', data);
+
+/**
+ * Apply several changes as ONE save: either all of them happen or none. Each step is validated with the
+ * same rules as a single write, against the data as the earlier steps left it.
+ */
+export function transaction(work: (tx: { create: typeof create; update: typeof update; remove: typeof remove }) => void): void {
+  const before = load(); // writes replace the data object instead of changing it, so this is a safe rollback point
+  try {
+    suspend = true;
+    work({ create, update, remove });
+  } catch (e) {
+    state = before; suspend = false;
+    emit();
+    throw e;
+  }
+  suspend = false;
+  persist(); emit();
+}
+let suspend = false;
 
 // ---------------------------------------------------------------- backup, restore, reset
 export function exportJson(): string {

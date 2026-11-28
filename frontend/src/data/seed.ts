@@ -5,6 +5,7 @@
  * (Self-contained on purpose: db.ts imports this file, so it must not import db.ts.)
  */
 import type { Db, Row } from './db';
+import { addDays, localDate, todayStr, weekdayOf, WEEKDAYS } from './slots';
 
 const T = '2026-01-05T09:00:00.000Z';
 const row = (id: string, data: Record<string, any>): Row => ({ id, createdAt: T, updatedAt: T, ...data });
@@ -148,5 +149,122 @@ export function buildSeed(): Db {
     address: 'Hospital Road', city: 'Pune', state: 'Maharashtra', pincode: '411001', establishedYear: 2010, licensedBeds: 100, accreditation: 'NABH (in progress)', about: '',
   })];
 
-  return { hospitalProfile, branches, departments, costCentres, buildings, floors, wards, rooms, beds, staff, services, tariffs, policies, approvalRules, approvalRequests };
+  const base = { hospitalProfile, branches, departments, costCentres, buildings, floors, wards, rooms, beds, staff, services, tariffs, policies, approvalRules, approvalRequests } as Partial<Db>;
+  return { ...emptyReception(), ...base, ...buildReceptionSeed({ ...emptyReception(), ...base } as Db) } as Db;
+}
+
+const emptyReception = (): Partial<Db> => ({
+  receptionSettings: [], patients: [], enquiries: [], doctorSchedules: [], doctorLeaves: [], appointments: [], admissions: [], patientDocuments: [], transfers: [], dischargeRegs: [], feedback: [],
+});
+
+/**
+ * Starter data for Module B (Reception): a few patients, today's appointments, OPD sessions, admitted patients
+ * (one per bed that is already Occupied), enquiries, documents and feedback. Dates are relative to today.
+ * Built from whatever hospital data exists, so it also works for data saved before Module B was added.
+ */
+export function buildReceptionSeed(base: Db): Pick<Db, 'receptionSettings' | 'patients' | 'enquiries' | 'doctorSchedules' | 'doctorLeaves' | 'appointments' | 'admissions' | 'patientDocuments' | 'transfers' | 'dischargeRegs' | 'feedback'> {
+  const today = todayStr();
+  const stamp = (date: string, time: string) => new Date(`${date}T${time}:00`).toISOString();
+  const doctors = base.staff.filter((s) => s.staffType === 'Doctor');
+
+  const receptionSettings = [row('rset-1', { uhidPrefix: 'UHID', uhidDigits: 6, mrnPrefix: 'MRN', mrnDigits: 6, registrationFee: 100 })];
+
+  // ---------------------------------------------------------------- patients
+  const people: [string, string, string, string, string, string, string][] = [
+    // first, last, gender, dob, blood group, city, mobile
+    ['Rahul', 'Sharma', 'Male', '1990-03-14', 'B+', 'Pune', '9876500001'], ['Priya', 'Patil', 'Female', '1996-07-02', 'O+', 'Pune', '9876500002'],
+    ['Amit', 'Deshmukh', 'Male', '1972-11-21', 'A+', 'Pimpri', '9876500003'], ['Sneha', 'Kulkarni', 'Female', '1985-05-30', 'AB+', 'Pune', '9876500004'],
+    ['Vikas', 'Joshi', 'Male', '1961-01-09', 'O-', 'Satara', '9876500005'], ['Anjali', 'Mehta', 'Female', '1978-09-18', 'A-', 'Pune', '9876500006'],
+    ['Suresh', 'Pawar', 'Male', '1969-12-05', 'B-', 'Nashik', '9876500007'], ['Kavita', 'Naik', 'Female', '1992-04-22', 'O+', 'Pune', '9876500008'],
+    ['Ramesh', 'Gupta', 'Male', '1955-08-11', 'AB-', 'Mumbai', '9876500009'], ['Neha', 'Bhosale', 'Female', '2001-02-27', 'B+', 'Pune', '9876500010'],
+    ['Mahesh', 'Kale', 'Male', '1980-06-16', 'A+', 'Pune', '9876500011'], ['Sunita', 'Rane', 'Female', '1974-10-03', 'O+', 'Thane', '9876500012'],
+    ['Aarav', 'Singh', 'Male', '2018-01-25', 'B+', 'Pune', '9876500013'], ['Lata', 'Jadhav', 'Female', '1966-03-08', 'A+', 'Pune', '9876500014'],
+  ];
+  const patients = people.map(([firstName, lastName, gender, dob, bloodGroup, city, phone], i) => row(`pat-${i + 1}`, {
+    uhid: `UHID-${String(i + 1).padStart(6, '0')}`, mrn: `MRN-${String(i + 1).padStart(6, '0')}`, title: gender === 'Male' ? (dob > '2010' ? 'Master' : 'Mr.') : dob > '2010' ? 'Baby' : 'Ms.', firstName, middleName: '', lastName, gender, dob, bloodGroup,
+    maritalStatus: dob > '2010' ? 'Single' : 'Married', religion: 'Hindu', language: 'Marathi', phone, altPhone: '', email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mail.example`, address: `${10 + i} Station Road`, city, state: 'Maharashtra', pincode: '411001',
+    idProofType: 'Aadhaar Card', idProofNumber: `5000${String(1000 + i).padStart(4, '0')}${String(2000 + i).padStart(4, '0')}`, emergencyName: `${firstName} family`, emergencyRelation: 'Spouse', emergencyPhone: `98221${String(10000 + i).slice(-5)}`.replace(/^98221/, '98221'),
+    patientType: 'OPD', registrationType: 'Self', referredBy: '', occupation: '', hasInsurance: i % 4 === 0 ? 'Yes' : 'No', insuranceProvider: i % 4 === 0 ? 'Star Health' : '', policyNumber: i % 4 === 0 ? `POL-${5000 + i}` : '', policyValidTill: i % 4 === 0 ? '2027-03-31' : '',
+    isVip: 'No', status: 'Active', notes: '', registeredAt: stamp(addDays(today, -(20 - i)), '10:00'),
+  }));
+  // phone numbers must be unique-looking and valid; emergency phone must be a valid mobile number
+  patients.forEach((p, i) => { p.emergencyPhone = `98221${String(10000 + i).slice(-5)}`; });
+
+  // ---------------------------------------------------------------- admitted patients: one per Occupied bed
+  const occupied = base.beds.filter((b) => b.status === 'Occupied');
+  const wardOfBed = (bedId: string) => { const bed = base.beds.find((b) => b.id === bedId); const room = base.rooms.find((r) => r.id === bed?.roomId); return base.wards.find((w) => w.id === room?.wardId); };
+  const admissions: Row[] = [];
+  occupied.slice(0, 6).forEach((bed, i) => {
+    const pat = patients[8 + i]; if (!pat) return;
+    const ward = wardOfBed(bed.id); const doc = doctors.find((d) => d.departmentId === ward?.departmentId) || doctors[0]; if (!doc) return;
+    pat.patientType = 'IPD';
+    admissions.push(row(`adm-${i + 1}`, {
+      patientId: pat.id, bedId: bed.id, bedNumber: bed.bedNumber, wardName: ward?.name || '', doctorId: doc.id, departmentId: ward?.departmentId || doc.departmentId, admissionType: 'Planned', diagnosis: ['Pneumonia', 'Chest pain, under observation', 'Post-delivery care', 'Fracture, post-op', 'Dengue fever', 'Cardiac monitoring'][i] || 'Under evaluation',
+      admittedAt: stamp(addDays(today, -(i % 4)), '11:30'), status: 'Admitted', dischargedAt: '', notes: '',
+    }));
+  });
+
+  // ---------------------------------------------------------------- OPD sessions: every doctor, Monday to Saturday
+  const doctorSchedules: Row[] = [];
+  doctors.forEach((d) => {
+    WEEKDAYS.slice(0, 6).forEach((day) => {
+      const sat = day === 'Saturday';
+      doctorSchedules.push(row(`sch-${d.id}-${day}-am`, { doctorId: d.id, weekday: day, startTime: '09:00', endTime: sat ? '13:00' : '12:30', slotMinutes: 15, maxPatients: '', room: 'OPD', status: 'Active' }));
+      if (!sat) doctorSchedules.push(row(`sch-${d.id}-${day}-pm`, { doctorId: d.id, weekday: day, startTime: '16:00', endTime: '18:00', slotMinutes: 15, maxPatients: '', room: 'OPD', status: 'Active' }));
+    });
+  });
+  const lastDoc = doctors[doctors.length - 1];
+  const doctorLeaves = lastDoc ? [row('leave-1', { doctorId: lastDoc.id, fromDate: addDays(today, 10), toDate: addDays(today, 12), reason: 'Conference', status: 'Approved' })] : [];
+
+  // ---------------------------------------------------------------- appointments: some today, some upcoming, some past
+  const appointments: Row[] = [];
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+  const doc = (i: number) => doctors[i % Math.max(1, doctors.length)];
+  const mk = (id: string, pi: number, di: number, date: string, time: string, visitType: string, source: string, status: string, extra: Record<string, any> = {}) => {
+    const d = doc(di); if (!d) return;
+    const token = appointments.filter((a) => a.doctorId === d.id && a.date === date).length + 1;
+    appointments.push(row(id, {
+      patientId: patients[pi].id, doctorId: d.id, departmentId: d.departmentId, date, time, visitType, source, status, tokenNo: token, reason: ['Fever and cough', 'Routine check-up', 'Chest discomfort', 'Knee pain', 'Headache', 'Follow-up visit'][pi % 6],
+      fee: d.consultationFee || 0, bookedAt: stamp(addDays(date, -1), '17:00'), checkedInAt: '', calledAt: '', completedAt: '', followUpDate: '', skipped: 0, notes: '', ...extra,
+    }));
+  };
+  if (doctors.length) {
+    mk('apt-1', 0, 0, today, '09:00', 'New', 'Counter', 'Completed', { checkedInAt: stamp(today, '08:50'), calledAt: stamp(today, '09:02'), completedAt: stamp(today, '09:15'), followUpDate: addDays(today, 14) });
+    mk('apt-2', 1, 1, today, '09:15', 'New', 'Phone', 'Completed', { checkedInAt: stamp(today, '09:05'), calledAt: stamp(today, '09:18'), completedAt: stamp(today, '09:35') });
+    mk('apt-3', 2, 0, today, '09:30', 'Follow-up', 'Online', 'In consultation', { checkedInAt: stamp(today, '09:20'), calledAt: stamp(today, '09:32') });
+    mk('apt-4', 3, 1, today, '09:45', 'New', 'Counter', 'Checked-in', { checkedInAt: stamp(today, '09:40') });
+    mk('apt-5', 4, 0, today, '10:00', 'Follow-up', 'Counter', 'Checked-in', { checkedInAt: stamp(today, '09:55') });
+    mk('apt-6', 5, 2, today, '10:15', 'New', 'Phone', 'Booked');
+    mk('apt-7', 6, 1, today, '10:30', 'New', 'Online', 'Booked');
+    mk('apt-8', 7, 2, today, '10:45', 'Follow-up', 'Counter', 'No-show');
+    // Appointments on other days avoid Sundays (no OPD sessions) and the patients who are admitted.
+    const workday = (n: number) => { let d = addDays(today, n); while (weekdayOf(d) === 'Sunday') d = addDays(d, n < 0 ? -1 : 1); return d; };
+    mk('apt-9', 0, 0, workday(1), '09:30', 'Follow-up', 'Phone', 'Booked');
+    mk('apt-10', 1, 1, workday(1), '10:00', 'Follow-up', 'Online', 'Booked');
+    mk('apt-11', 2, 3, workday(2), '09:15', 'New', 'Counter', 'Booked');
+    mk('apt-12', 3, 0, workday(-3), '10:00', 'New', 'Counter', 'Completed', { checkedInAt: stamp(workday(-3), '09:50'), calledAt: stamp(workday(-3), '10:05'), completedAt: stamp(workday(-3), '10:20'), followUpDate: today });
+    mk('apt-13', 4, 1, workday(-2), '11:00', 'New', 'Phone', 'Cancelled', { notes: 'Cancelled: patient unwell' });
+  }
+  void nowMin; void hhmm; void localDate;
+
+  // ---------------------------------------------------------------- enquiries, documents, feedback
+  const enquiries = [
+    row('enq-1', { name: 'Manoj Chavan', phone: '9822000001', enquiryType: 'Appointment', source: 'Phone', message: 'Wants a cardiology appointment this week.', status: 'New', patientId: '', handledBy: '' }),
+    row('enq-2', { name: 'Rekha Salunkhe', phone: '9822000002', enquiryType: 'Health check-up', source: 'Walk-in', message: 'Asked about the full body check-up package.', status: 'In progress', patientId: '', handledBy: '' }),
+    row('enq-3', { name: 'Imran Shaikh', phone: '9822000003', enquiryType: 'Billing / estimate', source: 'WhatsApp', message: 'Estimate for knee surgery.', status: 'In progress', patientId: '', handledBy: '' }),
+    row('enq-4', { name: 'Pooja Thakur', phone: '9822000004', enquiryType: 'General information', source: 'Website', message: 'OPD timings and visiting hours.', status: 'Closed', patientId: '', handledBy: '' }),
+    row('enq-5', { name: 'Neha Bhosale', phone: '9876500010', enquiryType: 'Appointment', source: 'Phone', message: 'Booked a general medicine visit.', status: 'Converted', patientId: 'pat-10', handledBy: '' }),
+  ];
+  const patientDocuments = [
+    row('doc-1', { patientId: 'pat-1', docType: 'ID proof', title: 'Aadhaar card', fileName: 'aadhaar-rahul.pdf', fileSize: 182000, notes: '', verified: 'Yes' }),
+    row('doc-2', { patientId: 'pat-1', docType: 'Insurance card', title: 'Star Health card', fileName: 'star-health.jpg', fileSize: 95000, notes: '', verified: 'Yes' }),
+    row('doc-3', { patientId: 'pat-5', docType: 'Previous report', title: 'ECG report, March', fileName: 'ecg-vikas.pdf', fileSize: 240000, notes: '', verified: 'No' }),
+  ];
+  const feedback = [
+    row('fb-1', { patientId: 'pat-1', appointmentId: 'apt-1', rating: 5, category: 'Reception / registration', comments: 'Quick registration, polite staff.', followUp: 'No' }),
+    row('fb-2', { patientId: 'pat-2', appointmentId: 'apt-2', rating: 3, category: 'Waiting time', comments: 'Waited more than 30 minutes.', followUp: 'Yes' }),
+  ].filter((f) => appointments.some((a) => a.id === f.appointmentId));
+
+  return { receptionSettings, patients, enquiries, doctorSchedules, doctorLeaves, appointments, admissions, patientDocuments, transfers: [], dischargeRegs: [], feedback };
 }

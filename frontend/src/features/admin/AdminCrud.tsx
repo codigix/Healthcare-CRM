@@ -12,7 +12,7 @@ export interface Opt { value: string; label: string }
 export interface FieldDef {
   name: string;
   label: string;
-  type?: 'text' | 'number' | 'email' | 'tel' | 'date' | 'time' | 'textarea' | 'select' | 'heading';
+  type?: 'text' | 'number' | 'email' | 'tel' | 'date' | 'time' | 'textarea' | 'select' | 'heading' | 'file';
   required?: boolean;
   /** Fixed choices for a select. */
   options?: (string | Opt)[];
@@ -61,6 +61,8 @@ export interface AdminCrudProps {
   addLabel?: string;
   hideAdd?: boolean;
   emptyHint?: string;
+  /** Filter values to start with, by filter position (for example the patient chosen on the previous page). */
+  initialFilters?: Record<number, string>;
 }
 
 // ----------------------------------------------------------------------------- helpers
@@ -93,7 +95,7 @@ export default function AdminCrud(p: AdminCrudProps) {
   useEffect(() => setReady(true), []);
 
   const [search, setSearch] = useState('');
-  const [filterVals, setFilterVals] = useState<Record<number, string>>({});
+  const [filterVals, setFilterVals] = useState<Record<number, string>>(p.initialFilters || {});
   const [editing, setEditing] = useState<Row | null | undefined>(undefined); // undefined = closed, null = new
   const [form, setForm] = useState<Record<string, any>>({});
   const [formError, setFormError] = useState('');
@@ -265,6 +267,15 @@ export default function AdminCrud(p: AdminCrudProps) {
                     <option value="">{f.required ? `Select ${f.label.toLowerCase()}` : 'None'}</option>
                     {fieldOptions(f).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
+                ) : f.type === 'file' ? (
+                  <div>
+                    <input type="file" onChange={(e) => {
+                      const file = e.target.files?.[0]; if (!file) return;
+                      if (file.size > 5 * 1024 * 1024) { setFormError('This file is larger than 5 MB.'); e.target.value = ''; return; }
+                      setFormError(''); setForm({ ...form, [f.name]: file.name, fileSize: file.size });
+                    }} className={inputCls} />
+                    {form[f.name] && <span className="block text-xs text-gray-400 mt-1">Selected: {form[f.name]}{form.fileSize ? ` (${Math.max(1, Math.round(Number(form.fileSize) / 1024))} KB)` : ''}</span>}
+                  </div>
                 ) : f.type === 'textarea' ? (
                   <textarea rows={3} value={form[f.name] ?? ''} placeholder={f.placeholder} onChange={(e) => setForm({ ...form, [f.name]: e.target.value })} className={inputCls} />
                 ) : (
